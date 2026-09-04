@@ -15,22 +15,22 @@ export default function ErrorView({
       <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
         Underlier Desk
       </p>
-      <h1 className="text-xl font-semibold tracking-tight">This page failed to load</h1>
+      <h1 className="text-[1.35rem] font-semibold tracking-tight">This page failed to load</h1>
       <p className="text-sm text-muted-foreground">
         The desk could not finish this CoinMarketCap request. Retry, or go back
-        to overview.
+        to the desk.
       </p>
       {error.digest ? (
-        <p className="font-mono text-xs text-muted-foreground">Ref {error.digest}</p>
+        <p className="font-mono text-[11px] text-muted-foreground">Ref {error.digest}</p>
       ) : null}
       <div className="flex flex-wrap items-center gap-3 pt-1">
-        <Button type="button" variant="outline" className="w-fit" onClick={() => reset()}>
+        <Button type="button" variant="outline" size="sm" className="w-fit" onClick={() => reset()}>
           Retry
         </Button>
-        <Link href="/" className="text-sm text-mark hover:underline">
-          Back to overview
+        <Link href="/" className="text-[12px] text-mark hover:underline">
+          Back to desk
         </Link>
-        <Link href="/issuers" className="text-sm text-mark hover:underline">
+        <Link href="/issuers" className="text-[12px] text-mark hover:underline">
           Issuer directory
         </Link>
       </div>

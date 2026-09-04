@@ -81,6 +81,6 @@ A judge who has never seen it can:
 1. Run it locally with a CMC key, or open a deployed demo (fixtures if no key).
 2. Search `NVDA`, `GOLD`, `SPCX`, or `TLT` and see CMC data, not lorem.
 3. Open an asset desk and an issuer book.
-4. Read named endpoints in the README and in **Data & Evidence**.
+4. Read named endpoints in the README and in **Evidence**.
 5. Read a short, honest API feedback note.
 6. Confirm the submission track is **Real World Assets**.

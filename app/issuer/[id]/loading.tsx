@@ -1,8 +1,9 @@
+import { LoadingShell } from "@/components/desk-chrome";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Loading() {
   return (
-    <div className="mx-auto flex w-full max-w-[88rem] flex-col gap-3 px-3 py-4 sm:px-4">
+    <LoadingShell>
       <Skeleton className="h-3 w-28" />
       <div className="border-b border-border pb-3">
         <Skeleton className="h-3 w-20" />
@@ -15,6 +16,6 @@ export default function Loading() {
           <Skeleton key={index} className="h-9 w-full" />
         ))}
       </div>
-    </div>
+    </LoadingShell>
   );
 }

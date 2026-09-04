@@ -6,7 +6,7 @@ A research desk for the **Build with CMC: API Hackathon**, track **Real World As
 
 **One-liner.** What real-world asset is being tokenized, who is tokenizing it, and where can you access it?
 
-CMC already publishes two views that do not meet: ranked *underliers* and ranked *wrapper tokens*. Tickers collide — `NVDA` is a Nasdaq stock and several issuer tokens; `SPCX` is a listing and a Backpack token. Underlier Desk resolves `rwa_id`, then joins metadata, tokenized quotes, issuer tokens, and the TradFi venue CMC actually reports.
+Tickers collide. `NVDA` is a Nasdaq stock and several issuer tokens; `SPCX` is an underlier and a Backpack token. Underlier Desk resolves `rwa_id`, then joins metadata, tokenized quotes, issuer tokens, and the venue CMC actually reports.
 
 There is no splash screen. `/` is the Market Desk: universe summary plus the underlier table.
 
@@ -95,10 +95,10 @@ flowchart TD
   B --> C[Search ticker / slug / rwa_id]
   C --> D[Asset desk]
   D --> E[Issuer wrappers vs average tokenized price]
-  D --> F[CMC-reported TradFi venue]
+  D --> F[CMC-reported venue]
   E --> G[Issuer book]
   G --> D
-  D --> H[Data and Evidence drawer]
+  D --> H[Evidence drawer]
 ```
 
 ## CMC endpoints used
@@ -111,7 +111,7 @@ flowchart TD
 6. `GET /v5/real-world-assets/issuers`
 7. `GET /v2/cryptocurrency/quotes/latest` — fallback when an RWA token has a `crypto_id` but no price
 
-Each page exposes **Data & Evidence** with the named endpoint and a truncated response. Sample envelopes: [`evidence/sample-cmc-map-spacex.json`](evidence/sample-cmc-map-spacex.json) and [`evidence/live-nvda-quotes.json`](evidence/live-nvda-quotes.json) (key stripped).
+Each page exposes **Evidence** with the named endpoint and a truncated response. Sample envelopes: [`evidence/sample-cmc-map-spacex.json`](evidence/sample-cmc-map-spacex.json) and [`evidence/live-nvda-quotes.json`](evidence/live-nvda-quotes.json) (key stripped).
 
 Debug BFF routes (same payloads the UI uses):
 

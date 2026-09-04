@@ -1,4 +1,3 @@
-import { ArrowRight } from "lucide-react";
 import { PageHeader, TextLink } from "@/components/desk-chrome";
 import {
   Table,
@@ -26,7 +25,7 @@ export function ClassesView({ counts }: { counts: TypeCount[] }) {
   const byType = new Map(counts.map((row) => [row.type, row]));
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       <PageHeader
         kicker="Taxonomy"
         title="Asset classes"
@@ -44,7 +43,7 @@ export function ClassesView({ counts }: { counts: TypeCount[] }) {
             <TableHead>Class</TableHead>
             <TableHead className="text-right">Underliers</TableHead>
             <TableHead className="hidden sm:table-cell">Notes</TableHead>
-            <TableHead className="text-right">Universe</TableHead>
+            <TableHead className="text-right">Research</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -70,12 +69,8 @@ export function ClassesView({ counts }: { counts: TypeCount[] }) {
                   {empty ? (
                     <span className="text-[12px] text-muted-foreground">None in map</span>
                   ) : (
-                    <TextLink
-                      href={`/?type=${type}`}
-                      className="inline-flex items-center justify-end gap-1 text-[12px]"
-                    >
-                      Open
-                      <ArrowRight className="size-3" aria-hidden />
+                    <TextLink href={`/?type=${type}`} className="text-[12px]">
+                      Open desk
                     </TextLink>
                   )}
                 </TableCell>

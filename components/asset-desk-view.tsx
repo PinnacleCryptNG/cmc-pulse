@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { ArrowDown, ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { WatchlistButton } from "@/components/watchlist-button";
-import { EmptyState, IdentityRow, QuoteBar, QuoteStat, SectionHead } from "@/components/desk-chrome";
+import { EmptyState, IdentityRow, QuoteBar, QuoteStat, SectionHead, TextLink } from "@/components/desk-chrome";
 import { ExternalLink } from "@/components/external-link";
 import {
   Table,
@@ -41,7 +41,7 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
   const identityBits = identityLine(info);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       <nav aria-label="Breadcrumb" className="text-[12px]">
         <Link
           href="/"
@@ -68,10 +68,10 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
             <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
               Underlier
             </p>
-            <h1 className="font-mono text-2xl font-semibold tracking-tight sm:text-[1.75rem]">
+            <h1 className="font-mono text-[1.35rem] font-semibold tracking-tight">
               {info?.symbol ?? `RWA ${rwaId}`}
             </h1>
-            <p className="mt-0.5 text-sm text-muted-foreground">
+            <p className="mt-0.5 text-[12px] text-muted-foreground">
               <span className="text-foreground">{info?.name ?? `RWA ${rwaId}`}</span>
               {identityBits.length > 0 ? ` · ${identityBits.join(" · ")}` : null}
             </p>
@@ -110,13 +110,10 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
 
       <UnderlierIdentity info={info} rwaId={rwaId} />
       {info?.assetType ? (
-        <p className="text-sm text-muted-foreground">
-          <Link
-            href={`/?type=${encodeURIComponent(String(info.assetType))}`}
-            className="underline underline-offset-4"
-          >
+        <p className="text-[12px] text-muted-foreground">
+          <TextLink href={`/?type=${encodeURIComponent(String(info.assetType))}`}>
             More {formatType(String(info.assetType))} underliers
-          </Link>
+          </TextLink>
         </p>
       ) : null}
 
@@ -182,7 +179,7 @@ function UnderlierIdentity({ info, rwaId }: { info: AssetInfo | null; rwaId: str
     rows.push({
       label: "Website",
       value: (
-        <ExternalLink className="underline underline-offset-4" href={info.website}>
+        <ExternalLink className="text-mark hover:underline" href={info.website}>
           {hostLabel(info.website)}
         </ExternalLink>
       ),
@@ -203,9 +200,9 @@ function UnderlierIdentity({ info, rwaId }: { info: AssetInfo | null; rwaId: str
         ))}
       </dl>
       {about ? (
-        <p className="max-w-3xl text-sm text-muted-foreground">{about}</p>
+        <p className="max-w-3xl text-[13px] text-muted-foreground">{about}</p>
       ) : (
-        <p className="text-sm text-muted-foreground">No About block returned for this underlier.</p>
+        <p className="text-[13px] text-muted-foreground">No About block returned for this underlier.</p>
       )}
     </DeskSection>
   );
@@ -245,7 +242,7 @@ function TokenizedExposure({
           No tokenized exposure in this CMC payload. Underlier metadata still stands.
         </EmptyState>
       ) : (
-        <Table className="text-[13px]">
+        <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead>Wrapper</TableHead>
@@ -273,21 +270,21 @@ function TokenizedExposure({
                 mostVolumeId !== undefined &&
                 token.cryptoId === mostVolumeId;
               return (
-                <TableRow key={`${token.cryptoId}-${token.symbol}-${token.issuerId}`}>
+                <TableRow
+                  key={`${token.cryptoId}-${token.symbol}-${token.issuerId}`}
+                  className="focus-within:bg-muted/60"
+                >
                   <TableCell className="whitespace-normal">
                     <div className="font-medium">{token.name}</div>
-                    <div className="font-mono text-xs text-muted-foreground">
+                    <div className="font-mono text-[11px] text-muted-foreground">
                       {token.symbol}
                       {token.cryptoId ? ` · crypto_id ${token.cryptoId}` : ""}
                     </div>
-                    <div className="mt-1 text-xs sm:hidden">
+                    <div className="mt-0.5 text-[11px] sm:hidden">
                       {token.issuerId ? (
-                        <Link
-                          className="underline underline-offset-4"
-                          href={`/issuer/${token.issuerId}`}
-                        >
-                          {token.issuerName ?? "Issuer book"}
-                        </Link>
+                        <TextLink href={`/issuer/${token.issuerId}`}>
+                          {token.issuerName ?? "View issuer"}
+                        </TextLink>
                       ) : (
                         (token.issuerName ?? "Issuer not named")
                       )}
@@ -298,7 +295,7 @@ function TokenizedExposure({
                   <TableCell className="hidden whitespace-normal sm:table-cell">
                     {token.issuerId ? (
                       <Link
-                        className="underline underline-offset-4"
+                        className="font-medium text-foreground hover:text-mark"
                         href={`/issuer/${token.issuerId}`}
                       >
                         {token.issuerName ?? token.issuerId}
@@ -396,7 +393,7 @@ function ComparisonSection({
       title="Comparison"
       description="Existing spread versus the average tokenized underlier price. Not a cash-market premium."
     >
-      <Table className="text-[13px]">
+      <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
             <TableHead>Leg</TableHead>
@@ -411,9 +408,9 @@ function ComparisonSection({
             <TableCell className="whitespace-normal">
               <span className="font-medium">{underlierName}</span>
               {underlierSymbol ? (
-                <div className="font-mono text-xs text-muted-foreground">{underlierSymbol}</div>
+                <div className="font-mono text-[11px] text-muted-foreground">{underlierSymbol}</div>
               ) : null}
-              <div className="text-xs text-muted-foreground">Average tokenized price</div>
+              <div className="text-[11px] text-muted-foreground">Average tokenized price</div>
             </TableCell>
             <TableCell className="text-right font-mono tabular-nums">
               {formatUsd(underlierPrice)}
@@ -426,7 +423,7 @@ function ComparisonSection({
               <TableCell className="whitespace-normal">
                 <span className="font-mono font-medium">{summary.closest.symbol}</span>
                 {summary.closest.issuerName ? (
-                  <div className="text-xs text-muted-foreground">{summary.closest.issuerName}</div>
+                  <div className="text-[11px] text-muted-foreground">{summary.closest.issuerName}</div>
                 ) : null}
               </TableCell>
               <TableCell className="text-right font-mono tabular-nums">
@@ -452,7 +449,7 @@ function ComparisonSection({
               <TableCell className="whitespace-normal">
                 <span className="font-mono font-medium">{summary.mostVolume.symbol}</span>
                 {summary.mostVolume.issuerName ? (
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-[11px] text-muted-foreground">
                     {summary.mostVolume.issuerName}
                   </div>
                 ) : null}
@@ -475,7 +472,7 @@ function ComparisonSection({
           ) : summary.mostVolume ? (
             <TableRow>
               <TableCell className="text-muted-foreground">Most volume</TableCell>
-              <TableCell colSpan={3} className="text-sm text-muted-foreground">
+              <TableCell colSpan={3} className="text-[13px] text-muted-foreground">
                 Same wrapper as closest
                 {summary.mostVolume.volume24h != null
                   ? ` · ${formatUsd(summary.mostVolume.volume24h, { compact: true })} 24h vol`
@@ -485,7 +482,7 @@ function ComparisonSection({
           ) : null}
         </TableBody>
       </Table>
-      <p className="text-xs text-muted-foreground">
+      <p className="text-[11px] text-muted-foreground">
         {summary.pricedCount} of {summary.tokenCount} wrappers have a tokenized price in this
         payload.
       </p>
@@ -505,51 +502,54 @@ function TradfiSection({
   return (
     <DeskSection
       id="tradfi"
-      kicker="CMC-reported venue"
-      title="TradFi market"
-      description="Venue reported by CMC; not a cash last."
+      kicker="Venue identity"
+      title="CMC-reported venue"
+      description="Venue identity from this CMC payload. Not a cash-market last, and not necessarily a traditional listing."
     >
-      <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+      <p className="text-[12px] text-muted-foreground">
         <span className="text-foreground">{underlierName}</span>
         {underlierSymbol ? (
-          <span className="font-mono text-xs">{underlierSymbol}</span>
+          <>
+            {" "}
+            <span className="font-mono text-[11px]">{underlierSymbol}</span>
+          </>
         ) : null}
-        <ArrowDown className="size-3.5" aria-hidden />
-        <span>CMC-reported venue</span>
+        {" → CMC-reported venue"}
       </p>
 
       {markets.length === 0 ? (
-        <EmptyState title="No TradFi venues">No TradFi venues in this payload.</EmptyState>
+        <EmptyState title="No CMC-reported venues">
+          No venue identity in this payload.
+        </EmptyState>
       ) : (
-        <Table className="text-[13px]">
+        <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead>Exchange</TableHead>
               <TableHead>Ticker</TableHead>
-              <TableHead>Market</TableHead>
+              <TableHead className="text-right">Research</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {markets.map((market) => (
-              <TableRow key={`${market.exchange}-${market.name}-${market.symbol}`}>
+              <TableRow
+                key={`${market.exchange}-${market.name}-${market.symbol}`}
+                className="focus-within:bg-muted/60"
+              >
                 <TableCell className="whitespace-normal">
                   {market.exchange ?? market.name}
                   {market.exchange && market.name && market.name !== market.exchange ? (
-                    <div className="text-xs text-muted-foreground">{market.name}</div>
+                    <div className="text-[11px] text-muted-foreground">{market.name}</div>
                   ) : null}
                 </TableCell>
                 <TableCell className="font-mono">{market.symbol ?? "—"}</TableCell>
-                <TableCell>
+                <TableCell className="text-right">
                   {market.marketUrl ? (
-                    <ExternalLink
-                      className="inline-flex items-center gap-1 underline underline-offset-4"
-                      href={market.marketUrl}
-                    >
-                      Open {market.exchange ?? "market"}
-                      <ArrowRight className="size-3" aria-hidden />
+                    <ExternalLink className="text-[12px] text-mark hover:underline" href={market.marketUrl}>
+                      Open venue
                     </ExternalLink>
                   ) : (
-                    <span className="text-muted-foreground">No market URL</span>
+                    <span className="text-muted-foreground">—</span>
                   )}
                 </TableCell>
               </TableRow>
@@ -580,21 +580,21 @@ function IssuersSection({
           No issuers attached to wrappers in this payload.
         </EmptyState>
       ) : (
-        <Table className="text-[13px]">
+        <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead>Issuer</TableHead>
               <TableHead>Tokenized representation</TableHead>
-              <TableHead className="hidden sm:table-cell">Issuer book</TableHead>
+              <TableHead className="hidden text-right sm:table-cell">Research</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {issuers.map((group) => (
-              <TableRow key={group.key}>
+              <TableRow key={group.key} className="focus-within:bg-muted/60">
                 <TableCell className="whitespace-normal font-medium">
                   {group.issuerId ? (
                     <Link
-                      className="underline underline-offset-4"
+                      className="text-foreground hover:text-mark"
                       href={`/issuer/${group.issuerId}`}
                     >
                       {group.name}
@@ -604,34 +604,30 @@ function IssuersSection({
                   )}
                 </TableCell>
                 <TableCell className="whitespace-normal">
-                  <ul className="flex flex-col gap-1">
+                  <ul className="flex flex-col gap-0.5">
                     {group.tokens.map((token) => (
-                      <li key={`${token.cryptoId}-${token.symbol}`} className="font-mono text-xs">
+                      <li key={`${token.cryptoId}-${token.symbol}`} className="font-mono text-[11px]">
                         {token.symbol}
                         <span className="ml-1.5 font-sans text-muted-foreground">{token.name}</span>
                       </li>
                     ))}
                   </ul>
                   {group.issuerId ? (
-                    <Link
-                      className="mt-1 inline-flex text-xs underline underline-offset-4 sm:hidden"
+                    <TextLink
                       href={`/issuer/${group.issuerId}`}
+                      className="mt-1 inline-flex text-[12px] sm:hidden"
                     >
                       View issuer
-                    </Link>
+                    </TextLink>
                   ) : null}
                 </TableCell>
-                <TableCell className="hidden sm:table-cell">
+                <TableCell className="hidden text-right sm:table-cell">
                   {group.issuerId ? (
-                    <Link
-                      className="inline-flex items-center gap-1 underline underline-offset-4"
-                      href={`/issuer/${group.issuerId}`}
-                    >
+                    <TextLink href={`/issuer/${group.issuerId}`} className="text-[12px]">
                       View issuer
-                      <ArrowRight className="size-3" aria-hidden />
-                    </Link>
+                    </TextLink>
                   ) : (
-                    <span className="text-muted-foreground">No issuer id</span>
+                    <span className="text-muted-foreground">—</span>
                   )}
                 </TableCell>
               </TableRow>
@@ -654,16 +650,16 @@ function EvidenceSection({
     <DeskSection
       id="evidence"
       kicker="Data provenance"
-      title="Data & Evidence"
+      title="Evidence"
       description="These relationships come from named CoinMarketCap RWA calls on this page load. Secrets are never included."
     >
-      <p className="text-xs text-muted-foreground">
+      <p className="text-[11px] text-muted-foreground">
         Tokenized quotes path: <span className="font-mono">{pathUsed}</span>
       </p>
       {evidence.length === 0 ? (
         <EmptyState title="No call evidence">No CMC call evidence on this page load.</EmptyState>
       ) : (
-        <Table className="text-[13px]">
+        <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead>Endpoint</TableHead>
@@ -675,10 +671,10 @@ function EvidenceSection({
           <TableBody>
             {evidence.map((item, index) => (
               <TableRow key={`${item.endpoint}-${index}`}>
-                <TableCell className="whitespace-normal font-mono text-xs">
+                <TableCell className="whitespace-normal font-mono text-[11px]">
                   {item.endpoint}
                   {item.errorMessage ? (
-                    <div className="font-sans text-xs text-destructive">{item.errorMessage}</div>
+                    <div className="font-sans text-[11px] text-destructive">{item.errorMessage}</div>
                   ) : null}
                 </TableCell>
                 <TableCell>

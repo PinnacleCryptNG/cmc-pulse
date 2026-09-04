@@ -39,7 +39,7 @@ export function WatchlistButton({
       aria-pressed={saved}
       aria-label={saved ? `Remove ${symbol} from watchlist` : `Save ${symbol} to watchlist`}
       className={cn(
-        "relative z-10 inline-flex size-7 items-center justify-center rounded-sm text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none",
+        "relative z-10 inline-flex size-7 items-center justify-center rounded-sm text-muted-foreground hover:bg-muted hover:text-foreground",
         saved && "text-mark",
       )}
     >

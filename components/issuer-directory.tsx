@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ExternalLink } from "@/components/external-link";
-import { EmptyState, Pager, TextLink } from "@/components/desk-chrome";
+import { EmptyState, PageHeader, Pager, TextLink } from "@/components/desk-chrome";
 import {
   Table,
   TableBody,
@@ -29,19 +29,17 @@ export function IssuerDirectory({ data }: { data: IssuersResult }) {
   const pastEnd = data.issuers.length === 0 && data.start > 1;
 
   return (
-    <div className="flex flex-col gap-3">
-      <header className="flex flex-col gap-0.5 border-b border-border pb-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-            Issuer database
-          </p>
-          <h1 className="text-[1.35rem] font-semibold tracking-tight">Issuer directory</h1>
-        </div>
-        <p className="max-w-lg text-[11px] text-muted-foreground sm:text-right">
-          Who is tokenizing real-world assets. Counts come from{" "}
-          <span className="font-mono">/issuers/list</span>.
-        </p>
-      </header>
+    <div className="flex flex-col gap-4">
+      <PageHeader
+        kicker="Issuer database"
+        title="Issuer directory"
+        description={
+          <>
+            Who is tokenizing real-world assets. Counts come from{" "}
+            <span className="font-mono">/issuers/list</span>.
+          </>
+        }
+      />
 
       {data.issuers.length === 0 ? (
         <>
@@ -154,12 +152,9 @@ function IssuerRow({ issuer }: { issuer: IssuerSummary }) {
         <IssuerMeta status={status} website={issuer.website} />
       </TableCell>
       <TableCell className="text-right">
-        <Link
-          href={`/issuer/${issuer.issuerId}`}
-          className="text-[12px] text-mark hover:underline"
-        >
+        <TextLink href={`/issuer/${issuer.issuerId}`} className="text-[12px]">
           View issuer
-        </Link>
+        </TextLink>
       </TableCell>
     </TableRow>
   );

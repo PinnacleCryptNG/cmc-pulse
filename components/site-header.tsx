@@ -31,7 +31,7 @@ export function SiteHeader({
       <div className="mx-auto flex w-full max-w-[88rem] items-center justify-between gap-3 px-3 py-1.5 sm:px-4">
         <Link
           href="/"
-          className="shrink-0 text-[13px] font-semibold tracking-[0.16em] uppercase focus-visible:outline-none"
+          className="shrink-0 text-[13px] font-semibold tracking-[0.16em] uppercase"
         >
           Underlier Desk
         </Link>
@@ -44,7 +44,7 @@ export function SiteHeader({
                 href={link.href}
                 aria-current={current ? "page" : undefined}
                 className={cn(
-                  "border-b-2 px-2 py-1.5 focus-visible:outline-none",
+                  "border-b-2 px-2 py-1.5",
                   current
                     ? "border-mark text-foreground"
                     : "border-transparent text-muted-foreground hover:text-foreground",

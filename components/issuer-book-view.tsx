@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { ExternalLink } from "@/components/external-link";
-import { EmptyState } from "@/components/desk-chrome";
+import { EmptyState, SectionHead, TextLink } from "@/components/desk-chrome";
 import {
   Table,
   TableBody,
@@ -51,7 +51,7 @@ export function IssuerBookView({ book }: { book: IssuerBook }) {
             <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
               Issuer book
             </p>
-            <h1 className="text-[1.35rem] font-semibold tracking-tight sm:text-2xl">
+            <h1 className="text-[1.35rem] font-semibold tracking-tight">
               {issuer.name}
             </h1>
             <p className="mt-0.5 font-mono text-[11px] text-muted-foreground">
@@ -75,21 +75,16 @@ export function IssuerBookView({ book }: { book: IssuerBook }) {
       </header>
 
       <section className="flex flex-col gap-2.5" aria-labelledby="tokenization-heading">
-        <div className="flex flex-col gap-0.5 border-b border-border pb-2 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-              Underlier → tokenized representation
-            </p>
-            <h2 id="tokenization-heading" className="text-[15px] font-semibold tracking-tight">
-              What real-world assets does this issuer tokenize?
-            </h2>
-          </div>
-          <p className="text-[11px] text-muted-foreground sm:text-right">
-            {truncated
+        <SectionHead
+          id="tokenization-heading"
+          kicker="Underlier → tokenized representation"
+          title="What real-world assets does this issuer tokenize?"
+          description={
+            truncated
               ? `Showing ${shown.toLocaleString("en-US")} of ${(indexed ?? shown).toLocaleString("en-US")} indexed tokens.`
-              : `${shown.toLocaleString("en-US")} tokenized representation${shown === 1 ? "" : "s"} in this payload.`}
-          </p>
-        </div>
+              : `${shown.toLocaleString("en-US")} tokenized representation${shown === 1 ? "" : "s"} in this payload.`
+          }
+        />
 
         {tokens.length === 0 ? (
           <EmptyState title="No tokenized underliers">
@@ -101,7 +96,7 @@ export function IssuerBookView({ book }: { book: IssuerBook }) {
               <TableRow className="hover:bg-transparent">
                 <TableHead>Underlier</TableHead>
                 <TableHead>Token</TableHead>
-                <TableHead className="text-right">View underlier</TableHead>
+                <TableHead className="text-right">Research</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -147,9 +142,9 @@ function TokenRow({ token }: { token: IssuerToken }) {
       </TableCell>
       <TableCell className="text-right">
         {token.rwaId !== null ? (
-          <Link href={`/asset/${token.rwaId}`} className="text-[12px] text-mark hover:underline">
+          <TextLink href={`/asset/${token.rwaId}`} className="text-[12px]">
             View underlier
-          </Link>
+          </TextLink>
         ) : (
           <span className="text-muted-foreground">—</span>
         )}

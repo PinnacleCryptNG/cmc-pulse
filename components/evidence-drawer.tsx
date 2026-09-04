@@ -32,7 +32,7 @@ export function EvidenceDrawer({ evidence }: { evidence: CallEvidence[] }) {
       </SheetTrigger>
       <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-lg">
         <SheetHeader>
-          <SheetTitle>Data & Evidence</SheetTitle>
+          <SheetTitle>Evidence</SheetTitle>
           <SheetDescription>
             Provenance for the relationships on this page: named CoinMarketCap
             endpoints and truncated response envelopes from this load. Secrets are
@@ -48,17 +48,17 @@ export function EvidenceDrawer({ evidence }: { evidence: CallEvidence[] }) {
             evidence.map((item, index) => (
               <section key={`${item.endpoint}-${index}`} className="border border-border p-3">
                 <div className="flex flex-wrap items-center gap-2">
-                  <p className="font-mono text-xs">{item.endpoint}</p>
+                  <p className="font-mono text-[11px]">{item.endpoint}</p>
                   <Badge variant={item.ok ? "secondary" : "destructive"}>
                     {item.ok ? item.source : "error"}
                   </Badge>
                 </div>
-                <p className="mt-1 text-xs text-muted-foreground">
+                <p className="mt-1 text-[11px] text-muted-foreground">
                   HTTP {item.httpStatus} · credits {item.creditCount ?? "—"} ·{" "}
                   {item.elapsedMs}ms · {item.fetchedAt}
                 </p>
                 {item.errorMessage ? (
-                  <p className="mt-1 text-xs text-destructive">{item.errorMessage}</p>
+                  <p className="mt-1 text-[11px] text-destructive">{item.errorMessage}</p>
                 ) : null}
                 <pre className="mt-2 max-h-64 overflow-auto bg-muted p-2 font-mono text-[11px] leading-relaxed">
                   {JSON.stringify(

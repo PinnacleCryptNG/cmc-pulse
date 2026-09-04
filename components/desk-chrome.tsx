@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 export function PageHeader({
@@ -31,7 +32,7 @@ export function PageHeader({
       {(description || action) && (
         <div className="flex max-w-xl flex-col items-start gap-1 sm:items-end">
           {description ? (
-            <p className="text-xs leading-relaxed text-muted-foreground sm:text-right">
+            <p className="text-[11px] leading-relaxed text-muted-foreground sm:text-right">
               {description}
             </p>
           ) : null}
@@ -56,7 +57,7 @@ export function SectionHead({
   id?: string;
 }) {
   return (
-    <div className="flex flex-col gap-1 border-b border-border pb-2.5 sm:flex-row sm:items-end sm:justify-between">
+    <div className="flex flex-col gap-0.5 border-b border-border pb-2 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
         <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
           {kicker}
@@ -69,7 +70,7 @@ export function SectionHead({
         </h2>
       </div>
       {description ? (
-        <p className="max-w-xl text-xs leading-relaxed text-muted-foreground sm:text-right">
+        <p className="max-w-xl text-[11px] leading-relaxed text-muted-foreground sm:text-right">
           {description}
         </p>
       ) : null}
@@ -128,7 +129,7 @@ export function EmptyState({
   actions?: ReactNode;
 }) {
   return (
-    <div className="border border-dashed border-border px-4 py-10 text-center">
+    <div className="border border-dashed border-border px-4 py-8 text-center">
       <p className="text-sm font-medium text-foreground">{title}</p>
       <div className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">{children}</div>
       {actions ? <div className="mt-3 flex justify-center gap-4 text-sm">{actions}</div> : null}
@@ -149,7 +150,7 @@ export function TextLink({
     <Link
       href={href}
       className={cn(
-        "text-mark underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-mark",
+        "text-mark underline-offset-4 hover:underline",
         className,
       )}
     >
@@ -169,11 +170,11 @@ export function Pager({
 }) {
   if (!prevHref && !nextHref) return null;
   return (
-    <div className={cn("flex items-center justify-between gap-2 text-xs", className)}>
+    <div className={cn("flex items-center justify-between gap-2 text-[11px]", className)}>
       {prevHref ? (
         <Link
           href={prevHref}
-          className="inline-flex h-7 items-center border border-border px-2.5 text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-mark"
+          className="inline-flex h-7 items-center border border-border px-2.5 text-muted-foreground hover:bg-muted hover:text-foreground"
         >
           Previous
         </Link>
@@ -183,7 +184,7 @@ export function Pager({
       {nextHref ? (
         <Link
           href={nextHref}
-          className="inline-flex h-7 items-center border border-border px-2.5 text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-mark"
+          className="inline-flex h-7 items-center border border-border px-2.5 text-muted-foreground hover:bg-muted hover:text-foreground"
         >
           Next
         </Link>
@@ -199,6 +200,26 @@ export function IdentityRow({ label, value }: { label: string; value: ReactNode 
     <div className="grid grid-cols-[7.5rem_1fr] gap-2 text-[13px] sm:grid-cols-[9.5rem_1fr]">
       <dt className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">{label}</dt>
       <dd className="min-w-0 break-words text-foreground">{value}</dd>
+    </div>
+  );
+}
+
+export function LoadingShell({ children }: { children: ReactNode }) {
+  return (
+    <div className="flex min-h-full flex-col">
+      <div className="border-b border-border">
+        <div className="h-px bg-mark" aria-hidden />
+        <div className="mx-auto flex w-full max-w-[88rem] items-center justify-between px-3 py-1.5 sm:px-4">
+          <Skeleton className="h-3.5 w-36" />
+          <div className="hidden gap-3 sm:flex">
+            <Skeleton className="h-4 w-10" />
+            <Skeleton className="h-4 w-14" />
+          </div>
+        </div>
+      </div>
+      <div className="mx-auto flex w-full max-w-[88rem] flex-1 flex-col gap-4 px-3 py-4 sm:px-4">
+        {children}
+      </div>
     </div>
   );
 }

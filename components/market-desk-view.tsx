@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowDown, ArrowUp, Search } from "lucide-react";
 import { WatchlistButton } from "@/components/watchlist-button";
-import { EmptyState, Pager, TextLink } from "@/components/desk-chrome";
+import { EmptyState, PageHeader, Pager, TextLink } from "@/components/desk-chrome";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -70,20 +70,17 @@ export function MarketDeskView({ data }: { data: ScreenerResult }) {
       />
 
       <section className="flex flex-col gap-2.5" aria-labelledby="universe-heading">
-        <div className="flex flex-col gap-0.5 border-b border-border pb-2 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-              Market desk
-            </p>
-            <h1 id="universe-heading" className="text-[1.35rem] font-semibold tracking-tight">
-              Underlier universe
-            </h1>
-          </div>
-          <p className="max-w-lg text-[11px] text-muted-foreground sm:text-right">
-            Lookup is ticker, slug, or <span className="font-mono">rwa_id</span> — not a
-            company-name search.
-          </p>
-        </div>
+        <PageHeader
+          id="universe-heading"
+          kicker="Market desk"
+          title="Underlier universe"
+          description={
+            <>
+              Lookup is ticker, slug, or <span className="font-mono">rwa_id</span> — not a
+              company-name search.
+            </>
+          }
+        />
 
         <form
           className="flex flex-col gap-2 border border-border bg-surface/40 px-2 py-2 sm:flex-row sm:items-center"
@@ -116,10 +113,10 @@ export function MarketDeskView({ data }: { data: ScreenerResult }) {
               defaultValue={data.query}
               placeholder="NVDA, GOLD, SPCX, TLT, or an rwa_id"
               aria-label="Search underliers"
-              className="border-0 bg-transparent pl-7 focus-visible:ring-0"
+              className="h-7 border-0 bg-transparent pl-7 focus-visible:ring-0"
             />
           </div>
-          <Button type="submit" variant="outline" className="h-7 shrink-0">
+          <Button type="submit" variant="outline" size="sm" className="h-7 shrink-0">
             Find
           </Button>
         </form>
@@ -142,7 +139,7 @@ export function MarketDeskView({ data }: { data: ScreenerResult }) {
 
         <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0">
-            <p className="mb-1 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+            <p className="mb-1 text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
               Type
             </p>
             <div className="flex flex-wrap gap-x-0 border-b border-border">
@@ -172,7 +169,7 @@ export function MarketDeskView({ data }: { data: ScreenerResult }) {
             </div>
           </div>
           <div className="shrink-0">
-            <p className="mb-1 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+            <p className="mb-1 text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
               Sort
             </p>
             <div className="flex flex-wrap gap-x-0 border-b border-border">
@@ -283,12 +280,9 @@ export function MarketDeskView({ data }: { data: ScreenerResult }) {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="inline-flex items-center justify-end gap-0.5">
-                        <Link
-                          href={`/asset/${asset.rwaId}`}
-                          className="text-[12px] text-mark hover:underline"
-                        >
+                        <TextLink href={`/asset/${asset.rwaId}`} className="text-[12px]">
                           Open desk
-                        </Link>
+                        </TextLink>
                         <WatchlistButton
                           rwaId={asset.rwaId}
                           name={asset.name}
@@ -371,7 +365,7 @@ function MarketSummary({
       </h2>
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-[auto_auto_1fr] lg:items-end lg:gap-6">
         <div>
-          <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+          <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
             Tracked universe
           </p>
           <p className="font-mono text-[15px] tabular-nums tracking-tight">
@@ -382,7 +376,7 @@ function MarketSummary({
           </p>
         </div>
         <div>
-          <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+          <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
             Tokenized in this view
           </p>
           <p className="font-mono text-[15px] tabular-nums tracking-tight">
@@ -393,7 +387,7 @@ function MarketSummary({
           </p>
         </div>
         <div className="min-w-0">
-          <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+          <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
             Category mix
           </p>
           {categories.length === 0 ? (

@@ -21,7 +21,7 @@ export function WatchlistView() {
   const items = useSyncExternalStore(subscribeWatchlist, readWatchlist, () => EMPTY);
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       <PageHeader
         kicker="Saved locally"
         title="Watchlist"
@@ -33,7 +33,7 @@ export function WatchlistView() {
           title="No saved underliers"
           actions={<TextLink href="/">Open desk</TextLink>}
         >
-          Star a row in Explorer or on an asset desk.
+          Star a row on the desk or an asset desk.
         </EmptyState>
       ) : (
         <Table>
@@ -52,7 +52,7 @@ export function WatchlistView() {
                 <TableCell className="whitespace-normal">
                   <Link
                     href={`/asset/${item.rwaId}`}
-                    className="after:absolute after:inset-0 font-medium"
+                    className="after:absolute after:inset-0 font-medium text-foreground hover:text-mark"
                   >
                     {item.name}
                   </Link>
