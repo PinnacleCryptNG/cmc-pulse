@@ -218,7 +218,7 @@ export function ScreenerView({ data }: { data: ScreenerResult }) {
                       </div>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
-                      <Badge variant="outline" className="font-normal capitalize">
+                      <Badge variant="outline" className="rounded-md font-normal capitalize">
                         {formatType(asset.assetType)}
                       </Badge>
                     </TableCell>
