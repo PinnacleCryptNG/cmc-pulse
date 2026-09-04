@@ -2,15 +2,27 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Loading() {
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-6">
-      <Skeleton className="h-4 w-40" />
-      <Skeleton className="h-8 w-64" />
-      <div className="grid gap-3 sm:grid-cols-3">
-        <Skeleton className="h-24" />
-        <Skeleton className="h-24" />
-        <Skeleton className="h-24" />
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-5">
+      <Skeleton className="h-4 w-48" />
+      <div className="flex flex-col gap-4 border-b border-border/80 pb-5">
+        <Skeleton className="h-3 w-20" />
+        <Skeleton className="h-8 w-72" />
+        <Skeleton className="h-4 w-56" />
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <Skeleton className="h-12 w-28" />
+          <Skeleton className="h-12 w-28" />
+          <Skeleton className="h-12 w-28" />
+          <Skeleton className="h-12 w-20" />
+        </div>
       </div>
-      <Skeleton className="h-72 w-full" />
+      <div className="flex flex-col gap-3">
+        <Skeleton className="h-6 w-32" />
+        <Skeleton className="h-24 w-full" />
+      </div>
+      <div className="flex flex-col gap-3">
+        <Skeleton className="h-6 w-48" />
+        <Skeleton className="h-40 w-full" />
+      </div>
     </div>
   );
 }
