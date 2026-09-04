@@ -108,6 +108,8 @@ export type IssuerToken = {
   name: string;
   symbol: string;
   rwaId: number | null;
+  underlierName: string | null;
+  underlierSymbol: string | null;
 };
 
 export type IssuerDetail = IssuerSummary & {

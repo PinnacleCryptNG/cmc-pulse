@@ -281,6 +281,8 @@ export function parseIssuerToken(token: unknown): IssuerToken | null {
     name: name ?? symbol ?? "Token",
     symbol: symbol ?? "—",
     rwaId: asNumber(pick(record, "rwa_id", "rwaId")),
+    underlierName: asString(pick(record, "underlier_name", "underlierName")),
+    underlierSymbol: asString(pick(record, "underlier_symbol", "underlierSymbol")),
   };
 }
 

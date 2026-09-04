@@ -1,5 +1,4 @@
-import { SiteHeader } from "@/components/site-header";
-import { StatusBanner } from "@/components/status-banner";
+import { AppFrame } from "@/components/app-frame";
 import { ScreenerView } from "@/components/screener-view";
 import { getScreener } from "@/lib/cmc/service";
 import { firstParam, parseAssetTypeParam } from "@/lib/search-params";
@@ -23,12 +22,8 @@ export default async function HomePage({
   });
 
   return (
-    <div className="flex min-h-full flex-col">
-      <SiteHeader evidence={data.evidence} source={data.source} />
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-4 px-4 py-6">
-        <StatusBanner source={data.source} warning={data.warning} />
-        <ScreenerView data={data} />
-      </main>
-    </div>
+    <AppFrame evidence={data.evidence} source={data.source} warning={data.warning}>
+      <ScreenerView data={data} />
+    </AppFrame>
   );
 }

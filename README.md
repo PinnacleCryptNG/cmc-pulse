@@ -35,7 +35,7 @@ Dev server: [http://127.0.0.1:43147](http://127.0.0.1:43147)
 
 CMC publishes two views that do not meet: ranked underliers and ranked wrapper tokens. Tickers collide (`NVDA` the Nasdaq stock vs several issuer tokens; `SPCX` the listing vs the Backpack token). Underlier resolves `rwa_id`, then joins metadata, tokenized quotes, issuer tokens, and market pairs.
 
-Try `NVDA`, `GOLD`, or `SPCX` in the screener, open the asset desk, then an issuer.
+Search a ticker. Open the underlier. Compare every issuer token to the average tokenized price. That gap is the product.
 
 ## CMC endpoints used
 

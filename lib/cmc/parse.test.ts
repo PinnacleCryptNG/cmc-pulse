@@ -91,7 +91,14 @@ test("issuer inversion joins tokens back to an rwa_id", () => {
       totalSize: 1,
       hasMore: false,
       tokens: [
-        { cryptoId: 40238, name: "SPCX token", symbol: "SPCX", rwaId: 9 },
+        {
+          cryptoId: 40238,
+          name: "SPCX token",
+          symbol: "SPCX",
+          rwaId: 9,
+          underlierName: null,
+          underlierSymbol: null,
+        },
       ],
     },
   ]);

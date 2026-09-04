@@ -8,9 +8,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatPct, formatType, formatUsd } from "@/lib/cmc/format";
+import { formatType, formatUsd } from "@/lib/cmc/format";
 import type { ScreenerResult } from "@/lib/cmc/types";
 import { screenerHref } from "@/lib/search-params";
+
+const SUGGESTED = ["NVDA", "GOLD", "SPCX", "TLT"] as const;
 
 export function ScreenerView({ data }: { data: ScreenerResult }) {
   const current = {
@@ -22,9 +24,31 @@ export function ScreenerView({ data }: { data: ScreenerResult }) {
   };
   const nextStart = data.start + data.limit;
   const prevStart = Math.max(1, data.start - data.limit);
+  const visibleTypes = data.typeCounts.filter(
+    (item) => item.type === "all" || item.count !== 0 || data.assetType === item.type,
+  );
 
   return (
     <div className="flex flex-col gap-4">
+      {!data.query ? (
+        <div className="max-w-2xl">
+          <h1 className="text-2xl font-semibold tracking-tight">Underlier desk</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Search a ticker. Open the underlier. Compare every issuer token to the
+            average tokenized price. That is the product.
+          </p>
+        </div>
+      ) : (
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Results for {data.query}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            CMC lookup is ticker, slug, or rwa_id — not a company-name search.
+          </p>
+        </div>
+      )}
+
       <form className="flex flex-col gap-2 sm:flex-row" action="/" method="get">
         {data.assetType !== "all" ? (
           <input type="hidden" name="type" value={data.assetType} />
@@ -38,7 +62,7 @@ export function ScreenerView({ data }: { data: ScreenerResult }) {
         <input
           name="q"
           defaultValue={data.query}
-          placeholder="Search ticker, slug, or rwa_id — NVDA, GOLD, SPCX"
+          placeholder="NVDA, GOLD, SPCX, TLT, or an rwa_id"
           aria-label="Search underliers"
           className="h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
         />
@@ -50,24 +74,37 @@ export function ScreenerView({ data }: { data: ScreenerResult }) {
         </button>
       </form>
 
+      <div className="flex flex-wrap items-center gap-2 text-sm">
+        <span className="text-muted-foreground">Try</span>
+        {SUGGESTED.map((ticker) => (
+          <Link
+            key={ticker}
+            href={`/?q=${ticker}`}
+            className={`rounded-full border px-2.5 py-0.5 font-mono text-xs hover:bg-muted ${
+              data.query.toUpperCase() === ticker ? "bg-foreground text-background" : ""
+            }`}
+          >
+            {ticker}
+          </Link>
+        ))}
+      </div>
+
       <div className="flex flex-wrap gap-2">
-        {data.typeCounts.map((item) => {
-          const href = screenerHref(current, {
-            type: item.type,
-            start: "1",
-          });
+        {visibleTypes.map((item) => {
           const selected = data.assetType === item.type;
           return (
             <Link
               key={item.type}
-              href={href}
+              href={screenerHref(current, { type: item.type, start: "1" })}
               className={`rounded-full border px-3 py-1 text-sm ${
                 selected ? "bg-foreground text-background" : "hover:bg-muted"
               }`}
             >
               {item.label}
               {item.count !== null ? (
-                <span className="ml-1 font-mono text-xs opacity-70">{item.count}</span>
+                <span className="ml-1 font-mono text-xs opacity-70">
+                  {item.count.toLocaleString("en-US")}
+                </span>
               ) : null}
             </Link>
           );
@@ -76,57 +113,48 @@ export function ScreenerView({ data }: { data: ScreenerResult }) {
 
       {data.assets.length === 0 ? (
         <div className="rounded-xl border p-8 text-sm text-muted-foreground">
-          No underliers matched. CMC search is ticker, slug, or rwa_id — not free
-          text company names.
+          No underliers matched <span className="font-mono">{data.query || "this filter"}</span>.
+          Try NVDA, GOLD, or SPCX.
         </div>
       ) : (
         <>
-          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
-            <p>
-              {data.totalSize} matching · sort{" "}
-              <Link className="underline" href={screenerHref(current, { sort: "rwa_rank", start: "1" })}>
-                rank
-              </Link>
-              {" · "}
-              <Link
-                className="underline"
-                href={screenerHref(current, {
-                  sort: "tokenized_market_cap",
-                  dir: "desc",
-                  start: "1",
-                })}
-              >
-                tokenized mcap
-              </Link>
-              {" · "}
-              <Link
-                className="underline"
-                href={screenerHref(current, {
-                  sort: "tokenized_volume_24h",
-                  dir: "desc",
-                  start: "1",
-                })}
-              >
-                24h volume
-              </Link>
-            </p>
-            <p>
-              {data.pathUsed === "assets-list"
-                ? "GET /v5/real-world-assets/assets/list"
-                : data.pathUsed}
-            </p>
-          </div>
+          <p className="text-xs text-muted-foreground">
+            {data.totalSize.toLocaleString("en-US")} matching · click a column to sort ·{" "}
+            GET /v5/real-world-assets/assets/list
+          </p>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>#</TableHead>
+                <TableHead>
+                  <SortLink current={current} field="rwa_rank" label="#" defaultDir="asc" />
+                </TableHead>
                 <TableHead>Underlier</TableHead>
                 <TableHead className="hidden sm:table-cell">Type</TableHead>
-                <TableHead className="text-right">Tokenized price</TableHead>
-                <TableHead className="hidden text-right md:table-cell">Mcap</TableHead>
-                <TableHead className="hidden text-right md:table-cell">24h vol</TableHead>
-                <TableHead className="text-right">24h</TableHead>
-                <TableHead>Tokens</TableHead>
+                <TableHead className="text-right">
+                  <SortLink
+                    current={current}
+                    field="average_tokenized_price"
+                    label="Tokenized price"
+                    defaultDir="desc"
+                  />
+                </TableHead>
+                <TableHead className="hidden text-right md:table-cell">
+                  <SortLink
+                    current={current}
+                    field="tokenized_market_cap"
+                    label="Mcap"
+                    defaultDir="desc"
+                  />
+                </TableHead>
+                <TableHead className="hidden text-right md:table-cell">
+                  <SortLink
+                    current={current}
+                    field="tokenized_volume_24h"
+                    label="24h vol"
+                    defaultDir="desc"
+                  />
+                </TableHead>
+                <TableHead className="hidden sm:table-cell">Tokens</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -140,7 +168,11 @@ export function ScreenerView({ data }: { data: ScreenerResult }) {
                       {asset.name}
                     </Link>
                     <div className="font-mono text-xs text-muted-foreground">
-                      {asset.symbol} · rwa_id {asset.rwaId}
+                      {asset.symbol}
+                      <span className="hidden sm:inline"> · rwa_id {asset.rwaId}</span>
+                    </div>
+                    <div className="mt-1 font-mono text-xs md:hidden">
+                      {formatUsd(asset.quote.volume24h, { compact: true })} vol
                     </div>
                   </TableCell>
                   <TableCell className="hidden sm:table-cell">
@@ -155,18 +187,7 @@ export function ScreenerView({ data }: { data: ScreenerResult }) {
                   <TableCell className="hidden text-right font-mono md:table-cell">
                     {formatUsd(asset.quote.volume24h, { compact: true })}
                   </TableCell>
-                  <TableCell
-                    className={`text-right font-mono ${
-                      (asset.quote.percentChange24h ?? 0) < 0
-                        ? "text-destructive"
-                        : (asset.quote.percentChange24h ?? 0) > 0
-                          ? "text-emerald-600 dark:text-emerald-400"
-                          : ""
-                    }`}
-                  >
-                    {formatPct(asset.quote.percentChange24h)}
-                  </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden sm:table-cell">
                     {asset.hasTokens ? "Yes" : asset.hasTokens === false ? "None" : "—"}
                   </TableCell>
                 </TableRow>
@@ -198,5 +219,36 @@ export function ScreenerView({ data }: { data: ScreenerResult }) {
         </>
       )}
     </div>
+  );
+}
+
+function SortLink({
+  current,
+  field,
+  label,
+  defaultDir,
+}: {
+  current: {
+    q?: string;
+    type: string;
+    sort: string;
+    dir: string;
+    start: string;
+  };
+  field: string;
+  label: string;
+  defaultDir: "asc" | "desc";
+}) {
+  const active = current.sort === field;
+  const nextDir = active ? (current.dir === "asc" ? "desc" : "asc") : defaultDir;
+  const marker = active ? (current.dir === "asc" ? " ↑" : " ↓") : "";
+  return (
+    <Link
+      href={screenerHref(current, { sort: field, dir: nextDir, start: "1" })}
+      className={active ? "text-foreground" : "hover:text-foreground"}
+    >
+      {label}
+      {marker}
+    </Link>
   );
 }

@@ -372,15 +372,45 @@ export async function getIssuers(input: {
 
 export async function getIssuerBook(issuerId: string): Promise<IssuerBook> {
   const call = await cmcGet(ISSUER, { issuer_id: issuerId, limit: 250 });
+  const issuer = parseIssuerPayload(call.payload);
+  const evidence: CallEvidence[] = [call.evidence];
+  if (issuer) {
+    const ids = [
+      ...new Set(
+        issuer.tokens
+          .map((token) => token.rwaId)
+          .filter((id): id is number => id !== null),
+      ),
+    ];
+    for (let i = 0; i < ids.length; i += 120) {
+      const chunk = ids.slice(i, i + 120);
+      const infoCall = await cmcGet(INFO, {
+        rwa_id: chunk.join(","),
+        skip_invalid: "true",
+      });
+      evidence.push(infoCall.evidence);
+      if (!infoCall.ok) continue;
+      const infos = parseInfoPayload(infoCall.payload);
+      const byId = new Map(infos.map((info) => [info.rwaId, info]));
+      issuer.tokens = issuer.tokens.map((token) => {
+        if (token.rwaId === null) return token;
+        const info = byId.get(token.rwaId);
+        if (!info) return token;
+        return {
+          ...token,
+          underlierName: info.name,
+          underlierSymbol: info.symbol,
+        };
+      });
+    }
+  }
   return {
     source: call.source,
-    issuer: parseIssuerPayload(call.payload),
-    evidence: [call.evidence],
+    issuer,
+    evidence,
     warning: warningFrom(
       [call],
-      call.ok && !parseIssuerPayload(call.payload)
-        ? "Issuer payload did not include an issuer_id."
-        : null,
+      call.ok && !issuer ? "Issuer payload did not include an issuer_id." : null,
     ),
   };
 }

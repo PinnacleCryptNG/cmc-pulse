@@ -44,4 +44,5 @@ test("issuer book lists every token Backpack minted", async () => {
   const book = await getIssuerBook("6a2d54b697c45356b1a634f4");
   assert.equal(book.issuer?.name, "Backpack");
   assert.equal(book.issuer?.tokens[0]?.rwaId, 9);
+  assert.equal(book.issuer?.tokens[0]?.underlierName, "SpaceX");
 });
