@@ -24,12 +24,12 @@ export function WatchlistView() {
       <header className="flex flex-col gap-2 border-b border-border/80 pb-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-            Research
+            Saved locally
           </p>
           <h1 className="text-xl font-semibold tracking-tight">Watchlist</h1>
         </div>
         <p className="max-w-xl text-xs text-muted-foreground sm:text-right">
-          Saved in this browser only. Open an asset desk for live tokenized quotes.
+          Names only, in this browser. Open an asset desk for tokenized quotes.
         </p>
       </header>
 
@@ -37,7 +37,7 @@ export function WatchlistView() {
         <div className="border border-dashed border-border/80 px-4 py-12 text-center">
           <p className="text-sm font-medium">No saved underliers</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Use the star on Explorer or an asset desk to save a name here.
+            Star a row in Explorer or on an asset desk.
           </p>
           <Link href="/explore" className="mt-4 inline-block text-sm underline underline-offset-4">
             Open explorer
@@ -49,17 +49,18 @@ export function WatchlistView() {
             <TableRow className="hover:bg-transparent">
               <TableHead>Underlier</TableHead>
               <TableHead className="hidden sm:table-cell">Type</TableHead>
-              <TableHead className="text-right">Desk</TableHead>
-              <TableHead className="w-10 text-right">Save</TableHead>
+              <TableHead className="w-10 text-right">
+                <span className="sr-only">Save</span>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {items.map((item) => (
-              <TableRow key={item.rwaId}>
+              <TableRow key={item.rwaId} className="relative">
                 <TableCell className="whitespace-normal">
                   <Link
                     href={`/asset/${item.rwaId}`}
-                    className="font-medium underline-offset-4 hover:underline"
+                    className="after:absolute after:inset-0 font-medium"
                   >
                     {item.name}
                   </Link>
@@ -68,12 +69,7 @@ export function WatchlistView() {
                 <TableCell className="hidden capitalize sm:table-cell text-muted-foreground">
                   {formatType(item.assetType)}
                 </TableCell>
-                <TableCell className="text-right">
-                  <Link href={`/asset/${item.rwaId}`} className="underline underline-offset-4">
-                    View underlier
-                  </Link>
-                </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="relative z-10 w-10 text-right">
                   <WatchlistButton
                     rwaId={item.rwaId}
                     name={item.name}

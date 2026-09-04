@@ -26,7 +26,7 @@ One-line pitch: *See the real asset behind every tokenized stock, treasury, and 
 ## Routes (locked)
 
 ```
-/              → Overview (Desk)
+/              → Overview (ranked book of 50; mcap/volume derived in JS)
 /explore       → RWA Explorer (screener)
 /classes       → CMC asset-class taxonomy
 /watchlist     → Browser-local saved underliers
@@ -34,6 +34,8 @@ One-line pitch: *See the real asset behind every tokenized stock, treasury, and 
 /issuers       → IssuerDirectory
 /issuer/[id]   → IssuerBookView
 ```
+
+No splash / start page. `/` is the research overview.
 
 Data flow: **RSC → `lib/cmc/service.ts`**. Pages do not fetch `/api/rwa/*` from the client. Those BFF routes exist for evidence and debugging only.
 
@@ -70,6 +72,7 @@ In-process memos (TTL): universe type counts from `/map`, and an issuer index fo
 - No name-search. Ticker, slug, or `rwa_id` only.
 - Two ID spaces: `rwaId` = underlier, `cryptoId` = wrapper token.
 - Homepage **Tracked universe** is the map count. Do not show a competing `assets/list` total as if it were the same universe.
+- Homepage leaderboards are **among the ranked book of 50**, not separate CMC sorts. One `getScreener` call.
 - Issuer tokens on the issuer book have **no quotes**. Do not invent market columns there.
 
 ## What “done” means

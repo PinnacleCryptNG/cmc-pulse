@@ -13,12 +13,12 @@ export default function ErrorView({
   return (
     <div className="mx-auto flex min-h-full max-w-lg flex-col gap-3 px-4 py-16">
       <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-        Desk
+        Underlier Desk
       </p>
       <h1 className="text-xl font-semibold tracking-tight">This page failed to load</h1>
       <p className="text-sm text-muted-foreground">
         The desk could not finish this CoinMarketCap request. Retry, or go back
-        to the universe.
+        to overview.
       </p>
       {error.digest ? (
         <p className="font-mono text-xs text-muted-foreground">Ref {error.digest}</p>
@@ -28,7 +28,7 @@ export default function ErrorView({
           Retry
         </Button>
         <Link href="/" className="text-sm underline underline-offset-4">
-          Back to the desk
+          Back to overview
         </Link>
         <Link href="/issuers" className="text-sm underline underline-offset-4">
           Issuer directory

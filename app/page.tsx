@@ -33,19 +33,11 @@ export default async function HomePage({
     );
   }
 
-  const [ranked, byVolume, byMcap] = await Promise.all([
-    getScreener({ sort: "rwa_rank", sortDir: "asc", limit: 50 }),
-    getScreener({ sort: "tokenized_volume_24h", sortDir: "desc", limit: 10 }),
-    getScreener({ sort: "tokenized_market_cap", sortDir: "desc", limit: 10 }),
-  ]);
+  const ranked = await getScreener({ sort: "rwa_rank", sortDir: "asc", limit: 50 });
 
   return (
-    <AppFrame
-      evidence={[...ranked.evidence, ...byVolume.evidence, ...byMcap.evidence]}
-      source={ranked.source}
-      warning={ranked.warning ?? byVolume.warning ?? byMcap.warning}
-    >
-      <OverviewView ranked={ranked} byVolume={byVolume} byMcap={byMcap} />
+    <AppFrame evidence={ranked.evidence} source={ranked.source} warning={ranked.warning}>
+      <OverviewView ranked={ranked} />
     </AppFrame>
   );
 }

@@ -30,12 +30,12 @@ export function IssuerDirectory({ data }: { data: IssuersResult }) {
           <h1 className="text-xl font-semibold tracking-tight">Issuer directory</h1>
         </div>
         <p className="max-w-xl text-xs text-muted-foreground sm:text-right">
-          Explore the entities issuing tokenized representations of real-world
-          assets.
+          Who mints wrappers for CMC underliers. Token counts come from{" "}
+          <span className="font-mono">/issuers/list</span>.
         </p>
       </header>
 
-      <div className="grid grid-cols-2 gap-x-4 gap-y-3 border-b border-border/80 pb-4 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-x-4 gap-y-3 border-b border-border/80 pb-4">
         <div className="flex flex-col gap-1">
           <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
             Tracked issuers
@@ -52,14 +52,6 @@ export function IssuerDirectory({ data }: { data: IssuersResult }) {
             {data.issuers.length === 0
               ? "—"
               : `${rangeStart.toLocaleString("en-US")}–${rangeEnd.toLocaleString("en-US")}`}
-          </p>
-        </div>
-        <div className="col-span-2 flex flex-col gap-1 sm:col-span-1">
-          <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-            Relationship
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Issuer → tokenized representation → underlier
           </p>
         </div>
       </div>

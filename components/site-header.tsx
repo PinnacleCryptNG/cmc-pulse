@@ -7,7 +7,7 @@ import type { CallEvidence, DataSource } from "@/lib/cmc/types";
 import { cn } from "@/lib/utils";
 
 const LINKS = [
-  { href: "/", label: "Desk", match: (path: string) => path === "/" || path.startsWith("/asset/") },
+  { href: "/", label: "Overview", match: (path: string) => path === "/" },
   { href: "/explore", label: "Explorer", match: (path: string) => path.startsWith("/explore") },
   { href: "/classes", label: "Classes", match: (path: string) => path.startsWith("/classes") },
   { href: "/watchlist", label: "Watchlist", match: (path: string) => path.startsWith("/watchlist") },
@@ -34,12 +34,12 @@ export function SiteHeader({
             Underlier Desk
           </Link>
           <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">
-            Research desk for tokenized real-world assets.
+            The real asset behind every tokenized stock, treasury, and commodity.
           </p>
         </div>
         <nav
           className="flex flex-wrap items-center gap-1 text-sm"
-          aria-label="Desk"
+          aria-label="Primary"
         >
           {LINKS.map((link) => {
             const current = link.match(pathname);
@@ -78,7 +78,7 @@ export function SiteHeader({
               {source === "live" ? "Live" : "Fixture"}
             </span>
           </span>
-          <EvidenceDrawer evidence={evidence} />
+          {evidence.length > 0 ? <EvidenceDrawer evidence={evidence} /> : null}
         </nav>
       </div>
     </header>

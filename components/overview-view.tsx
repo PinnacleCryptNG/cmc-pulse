@@ -13,21 +13,16 @@ import { formatUsd } from "@/lib/cmc/format";
 import type { ListedAsset, ScreenerResult, TypeCount } from "@/lib/cmc/types";
 import { cn } from "@/lib/utils";
 
-export function OverviewView({
-  ranked,
-  byVolume,
-  byMcap,
-}: {
-  ranked: ScreenerResult;
-  byVolume: ScreenerResult;
-  byMcap: ScreenerResult;
-}) {
+export function OverviewView({ ranked }: { ranked: ScreenerResult }) {
   const universe = ranked.typeCounts.find((item) => item.type === "all");
   const categories = ranked.typeCounts.filter(
     (item) => item.type !== "all" && (item.count ?? 0) > 0,
   );
   const pageMcap = sumQuote(ranked.assets, "marketCap");
   const pageVolume = sumQuote(ranked.assets, "volume24h");
+  const tokenized = ranked.assets.filter((asset) => asset.hasTokens).length;
+  const byMcap = topBy(ranked.assets, "marketCap", 10);
+  const byVolume = topBy(ranked.assets, "volume24h", 10);
 
   return (
     <div className="flex flex-col gap-8">
@@ -35,17 +30,26 @@ export function OverviewView({
         <div className="flex flex-col gap-2 border-b border-border/80 pb-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-              Overview
+              Ranked book
             </p>
             <h1 id="overview-heading" className="text-xl font-semibold tracking-tight">
-              Desk
+              Overview
             </h1>
           </div>
-          <p className="max-w-xl text-xs text-muted-foreground sm:text-right">
-            Tokenized market figures below are from this ranked book of{" "}
-            {ranked.assets.length.toLocaleString("en-US")} underliers — not a sum of
-            the full map universe.
-          </p>
+          <div className="flex flex-col items-start gap-1 sm:items-end">
+            <p className="max-w-xl text-xs text-muted-foreground sm:text-right">
+              Tokenized figures below are from this ranked book of{" "}
+              {ranked.assets.length.toLocaleString("en-US")} underliers — not a sum of
+              the full map universe.
+            </p>
+            <Link
+              href="/explore"
+              className="inline-flex items-center gap-1 text-xs underline underline-offset-4"
+            >
+              Open explorer
+              <ArrowRight className="size-3" aria-hidden />
+            </Link>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 border-b border-border/80 md:grid-cols-4">
@@ -73,10 +77,13 @@ export function OverviewView({
             </span>
             <span className="text-xs text-muted-foreground">this book</span>
           </Stat>
-          <Stat label="Research">
-            <Link href="/explore" className="text-sm underline underline-offset-4">
-              Open explorer
-            </Link>
+          <Stat label="Tokenized here">
+            <span className="font-mono text-lg tabular-nums">
+              {tokenized.toLocaleString("en-US")}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              of {ranked.assets.length.toLocaleString("en-US")} listed
+            </span>
           </Stat>
         </div>
       </section>
@@ -86,16 +93,16 @@ export function OverviewView({
       <AssetList
         kicker="Largest tokenized books"
         title="By tokenized market cap"
-        description="Sorted by CMC tokenized_market_cap. Not a cash-market ranking."
-        assets={byMcap.assets}
+        description="Top of this ranked book by CMC tokenized_market_cap — not a cash-market ranking."
+        assets={byMcap}
         value="marketCap"
       />
 
       <AssetList
         kicker="Market activity"
         title="By 24h tokenized volume"
-        description="CMC does not ship RWA 24h percent change, so this is volume — not movers."
-        assets={byVolume.assets}
+        description="CMC does not ship RWA 24h percent change. This is volume among this book, not movers."
+        assets={byVolume}
         value="volume24h"
       />
     </div>
@@ -109,10 +116,10 @@ function ClassBreakdown({ categories }: { categories: TypeCount[] }) {
       <div className="flex flex-col gap-1 border-b border-border/80 pb-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-            Asset-class breakdown
+            Asset-class mix
           </p>
           <h2 id="classes-heading" className="text-lg font-semibold tracking-tight">
-            CMC taxonomy
+            Map by type
           </h2>
         </div>
         <Link
@@ -256,4 +263,18 @@ function sumQuote(assets: ListedAsset[], field: "marketCap" | "volume24h"): numb
     any = true;
   }
   return any ? total : null;
+}
+
+function topBy(
+  assets: ListedAsset[],
+  field: "marketCap" | "volume24h",
+  n: number,
+): ListedAsset[] {
+  return [...assets]
+    .filter((asset) => {
+      const value = asset.quote[field];
+      return value != null && Number.isFinite(value);
+    })
+    .sort((a, b) => (b.quote[field] ?? 0) - (a.quote[field] ?? 0))
+    .slice(0, n);
 }

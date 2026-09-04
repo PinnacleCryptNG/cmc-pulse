@@ -8,6 +8,8 @@ A research desk for the **Build with CMC: API Hackathon**, track **Real World As
 
 CMC already publishes two views that do not meet: ranked *underliers* and ranked *wrapper tokens*. Tickers collide — `NVDA` is a Nasdaq stock and several issuer tokens; `SPCX` is a listing and a Backpack token. Underlier Desk resolves `rwa_id`, then joins metadata, tokenized quotes, issuer tokens, and the TradFi venue CMC actually reports.
 
+There is no splash screen. `/` is the ranked overview. The wordmark in the header is the name; a small tab icon is enough.
+
 ## Run locally
 
 ```bash
@@ -30,9 +32,23 @@ Without a key the app still runs on checked-in fixture responses so the underlie
 
 Never commit the key. `.env*` is gitignored; `.env.example` is not. The key is a **server-only** secret (`CMC_API_KEY`, never `NEXT_PUBLIC_*`). Evidence previews redact it if it ever appears in a payload.
 
+## Screens
+
+| Route | What it is |
+|---|---|
+| `/` | Overview — map counts plus the ranked book of 50 underliers |
+| `/explore` | Screener: ticker / slug / `rwa_id`, type filter, sort |
+| `/classes` | CMC asset-type taxonomy from `/map` |
+| `/watchlist` | Browser-local saved names (no live quotes on this page) |
+| `/asset/[id]` | Underlier desk: wrappers vs average tokenized price, issuers, venue |
+| `/issuers` | Issuer directory |
+| `/issuer/[id]` | Issuer book of tokenized underliers (no quotes on those rows) |
+
+Old `/?q=` / `?type=` / `?sort=` / `?dir=` / `?start=` query strings redirect to `/explore`.
+
 ## Judge path (under two minutes)
 
-1. Open `/` (Desk overview).
+1. Open `/` (Overview). Stats and leaderboards are from **one** ranked `assets/list` pull of 50 rows, plus cached map type counts.
 2. Open Explorer and search `NVDA` (or `GOLD`, `SPCX`, `TLT`).
 3. Open the asset desk. Compare issuer wrappers to the average tokenized price.
 4. Open an issuer book, then an underlier from that book.
@@ -45,7 +61,7 @@ Pages are React Server Components. They call `lib/cmc/service.ts` on the server.
 ```mermaid
 flowchart LR
   subgraph ui [App Router RSC]
-    Home["/ Desk overview"]
+    Home["/ Overview"]
     Explore["/explore Screener"]
     Desk["/asset/id Desk"]
     Classes["/classes"]
@@ -77,7 +93,7 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-  A[Land on Underlier Desk] --> B[Universe: type counts + ranked underliers]
+  A[Land on Overview] --> B[Universe: type counts + ranked underliers]
   B --> C[Search ticker / slug / rwa_id]
   C --> D[Asset desk]
   D --> E[Issuer wrappers vs average tokenized price]
@@ -119,6 +135,7 @@ Friction from live calls on a typical plan:
 - `/info` About text is a long markdown FAQ, not a one-line company blurb.
 - Asset-type taxonomy is uneven: stocks and ETFs dominate the map; treasuries often show up as ETFs. Do not treat map `total_size` and `assets/list` `total_size` as the same universe.
 - Convert quotes arrive as a `quotes: [{ symbol: "USD", ... }]` array, not the crypto-style `quote.USD` object.
+- `/market-pairs/list` is not on a typical plan. The product does not call it.
 
 ## Security and data handling
 
@@ -126,6 +143,7 @@ Friction from live calls on a typical plan:
 - External website and market URLs must be `https:` before they become `href` or `src`.
 - Route params are allowlisted (`rwa_id` digits, issuer ids alphanumeric). Screener `sort` is allowlisted so a junk `?sort=` cannot trip a CMC error into a map fallback.
 - No accounts, cookies, or user-uploaded data. Responses are `Cache-Control: no-store` on the BFF.
+- Watchlist is `localStorage` only.
 
 ## Stack
 

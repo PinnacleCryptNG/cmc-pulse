@@ -38,7 +38,7 @@ export function IssuerBookView({ book }: { book: IssuerBook }) {
           Back to issuers
         </Link>
         <Link href="/explore" className="text-muted-foreground hover:text-foreground">
-          Underlier Universe
+          Explorer
         </Link>
       </nav>
 
@@ -47,15 +47,12 @@ export function IssuerBookView({ book }: { book: IssuerBook }) {
           <SafeLogo src={issuer.logo} name={issuer.name} />
           <div className="min-w-0 flex-1">
             <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-              Who
+              Issuer
             </p>
             <h1 className="text-2xl font-semibold tracking-tight">{issuer.name}</h1>
             <p className="mt-1 font-mono text-xs text-muted-foreground">{issuer.issuerId}</p>
           </div>
         </div>
-        <p className="max-w-2xl text-sm text-muted-foreground">
-          This issuer mints tokenized representations of real-world underliers.
-        </p>
         <dl className="grid gap-x-8 gap-y-2 text-sm sm:grid-cols-2">
           <IdentityRow label="Indexed tokens" value={formatInt(indexed ?? shown)} />
           {issuer.active !== null ? (

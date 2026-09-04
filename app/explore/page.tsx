@@ -28,7 +28,7 @@ export default async function ExplorePage({
 
   return (
     <AppFrame evidence={data.evidence} source={data.source} warning={data.warning}>
-      <ScreenerView data={data} variant="explorer" />
+      <ScreenerView data={data} />
     </AppFrame>
   );
 }

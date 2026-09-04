@@ -4,7 +4,6 @@ import { ArrowDown, ArrowLeft, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { WatchlistButton } from "@/components/watchlist-button";
 import { ExternalLink } from "@/components/external-link";
-import { EvidenceDrawer } from "@/components/evidence-drawer";
 import {
   Table,
   TableBody,
@@ -48,7 +47,7 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
           className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-3.5" aria-hidden />
-          Underlier Universe
+          Explorer
         </Link>
         {info?.symbol ? (
           <>
@@ -707,12 +706,6 @@ function EvidenceSection({
           </TableBody>
         </Table>
       )}
-      <div className="flex flex-wrap items-center gap-3">
-        <EvidenceDrawer evidence={evidence} />
-        <p className="text-xs text-muted-foreground">
-          Open the envelopes for query parameters and truncated response bodies.
-        </p>
-      </div>
     </DeskSection>
   );
 }

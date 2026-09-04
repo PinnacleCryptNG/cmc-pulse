@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowDown, ArrowUp, Search } from "lucide-react";
 import { WatchlistButton } from "@/components/watchlist-button";
@@ -14,19 +13,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatPct, formatType, formatUsd } from "@/lib/cmc/format";
-import type { ScreenerResult, TypeCount } from "@/lib/cmc/types";
+import type { ScreenerResult } from "@/lib/cmc/types";
 import { screenerHref } from "@/lib/search-params";
 import { cn } from "@/lib/utils";
 
 const SUGGESTED = ["NVDA", "GOLD", "SPCX", "TLT"] as const;
 
-export function ScreenerView({
-  data,
-  variant = "full",
-}: {
-  data: ScreenerResult;
-  variant?: "full" | "explorer";
-}) {
+export function ScreenerView({ data }: { data: ScreenerResult }) {
   const current = {
     q: data.query || undefined,
     type: data.assetType,
@@ -39,35 +32,21 @@ export function ScreenerView({
   const visibleTypes = data.typeCounts.filter(
     (item) => item.type === "all" || item.count !== 0 || data.assetType === item.type,
   );
-  const universe = data.typeCounts.find((item) => item.type === "all");
-  const categories = data.typeCounts.filter(
-    (item) => item.type !== "all" && (item.count ?? 0) > 0,
-  );
-  const tokenizedOnPage = data.assets.filter((asset) => asset.hasTokens).length;
   const rangeStart = data.assets.length === 0 ? 0 : data.start;
   const rangeEnd = data.assets.length === 0 ? 0 : data.start + data.assets.length - 1;
   const showChange = data.assets.some((asset) => asset.quote.percentChange24h !== null);
 
   return (
     <div className="flex flex-col gap-8">
-      {variant === "full" ? (
-        <MarketOverview
-          universe={universe}
-          categories={categories}
-          listed={data.assets.length}
-          tokenizedOnPage={tokenizedOnPage}
-        />
-      ) : null}
-
       <section className="flex flex-col gap-3" aria-labelledby="universe-heading">
         <div className="flex flex-col gap-1 border-b border-border/80 pb-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
               RWA Explorer
             </p>
-            <h2 id="universe-heading" className="text-lg font-semibold tracking-tight">
-              {data.query ? `Results for ${data.query}` : "Underlier Universe"}
-            </h2>
+            <h1 id="universe-heading" className="text-xl font-semibold tracking-tight">
+              {data.query ? `Results for ${data.query}` : "Underlier universe"}
+            </h1>
           </div>
           <p className="max-w-lg text-xs text-muted-foreground sm:text-right">
             Search the real asset, not the wrapper. CMC lookup is ticker, slug, or{" "}
@@ -304,120 +283,6 @@ export function ScreenerView({
           </>
         )}
       </section>
-    </div>
-  );
-}
-
-function MarketOverview({
-  universe,
-  categories,
-  listed,
-  tokenizedOnPage,
-}: {
-  universe: TypeCount | undefined;
-  categories: TypeCount[];
-  listed: number;
-  tokenizedOnPage: number;
-}) {
-  const total = universe?.count ?? null;
-  const mixTotal = categories.reduce((sum, item) => sum + (item.count ?? 0), 0) || 1;
-
-  return (
-    <section aria-labelledby="market-heading">
-      <div className="flex flex-col gap-2 border-b border-border/80 pb-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-            Market desk
-          </p>
-          <h1 id="market-heading" className="text-xl font-semibold tracking-tight">
-            RWA Market
-          </h1>
-        </div>
-        <p className="max-w-xl text-xs text-muted-foreground sm:text-right">
-          What real-world asset is being tokenized, who is tokenizing it, and where
-          it can be accessed.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-2 border-b border-border/80 md:grid-cols-4">
-        <OverviewStat label="Tracked universe" className="border-b border-border/80 md:border-r md:border-b-0">
-          <span className="font-mono text-lg tabular-nums tracking-tight">
-            {total === null ? "—" : total.toLocaleString("en-US")}
-          </span>
-          <span className="text-xs text-muted-foreground">underliers</span>
-        </OverviewStat>
-        <OverviewStat label="Tokenized on this page" className="border-b border-border/80 md:border-r md:border-b-0">
-          <span className="font-mono text-lg tabular-nums tracking-tight">
-            {listed === 0 ? "—" : `${tokenizedOnPage.toLocaleString("en-US")}`}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            {listed === 0 ? "no rows" : `of ${listed.toLocaleString("en-US")} listed`}
-          </span>
-        </OverviewStat>
-        <div className="col-span-2 flex flex-col gap-2 py-3 md:px-4">
-          <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-            Asset categories
-          </p>
-          {categories.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No category mix returned.</p>
-          ) : (
-            <>
-              <div
-                className="flex h-1.5 overflow-hidden rounded-sm bg-muted"
-                role="img"
-                aria-label="Asset category distribution"
-              >
-                {categories.map((item, index) => (
-                  <div
-                    key={item.type}
-                    className={cn(
-                      "h-full",
-                      index === 0
-                        ? "bg-foreground/80"
-                        : index === 1
-                          ? "bg-foreground/45"
-                          : index === 2
-                            ? "bg-foreground/25"
-                            : "bg-foreground/12",
-                    )}
-                    style={{ width: `${((item.count ?? 0) / mixTotal) * 100}%` }}
-                    title={`${item.label} ${(item.count ?? 0).toLocaleString("en-US")}`}
-                  />
-                ))}
-              </div>
-              <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
-                {categories.map((item) => (
-                  <li key={item.type} className="flex items-baseline gap-1.5">
-                    <span className="text-muted-foreground">{item.label}</span>
-                    <span className="font-mono tabular-nums">
-                      {(item.count ?? 0).toLocaleString("en-US")}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function OverviewStat({
-  label,
-  children,
-  className,
-}: {
-  label: string;
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <div className={cn("flex flex-col gap-1 py-3 md:px-4", className)}>
-      <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-        {label}
-      </p>
-      <div className="flex items-baseline gap-2">{children}</div>
     </div>
   );
 }
