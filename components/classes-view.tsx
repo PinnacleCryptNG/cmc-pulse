@@ -1,5 +1,13 @@
-import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { PageHeader, TextLink } from "@/components/desk-chrome";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { ASSET_TYPES } from "@/lib/cmc/types";
 import { TYPE_LABELS } from "@/lib/cmc/parse";
 import type { TypeCount } from "@/lib/cmc/types";
@@ -18,50 +26,64 @@ export function ClassesView({ counts }: { counts: TypeCount[] }) {
   const byType = new Map(counts.map((row) => [row.type, row]));
 
   return (
-    <div className="flex flex-col gap-8">
-      <header className="flex flex-col gap-2 border-b border-border/80 pb-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-            Taxonomy
-          </p>
-          <h1 className="text-xl font-semibold tracking-tight">Asset classes</h1>
-        </div>
-        <p className="max-w-xl text-xs text-muted-foreground sm:text-right">
-          CoinMarketCap RWA types from{" "}
-          <span className="font-mono">/map</span>. Private credit and infrastructure
-          are not in this API.
-        </p>
-      </header>
+    <div className="flex flex-col gap-3">
+      <PageHeader
+        kicker="Taxonomy"
+        title="Asset classes"
+        description={
+          <>
+            CoinMarketCap RWA types from <span className="font-mono">/map</span>. Private
+            credit and infrastructure are not in this API.
+          </>
+        }
+      />
 
-      <ul className="grid gap-3 sm:grid-cols-2">
-        {ASSET_TYPES.map((type) => {
-          const row = byType.get(type);
-          const count = row?.count ?? null;
-          const empty = count === 0;
-          return (
-            <li key={type} className="border border-border/80 p-4">
-              <h2 className="text-lg font-semibold tracking-tight">{TYPE_LABELS[type]}</h2>
-              <p className="mt-1 font-mono text-sm tabular-nums">
-                {formatInt(count)} underliers
-              </p>
-              <p className="mt-2 text-sm text-muted-foreground">{CLASS_BLURB[type]}</p>
-              {empty ? (
-                <p className="mt-3 text-xs text-muted-foreground">
-                  None in the current map pull.
-                </p>
-              ) : (
-                <Link
-                  href={`/explore?type=${type}`}
-                  className="mt-3 inline-flex items-center gap-1 text-sm underline underline-offset-4"
-                >
-                  Open in explorer
-                  <ArrowRight className="size-3" aria-hidden />
-                </Link>
-              )}
-            </li>
-          );
-        })}
-      </ul>
+      <Table>
+        <TableHeader>
+          <TableRow className="hover:bg-transparent">
+            <TableHead>Class</TableHead>
+            <TableHead className="text-right">Underliers</TableHead>
+            <TableHead className="hidden sm:table-cell">Notes</TableHead>
+            <TableHead className="text-right">Universe</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {ASSET_TYPES.map((type) => {
+            const row = byType.get(type);
+            const count = row?.count ?? null;
+            const empty = count === 0;
+            return (
+              <TableRow key={type}>
+                <TableCell className="whitespace-normal font-medium">
+                  {TYPE_LABELS[type]}
+                  <p className="mt-0.5 max-w-sm text-[12px] font-normal text-muted-foreground sm:hidden">
+                    {CLASS_BLURB[type]}
+                  </p>
+                </TableCell>
+                <TableCell className="text-right font-mono tabular-nums">
+                  {formatInt(count)}
+                </TableCell>
+                <TableCell className="hidden max-w-md whitespace-normal text-[12px] text-muted-foreground sm:table-cell">
+                  {CLASS_BLURB[type]}
+                </TableCell>
+                <TableCell className="text-right">
+                  {empty ? (
+                    <span className="text-[12px] text-muted-foreground">None in map</span>
+                  ) : (
+                    <TextLink
+                      href={`/explore?type=${type}`}
+                      className="inline-flex items-center justify-end gap-1 text-[12px]"
+                    >
+                      Open
+                      <ArrowRight className="size-3" aria-hidden />
+                    </TextLink>
+                  )}
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
     </div>
   );
 }

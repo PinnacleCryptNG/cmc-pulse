@@ -1,6 +1,12 @@
-import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import {
+  PageHeader,
+  QuoteBar,
+  QuoteStat,
+  SectionHead,
+  TextLink,
+} from "@/components/desk-chrome";
 import {
   Table,
   TableBody,
@@ -25,86 +31,66 @@ export function OverviewView({ ranked }: { ranked: ScreenerResult }) {
   const byVolume = topBy(ranked.assets, "volume24h", 10);
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6">
       <section aria-labelledby="overview-heading">
-        <div className="flex flex-col gap-2 border-b border-border/80 pb-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-              Ranked book
-            </p>
-            <h1 id="overview-heading" className="text-xl font-semibold tracking-tight">
-              Overview
-            </h1>
-          </div>
-          <div className="flex flex-col items-start gap-1 sm:items-end">
-            <p className="max-w-xl text-xs text-muted-foreground sm:text-right">
-              Tokenized figures below are from this ranked book of{" "}
+        <PageHeader
+          id="overview-heading"
+          kicker="Ranked book"
+          title="Overview"
+          description={
+            <>
+              Tokenized figures are from this ranked book of{" "}
               {ranked.assets.length.toLocaleString("en-US")} underliers — not a sum of
               the full map universe.
-            </p>
-            <Link
-              href="/explore"
-              className="inline-flex items-center gap-1 text-xs underline underline-offset-4"
-            >
+            </>
+          }
+          action={
+            <TextLink href="/explore" className="inline-flex items-center gap-1 text-xs">
               Open explorer
               <ArrowRight className="size-3" aria-hidden />
-            </Link>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 border-b border-border/80 md:grid-cols-4">
-          <Stat
-            label="Tracked assets"
-            className="border-b border-border/80 md:border-r md:border-b-0"
-          >
-            <span className="font-mono text-lg tabular-nums">
-              {universe?.count == null ? "—" : universe.count.toLocaleString("en-US")}
-            </span>
-            <span className="text-xs text-muted-foreground">map underliers</span>
-          </Stat>
-          <Stat
-            label="Tokenized mcap"
-            className="border-b border-border/80 md:border-r md:border-b-0"
-          >
-            <span className="font-mono text-lg tabular-nums">
-              {formatUsd(pageMcap, { compact: true })}
-            </span>
-            <span className="text-xs text-muted-foreground">this book</span>
-          </Stat>
-          <Stat label="24h tokenized volume" className="border-b border-border/80 md:border-b-0 md:border-r">
-            <span className="font-mono text-lg tabular-nums">
-              {formatUsd(pageVolume, { compact: true })}
-            </span>
-            <span className="text-xs text-muted-foreground">this book</span>
-          </Stat>
-          <Stat label="Tokenized here">
-            <span className="font-mono text-lg tabular-nums">
-              {tokenized.toLocaleString("en-US")}
-            </span>
-            <span className="text-xs text-muted-foreground">
+            </TextLink>
+          }
+        />
+        <QuoteBar>
+          <QuoteStat label="Tracked assets">
+            {universe?.count == null ? "—" : universe.count.toLocaleString("en-US")}
+            <span className="font-sans text-[11px] text-muted-foreground">map underliers</span>
+          </QuoteStat>
+          <QuoteStat label="Tokenized mcap">
+            {formatUsd(pageMcap, { compact: true })}
+            <span className="font-sans text-[11px] text-muted-foreground">this book</span>
+          </QuoteStat>
+          <QuoteStat label="24h tokenized volume">
+            {formatUsd(pageVolume, { compact: true })}
+            <span className="font-sans text-[11px] text-muted-foreground">this book</span>
+          </QuoteStat>
+          <QuoteStat label="Tokenized here">
+            {tokenized.toLocaleString("en-US")}
+            <span className="font-sans text-[11px] text-muted-foreground">
               of {ranked.assets.length.toLocaleString("en-US")} listed
             </span>
-          </Stat>
-        </div>
+          </QuoteStat>
+        </QuoteBar>
       </section>
 
       <ClassBreakdown categories={categories} />
 
-      <AssetList
-        kicker="Largest tokenized books"
-        title="By tokenized market cap"
-        description="Top of this ranked book by CMC tokenized_market_cap — not a cash-market ranking."
-        assets={byMcap}
-        value="marketCap"
-      />
-
-      <AssetList
-        kicker="Market activity"
-        title="By 24h tokenized volume"
-        description="CMC does not ship RWA 24h percent change. This is volume among this book, not movers."
-        assets={byVolume}
-        value="volume24h"
-      />
+      <div className="grid gap-6 lg:grid-cols-2">
+        <AssetList
+          kicker="Largest tokenized books"
+          title="By tokenized market cap"
+          description="Top of this ranked book by CMC tokenized_market_cap — not a cash-market ranking."
+          assets={byMcap}
+          value="marketCap"
+        />
+        <AssetList
+          kicker="Market activity"
+          title="By 24h tokenized volume"
+          description="CMC does not ship RWA 24h percent change. Volume among this book, not movers."
+          assets={byVolume}
+          value="volume24h"
+        />
+      </div>
     </div>
   );
 }
@@ -112,30 +98,24 @@ export function OverviewView({ ranked }: { ranked: ScreenerResult }) {
 function ClassBreakdown({ categories }: { categories: TypeCount[] }) {
   const mixTotal = categories.reduce((sum, item) => sum + (item.count ?? 0), 0) || 1;
   return (
-    <section className="flex flex-col gap-3" aria-labelledby="classes-heading">
-      <div className="flex flex-col gap-1 border-b border-border/80 pb-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-            Asset-class mix
-          </p>
-          <h2 id="classes-heading" className="text-lg font-semibold tracking-tight">
-            Map by type
-          </h2>
-        </div>
-        <Link
-          href="/classes"
-          className="inline-flex items-center gap-1 text-xs underline underline-offset-4"
-        >
-          All classes
-          <ArrowRight className="size-3" aria-hidden />
-        </Link>
-      </div>
+    <section className="flex flex-col gap-2.5" aria-labelledby="classes-heading">
+      <SectionHead
+        id="classes-heading"
+        kicker="Asset-class mix"
+        title="Map by type"
+        action={
+          <TextLink href="/classes" className="inline-flex items-center gap-1 text-xs">
+            All classes
+            <ArrowRight className="size-3" aria-hidden />
+          </TextLink>
+        }
+      />
       {categories.length === 0 ? (
         <p className="text-sm text-muted-foreground">No category mix returned.</p>
       ) : (
         <>
           <div
-            className="flex h-1.5 overflow-hidden rounded-sm bg-muted"
+            className="flex h-1 overflow-hidden bg-muted"
             role="img"
             aria-label="Asset category distribution"
           >
@@ -161,10 +141,10 @@ function ClassBreakdown({ categories }: { categories: TypeCount[] }) {
               <li key={item.type}>
                 <Link
                   href={`/explore?type=${item.type}`}
-                  className="flex items-baseline gap-1.5 hover:underline"
+                  className="flex items-baseline gap-1.5 text-muted-foreground hover:text-foreground"
                 >
-                  <span className="text-muted-foreground">{item.label}</span>
-                  <span className="font-mono tabular-nums">
+                  <span>{item.label}</span>
+                  <span className="font-mono tabular-nums text-foreground">
                     {(item.count ?? 0).toLocaleString("en-US")}
                   </span>
                 </Link>
@@ -191,20 +171,12 @@ function AssetList({
   value: "marketCap" | "volume24h";
 }) {
   return (
-    <section className="flex flex-col gap-3">
-      <div className="flex flex-col gap-1 border-b border-border/80 pb-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-            {kicker}
-          </p>
-          <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
-        </div>
-        <p className="max-w-xl text-xs text-muted-foreground sm:text-right">{description}</p>
-      </div>
+    <section className="flex flex-col gap-2.5">
+      <SectionHead kicker={kicker} title={title} description={description} />
       {assets.length === 0 ? (
         <p className="text-sm text-muted-foreground">No rows in this book.</p>
       ) : (
-        <Table className="text-[13px]">
+        <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead>Underlier</TableHead>
@@ -220,7 +192,7 @@ function AssetList({
                   <Link href={`/asset/${asset.rwaId}`} className="after:absolute after:inset-0">
                     <span className="font-medium">{asset.name}</span>
                   </Link>
-                  <div className="font-mono text-xs text-muted-foreground">{asset.symbol}</div>
+                  <div className="font-mono text-[11px] text-muted-foreground">{asset.symbol}</div>
                 </TableCell>
                 <TableCell className="text-right font-mono tabular-nums">
                   {formatUsd(asset.quote[value], { compact: true })}
@@ -231,25 +203,6 @@ function AssetList({
         </Table>
       )}
     </section>
-  );
-}
-
-function Stat({
-  label,
-  children,
-  className,
-}: {
-  label: string;
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <div className={cn("flex flex-col gap-1 py-3 md:px-4", className)}>
-      <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-        {label}
-      </p>
-      <div className="flex flex-wrap items-baseline gap-2">{children}</div>
-    </div>
   );
 }
 

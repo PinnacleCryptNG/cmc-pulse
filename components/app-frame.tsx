@@ -17,12 +17,12 @@ export function AppFrame({
   return (
     <div className="flex min-h-full flex-col">
       <SiteHeader evidence={evidence} source={source} />
-      <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-4 px-4 py-5">
+      <main className="mx-auto flex w-full max-w-[88rem] flex-1 flex-col gap-3 px-3 py-4 sm:px-4">
         <StatusBanner source={source} warning={warning} />
         {children}
       </main>
-      <footer className="mt-auto border-t border-border/80">
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-1 px-4 py-3 text-[11px] text-muted-foreground">
+      <footer className="mt-auto border-t border-border">
+        <div className="mx-auto flex w-full max-w-[88rem] flex-col gap-0.5 px-3 py-2.5 text-[10px] leading-relaxed tracking-wide text-muted-foreground sm:px-4 sm:flex-row sm:items-baseline sm:justify-between">
           <p>
             Underlier Desk · Real World Assets ·{" "}
             <span className="font-mono">/v5/real-world-assets/*</span>

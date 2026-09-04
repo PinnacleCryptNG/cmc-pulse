@@ -12,7 +12,7 @@ export default function ErrorView({
 }) {
   return (
     <div className="mx-auto flex min-h-full max-w-lg flex-col gap-3 px-4 py-16">
-      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+      <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
         Underlier Desk
       </p>
       <h1 className="text-xl font-semibold tracking-tight">This page failed to load</h1>
@@ -27,10 +27,10 @@ export default function ErrorView({
         <Button type="button" variant="outline" className="w-fit" onClick={() => reset()}>
           Retry
         </Button>
-        <Link href="/" className="text-sm underline underline-offset-4">
+        <Link href="/" className="text-sm text-mark hover:underline">
           Back to overview
         </Link>
-        <Link href="/issuers" className="text-sm underline underline-offset-4">
+        <Link href="/issuers" className="text-sm text-mark hover:underline">
           Issuer directory
         </Link>
       </div>

@@ -1,6 +1,13 @@
-import Link from "next/link";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { ExternalLink } from "@/components/external-link";
+import {
+  EmptyState,
+  PageHeader,
+  Pager,
+  QuoteBar,
+  QuoteStat,
+  TextLink,
+} from "@/components/desk-chrome";
 import {
   Table,
   TableBody,
@@ -21,144 +28,108 @@ export function IssuerDirectory({ data }: { data: IssuersResult }) {
   const nextStart = data.start + data.limit;
 
   return (
-    <div className="flex flex-col gap-8">
-      <header className="flex flex-col gap-2 border-b border-border/80 pb-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-            Research
-          </p>
-          <h1 className="text-xl font-semibold tracking-tight">Issuer directory</h1>
-        </div>
-        <p className="max-w-xl text-xs text-muted-foreground sm:text-right">
-          Who mints wrappers for CMC underliers. Token counts come from{" "}
-          <span className="font-mono">/issuers/list</span>.
-        </p>
-      </header>
+    <div className="flex flex-col gap-3">
+      <PageHeader
+        kicker="Who wraps it"
+        title="Issuer directory"
+        description={
+          <>
+            Who mints wrappers for CMC underliers. Token counts come from{" "}
+            <span className="font-mono">/issuers/list</span>.
+          </>
+        }
+      />
 
-      <div className="grid grid-cols-2 gap-x-4 gap-y-3 border-b border-border/80 pb-4">
-        <div className="flex flex-col gap-1">
-          <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-            Tracked issuers
-          </p>
-          <p className="font-mono text-lg tabular-nums">
-            {formatInt(data.totalSize)}
-          </p>
-        </div>
-        <div className="flex flex-col gap-1">
-          <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-            This page
-          </p>
-          <p className="font-mono text-lg tabular-nums">
-            {data.issuers.length === 0
-              ? "—"
-              : `${rangeStart.toLocaleString("en-US")}–${rangeEnd.toLocaleString("en-US")}`}
-          </p>
-        </div>
-      </div>
+      <QuoteBar className="md:grid-cols-2">
+        <QuoteStat label="Tracked issuers">{formatInt(data.totalSize)}</QuoteStat>
+        <QuoteStat label="This page">
+          {data.issuers.length === 0
+            ? "—"
+            : `${rangeStart.toLocaleString("en-US")}–${rangeEnd.toLocaleString("en-US")}`}
+        </QuoteStat>
+      </QuoteBar>
 
       {data.issuers.length === 0 ? (
-        <div className="border border-dashed border-border/80 px-4 py-12 text-center">
-          <p className="text-sm font-medium">No issuers in this view</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {data.start > 1
-              ? "This page is past the end of the CMC issuer list. Go back to the previous page."
-              : "The CMC issuer list returned an empty page."}
-          </p>
-        </div>
+        <EmptyState title="No issuers in this view">
+          {data.start > 1
+            ? "This page is past the end of the CMC issuer list. Go back to the previous page."
+            : "The CMC issuer list returned an empty page."}
+        </EmptyState>
       ) : (
-        <Table className="text-[13px]">
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead>Issuer</TableHead>
-                <TableHead className="text-right">Tokenized assets</TableHead>
-                <TableHead className="hidden sm:table-cell">Status</TableHead>
-                <TableHead className="hidden md:table-cell">Website</TableHead>
-                <TableHead className="text-right">Book</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.issuers.map((issuer) => (
-                <TableRow key={issuer.issuerId}>
-                  <TableCell className="whitespace-normal">
-                    <Link
-                      className="font-medium underline-offset-4 hover:underline"
-                      href={`/issuer/${issuer.issuerId}`}
-                    >
-                      {issuer.name}
-                    </Link>
-                    <div className="font-mono text-xs text-muted-foreground">
-                      {issuer.issuerId}
-                    </div>
-                    <div className="mt-1 text-xs text-muted-foreground sm:hidden">
-                      {issuer.active === true
-                        ? "Active"
-                        : issuer.active === false
-                          ? "Inactive"
-                          : null}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right font-mono tabular-nums">
-                    {formatInt(issuer.numTokens)}
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell text-muted-foreground">
+        <Table sticky>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              <TableHead>Issuer</TableHead>
+              <TableHead className="text-right">Tokenized assets</TableHead>
+              <TableHead className="hidden sm:table-cell">Status</TableHead>
+              <TableHead className="hidden md:table-cell">Website</TableHead>
+              <TableHead className="text-right">Book</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data.issuers.map((issuer) => (
+              <TableRow key={issuer.issuerId} className="relative">
+                <TableCell className="whitespace-normal">
+                  <TextLink
+                    href={`/issuer/${issuer.issuerId}`}
+                    className="after:absolute after:inset-0 font-medium text-foreground no-underline hover:underline"
+                  >
+                    {issuer.name}
+                  </TextLink>
+                  <div className="font-mono text-[11px] text-muted-foreground">
+                    {issuer.issuerId}
+                  </div>
+                  <div className="mt-0.5 text-[11px] text-muted-foreground sm:hidden">
                     {issuer.active === true
                       ? "Active"
                       : issuer.active === false
                         ? "Inactive"
-                        : "—"}
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {issuer.website ? (
-                      <ExternalLink
-                        className="underline underline-offset-4"
-                        href={issuer.website}
-                      >
-                        {hostLabel(issuer.website)}
-                      </ExternalLink>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Link
-                      className="inline-flex items-center gap-1 underline underline-offset-4"
-                      href={`/issuer/${issuer.issuerId}`}
-                    >
-                      View issuer
-                      <ArrowRight className="size-3" aria-hidden />
-                    </Link>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                        : null}
+                  </div>
+                </TableCell>
+                <TableCell className="text-right font-mono tabular-nums">
+                  {formatInt(issuer.numTokens)}
+                </TableCell>
+                <TableCell className="hidden text-[12px] text-muted-foreground sm:table-cell">
+                  {issuer.active === true
+                    ? "Active"
+                    : issuer.active === false
+                      ? "Inactive"
+                      : "—"}
+                </TableCell>
+                <TableCell className="relative z-10 hidden md:table-cell">
+                  {issuer.website ? (
+                    <ExternalLink className="text-mark hover:underline" href={issuer.website}>
+                      {hostLabel(issuer.website)}
+                    </ExternalLink>
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </TableCell>
+                <TableCell className="relative z-10 text-right">
+                  <TextLink
+                    href={`/issuer/${issuer.issuerId}`}
+                    className="inline-flex items-center justify-end gap-1 text-[12px]"
+                  >
+                    View
+                    <ArrowRight className="size-3" aria-hidden />
+                  </TextLink>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       )}
-      {data.start > 1 || data.hasMore ? (
-          <div className="flex items-center justify-between text-sm">
-            {data.start > 1 ? (
-              <Link
-                href={data.start - data.limit > 1 ? `/issuers?start=${prevStart}` : "/issuers"}
-                className="inline-flex h-7 items-center gap-1 rounded-md border border-border/80 px-2.5 hover:bg-muted"
-              >
-                <ArrowLeft className="size-3.5" aria-hidden />
-                Previous
-              </Link>
-            ) : (
-              <span />
-            )}
-            {data.hasMore ? (
-              <Link
-                href={`/issuers?start=${nextStart}`}
-                className="inline-flex h-7 items-center gap-1 rounded-md border border-border/80 px-2.5 hover:bg-muted"
-              >
-                Next
-                <ArrowRight className="size-3.5" aria-hidden />
-              </Link>
-            ) : (
-              <span />
-            )}
-          </div>
-      ) : null}
+      <Pager
+        prevHref={
+          data.start > 1
+            ? data.start - data.limit > 1
+              ? `/issuers?start=${prevStart}`
+              : "/issuers"
+            : null
+        }
+        nextHref={data.hasMore ? `/issuers?start=${nextStart}` : null}
+      />
     </div>
   );
 }

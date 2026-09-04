@@ -21,7 +21,7 @@ export function EvidenceDrawer({ evidence }: { evidence: CallEvidence[] }) {
             type="button"
             variant="outline"
             size="sm"
-            className="border-border/80 font-normal text-muted-foreground hover:text-foreground"
+            className="border-border font-normal text-[12px] tracking-[0.04em] text-muted-foreground hover:text-foreground"
           />
         }
       >
@@ -44,7 +44,7 @@ export function EvidenceDrawer({ evidence }: { evidence: CallEvidence[] }) {
             </p>
           ) : (
             evidence.map((item, index) => (
-              <section key={`${item.endpoint}-${index}`} className="rounded-lg border p-3">
+              <section key={`${item.endpoint}-${index}`} className="border border-border p-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="font-mono text-xs">{item.endpoint}</p>
                   <Badge variant={item.ok ? "secondary" : "destructive"}>
@@ -58,7 +58,7 @@ export function EvidenceDrawer({ evidence }: { evidence: CallEvidence[] }) {
                 {item.errorMessage ? (
                   <p className="mt-1 text-xs text-destructive">{item.errorMessage}</p>
                 ) : null}
-                <pre className="mt-2 max-h-64 overflow-auto rounded-md bg-muted p-2 text-[11px] leading-relaxed">
+                <pre className="mt-2 max-h-64 overflow-auto bg-muted p-2 font-mono text-[11px] leading-relaxed">
                   {JSON.stringify(
                     {
                       query: item.query,

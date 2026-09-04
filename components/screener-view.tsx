@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowDown, ArrowUp, Search } from "lucide-react";
 import { WatchlistButton } from "@/components/watchlist-button";
-import { Badge } from "@/components/ui/badge";
+import { EmptyState, PageHeader, Pager, TextLink } from "@/components/desk-chrome";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -37,22 +37,19 @@ export function ScreenerView({ data }: { data: ScreenerResult }) {
   const showChange = data.assets.some((asset) => asset.quote.percentChange24h !== null);
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-3">
       <section className="flex flex-col gap-3" aria-labelledby="universe-heading">
-        <div className="flex flex-col gap-1 border-b border-border/80 pb-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-              RWA Explorer
-            </p>
-            <h1 id="universe-heading" className="text-xl font-semibold tracking-tight">
-              {data.query ? `Results for ${data.query}` : "Underlier universe"}
-            </h1>
-          </div>
-          <p className="max-w-lg text-xs text-muted-foreground sm:text-right">
-            Search the real asset, not the wrapper. CMC lookup is ticker, slug, or{" "}
-            <span className="font-mono">rwa_id</span> — not a company-name search.
-          </p>
-        </div>
+        <PageHeader
+          id="universe-heading"
+          kicker="RWA Explorer"
+          title={data.query ? `Results for ${data.query}` : "Underlier universe"}
+          description={
+            <>
+              Search the real asset, not the wrapper. CMC lookup is ticker, slug, or{" "}
+              <span className="font-mono">rwa_id</span> — not a company-name search.
+            </>
+          }
+        />
 
         <form className="flex flex-col gap-2 sm:flex-row" action="/explore" method="get">
           {data.assetType !== "all" ? (
@@ -80,17 +77,15 @@ export function ScreenerView({ data }: { data: ScreenerResult }) {
           <Button type="submit">Look up</Button>
         </form>
 
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-          <span className="text-muted-foreground">Examples</span>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px]">
+          <span className="uppercase tracking-[0.12em] text-muted-foreground">Examples</span>
           {SUGGESTED.map((ticker) => (
             <Link
               key={ticker}
               href={`/explore?q=${ticker}`}
               className={cn(
-                "font-mono hover:text-foreground",
-                data.query.toUpperCase() === ticker
-                  ? "text-foreground"
-                  : "text-muted-foreground",
+                "font-mono hover:text-mark",
+                data.query.toUpperCase() === ticker ? "text-mark" : "text-muted-foreground",
               )}
             >
               {ticker}
@@ -98,7 +93,7 @@ export function ScreenerView({ data }: { data: ScreenerResult }) {
           ))}
         </div>
 
-        <div className="flex flex-wrap gap-1 border-y border-border/80 py-2">
+        <div className="flex flex-wrap gap-x-1 border-b border-border">
           {visibleTypes.map((item) => {
             const selected = data.assetType === item.type;
             return (
@@ -107,15 +102,15 @@ export function ScreenerView({ data }: { data: ScreenerResult }) {
                 href={screenerHref(current, { type: item.type, start: "1" })}
                 aria-current={selected ? "page" : undefined}
                 className={cn(
-                  "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-sm",
+                  "inline-flex items-center gap-1.5 border-b-2 px-2.5 py-1.5 text-[13px]",
                   selected
-                    ? "bg-foreground text-background"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    ? "border-mark text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground",
                 )}
               >
                 {item.label}
                 {item.count !== null ? (
-                  <span className="font-mono text-[11px] tabular-nums opacity-70">
+                  <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
                     {item.count.toLocaleString("en-US")}
                   </span>
                 ) : null}
@@ -128,33 +123,33 @@ export function ScreenerView({ data }: { data: ScreenerResult }) {
           <EmptyUniverse query={data.query} />
         ) : (
           <>
-            <div className="flex flex-wrap items-baseline justify-between gap-2 text-xs text-muted-foreground">
+            <div className="flex flex-wrap items-baseline justify-between gap-2 text-[11px] text-muted-foreground">
               <p>
                 Showing{" "}
-                <span className="tabular-nums text-foreground">
+                <span className="font-mono tabular-nums text-foreground">
                   {rangeStart.toLocaleString("en-US")}–{rangeEnd.toLocaleString("en-US")}
                 </span>
                 {data.query || data.assetType !== "all" ? (
                   <>
                     {" of "}
-                    <span className="tabular-nums">
+                    <span className="font-mono tabular-nums">
                       {data.totalSize.toLocaleString("en-US")}
                     </span>
                     {" matching this lookup"}
                   </>
                 ) : null}
               </p>
-              <p>Click a column to sort.</p>
+              <p className="hidden sm:block">Click a column to sort.</p>
             </div>
-            <Table className="text-[13px]">
+            <Table sticky>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
-                  <TableHead className="w-12 text-muted-foreground">
+                  <TableHead className="w-12">
                     <SortLink current={current} field="rwa_rank" label="#" defaultDir="asc" />
                   </TableHead>
                   <TableHead>Underlier</TableHead>
                   <TableHead className="hidden sm:table-cell">Type</TableHead>
-                  <TableHead className="hidden sm:table-cell">Tokenized</TableHead>
+                  <TableHead className="hidden md:table-cell">Tokenized</TableHead>
                   <TableHead className="text-right">
                     <SortLink
                       current={current}
@@ -166,7 +161,7 @@ export function ScreenerView({ data }: { data: ScreenerResult }) {
                   {showChange ? (
                     <TableHead className="hidden text-right md:table-cell">24h</TableHead>
                   ) : null}
-                  <TableHead className="hidden text-right md:table-cell">
+                  <TableHead className="hidden text-right lg:table-cell">
                     <SortLink
                       current={current}
                       field="tokenized_market_cap"
@@ -190,7 +185,7 @@ export function ScreenerView({ data }: { data: ScreenerResult }) {
               <TableBody>
                 {data.assets.map((asset) => (
                   <TableRow key={asset.rwaId} className="relative">
-                    <TableCell className="font-mono text-xs tabular-nums text-muted-foreground">
+                    <TableCell className="font-mono text-[11px] tabular-nums text-muted-foreground">
                       {asset.rwaRank ?? "—"}
                     </TableCell>
                     <TableCell className="whitespace-normal">
@@ -201,28 +196,30 @@ export function ScreenerView({ data }: { data: ScreenerResult }) {
                         <span className="font-medium">{asset.name}</span>
                         <span className="sr-only"> Open asset desk</span>
                       </Link>
-                      <div className="font-mono text-xs text-muted-foreground">
+                      <div className="font-mono text-[11px] text-muted-foreground">
                         {asset.symbol}
                         <span className="sm:hidden">
                           {" · "}
                           {formatType(asset.assetType)}
                         </span>
                       </div>
-                      <div className="mt-1 font-mono text-[11px] text-muted-foreground md:hidden">
+                      <div className="mt-0.5 font-mono text-[11px] text-muted-foreground md:hidden">
                         {formatUsd(asset.quote.volume24h, { compact: true })} vol
-                        {asset.hasTokens ? " · Tokenized" : asset.hasTokens === false ? " · Not tokenized" : ""}
+                        {asset.hasTokens
+                          ? " · Tokenized"
+                          : asset.hasTokens === false
+                            ? " · Not tokenized"
+                            : ""}
                       </div>
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell">
-                      <Badge variant="outline" className="rounded-md font-normal capitalize">
-                        {formatType(asset.assetType)}
-                      </Badge>
+                    <TableCell className="hidden text-[11px] uppercase tracking-[0.08em] text-muted-foreground sm:table-cell">
+                      {formatType(asset.assetType)}
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell text-xs">
+                    <TableCell className="hidden text-[12px] md:table-cell">
                       {asset.hasTokens ? (
-                        <span>Tokenized</span>
+                        <span>Yes</span>
                       ) : asset.hasTokens === false ? (
-                        <span className="text-muted-foreground">Not tokenized</span>
+                        <span className="text-muted-foreground">No</span>
                       ) : (
                         <span className="text-muted-foreground">—</span>
                       )}
@@ -240,7 +237,7 @@ export function ScreenerView({ data }: { data: ScreenerResult }) {
                         {formatPct(asset.quote.percentChange24h)}
                       </TableCell>
                     ) : null}
-                    <TableCell className="hidden text-right font-mono tabular-nums md:table-cell">
+                    <TableCell className="hidden text-right font-mono tabular-nums lg:table-cell">
                       {formatUsd(asset.quote.marketCap, { compact: true })}
                     </TableCell>
                     <TableCell className="hidden text-right font-mono tabular-nums lg:table-cell">
@@ -258,28 +255,10 @@ export function ScreenerView({ data }: { data: ScreenerResult }) {
                 ))}
               </TableBody>
             </Table>
-            <div className="flex items-center justify-between text-sm">
-              {data.start > 1 ? (
-                <Link
-                  href={screenerHref(current, { start: String(prevStart) })}
-                  className="inline-flex h-7 items-center rounded-md border border-border/80 px-2.5 hover:bg-muted"
-                >
-                  Previous
-                </Link>
-              ) : (
-                <span />
-              )}
-              {data.hasMore ? (
-                <Link
-                  href={screenerHref(current, { start: String(nextStart) })}
-                  className="inline-flex h-7 items-center rounded-md border border-border/80 px-2.5 hover:bg-muted"
-                >
-                  Next
-                </Link>
-              ) : (
-                <span />
-              )}
-            </div>
+            <Pager
+              prevHref={data.start > 1 ? screenerHref(current, { start: String(prevStart) }) : null}
+              nextHref={data.hasMore ? screenerHref(current, { start: String(nextStart) }) : null}
+            />
           </>
         )}
       </section>
@@ -289,29 +268,24 @@ export function ScreenerView({ data }: { data: ScreenerResult }) {
 
 function EmptyUniverse({ query }: { query: string }) {
   return (
-    <div className="border border-dashed border-border/80 px-4 py-12 text-center">
-      <p className="text-sm font-medium">No underliers in this view</p>
-      <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-        {query ? (
-          <>
-            Nothing matched <span className="font-mono text-foreground">{query}</span>.
-            Try a ticker such as NVDA, GOLD, or SPCX.
-          </>
-        ) : (
-          <>
-            This filter returned an empty book. Clear it, or try NVDA, GOLD, or SPCX.
-          </>
-        )}
-      </p>
-      <div className="mt-4 flex justify-center gap-3 text-sm">
-        <Link href="/explore" className="underline underline-offset-4 hover:text-foreground">
-          Reset universe
-        </Link>
-        <Link href="/explore?q=NVDA" className="underline underline-offset-4 hover:text-foreground">
-          Open NVDA
-        </Link>
-      </div>
-    </div>
+    <EmptyState
+      title="No underliers in this view"
+      actions={
+        <>
+          <TextLink href="/explore">Reset universe</TextLink>
+          <TextLink href="/explore?q=NVDA">Open NVDA</TextLink>
+        </>
+      }
+    >
+      {query ? (
+        <>
+          Nothing matched <span className="font-mono text-foreground">{query}</span>. Try a
+          ticker such as NVDA, GOLD, or SPCX.
+        </>
+      ) : (
+        <>This filter returned an empty book. Clear it, or try NVDA, GOLD, or SPCX.</>
+      )}
+    </EmptyState>
   );
 }
 
@@ -338,7 +312,7 @@ function SortLink({
     <Link
       href={screenerHref(current, { sort: field, dir: nextDir, start: "1" })}
       className={cn(
-        "inline-flex items-center gap-0.5",
+        "inline-flex items-center gap-0.5 uppercase",
         active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
       )}
     >
@@ -358,5 +332,5 @@ function changeClass(value: number | null) {
   if (value === null || !Number.isFinite(value) || value === 0) {
     return "text-muted-foreground";
   }
-  return value > 0 ? "text-emerald-500/90" : "text-red-400/90";
+  return value > 0 ? "text-up" : "text-down";
 }

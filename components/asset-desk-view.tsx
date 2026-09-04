@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowDown, ArrowLeft, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { WatchlistButton } from "@/components/watchlist-button";
+import { EmptyState, IdentityRow, QuoteBar, QuoteStat, SectionHead } from "@/components/desk-chrome";
 import { ExternalLink } from "@/components/external-link";
 import {
   Table,
@@ -40,8 +41,8 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
   const identityBits = identityLine(info);
 
   return (
-    <div className="flex flex-col gap-8">
-      <nav aria-label="Breadcrumb" className="text-sm">
+    <div className="flex flex-col gap-6">
+      <nav aria-label="Breadcrumb" className="text-[12px]">
         <Link
           href="/explore"
           className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
@@ -52,7 +53,7 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
         {info?.symbol ? (
           <>
             <span className="text-muted-foreground"> / </span>
-            <Link href={`/explore?q=${encodeURIComponent(info.symbol)}`} className="hover:underline">
+            <Link href={`/explore?q=${encodeURIComponent(info.symbol)}`} className="font-mono hover:text-mark">
               {info.symbol}
             </Link>
           </>
@@ -60,24 +61,19 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
         <span className="text-muted-foreground"> / rwa_id {rwaId}</span>
       </nav>
 
-      <header className="flex flex-col gap-4 border-b border-border/80 pb-5">
+      <header className="flex flex-col gap-3">
         <div className="flex items-start gap-3">
           <SafeLogo src={info?.logo} name={info?.name ?? `RWA ${rwaId}`} />
           <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+            <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
               Underlier
             </p>
-            <h1 className="text-2xl font-semibold tracking-tight">
-              {info?.name ?? `RWA ${rwaId}`}
+            <h1 className="font-mono text-2xl font-semibold tracking-tight sm:text-[1.75rem]">
+              {info?.symbol ?? `RWA ${rwaId}`}
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {identityBits.length > 0 ? identityBits.join(" · ") : "Identity fields not returned."}
-              {info?.symbol ? (
-                <>
-                  {" · "}
-                  <span className="font-mono text-foreground">{info.symbol}</span>
-                </>
-              ) : null}
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              <span className="text-foreground">{info?.name ?? `RWA ${rwaId}`}</span>
+              {identityBits.length > 0 ? ` · ${identityBits.join(" · ")}` : null}
             </p>
           </div>
           {info ? (
@@ -90,30 +86,24 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
           ) : null}
         </div>
 
-        <div className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-4">
+        <QuoteBar>
           <QuoteStat label="Tokenized price">
-            <span className="font-mono text-2xl tabular-nums tracking-tight">
-              {formatUsd(desk.quote.price)}
-            </span>
+            <span className="text-xl md:text-2xl">{formatUsd(desk.quote.price)}</span>
           </QuoteStat>
           <QuoteStat label="Tokenized market cap">
-            <span className="font-mono text-lg tabular-nums">
-              {formatUsd(desk.quote.marketCap, { compact: true })}
-            </span>
+            {formatUsd(desk.quote.marketCap, { compact: true })}
           </QuoteStat>
           <QuoteStat label="24h tokenized volume">
-            <span className="font-mono text-lg tabular-nums">
-              {formatUsd(desk.quote.volume24h, { compact: true })}
-            </span>
+            {formatUsd(desk.quote.volume24h, { compact: true })}
           </QuoteStat>
           <QuoteStat label="Tokenized exposure">
-            <span className="font-mono text-lg tabular-nums">{summary.tokenCount}</span>
-            <span className="text-xs text-muted-foreground">
+            {summary.tokenCount}
+            <span className="font-sans text-[11px] text-muted-foreground">
               {summary.tokenCount === 1 ? "wrapper" : "wrappers"}
             </span>
           </QuoteStat>
-        </div>
-        <p className="text-xs text-muted-foreground">
+        </QuoteBar>
+        <p className="text-[11px] text-muted-foreground">
           Tokenized market data — average across issuer wrappers, not a cash-market last.
         </p>
       </header>
@@ -207,12 +197,9 @@ function UnderlierIdentity({ info, rwaId }: { info: AssetInfo | null; rwaId: str
       title="Underlier"
       description="The instrument being tokenized — not the on-chain wrapper."
     >
-      <dl className="grid gap-x-8 gap-y-2 text-sm sm:grid-cols-2">
+      <dl className="grid gap-x-8 gap-y-1.5 sm:grid-cols-2">
         {rows.map((row) => (
-          <div key={row.label} className="grid grid-cols-[9rem_1fr] gap-2 sm:grid-cols-[10rem_1fr]">
-            <dt className="text-muted-foreground">{row.label}</dt>
-            <dd className="min-w-0 break-words">{row.value}</dd>
-          </div>
+          <IdentityRow key={row.label} label={row.label} value={row.value} />
         ))}
       </dl>
       {about ? (
@@ -254,9 +241,9 @@ function TokenizedExposure({
       }
     >
       {tokens.length === 0 ? (
-        <EmptyBlock>
+        <EmptyState title="No tokenized exposure">
           No tokenized exposure in this CMC payload. Underlier metadata still stands.
-        </EmptyBlock>
+        </EmptyState>
       ) : (
         <Table className="text-[13px]">
           <TableHeader>
@@ -321,12 +308,12 @@ function TokenizedExposure({
                     )}
                     <div className="mt-0.5 flex flex-wrap gap-1">
                       {isClosest ? (
-                        <Badge variant="outline" className="rounded-md font-normal">
+                        <Badge variant="outline" className="font-normal">
                           Closest
                         </Badge>
                       ) : null}
                       {isMostVolume ? (
-                        <Badge variant="secondary" className="rounded-md font-normal">
+                        <Badge variant="secondary" className="font-normal">
                           Most volume
                         </Badge>
                       ) : null}
@@ -395,7 +382,9 @@ function ComparisonSection({
         title="Comparison"
         description="Spread versus the average tokenized price of the underlier."
       >
-        <EmptyBlock>No wrappers to compare against this underlier.</EmptyBlock>
+        <EmptyState title="No wrappers to compare">
+          No wrappers to compare against this underlier.
+        </EmptyState>
       </DeskSection>
     );
   }
@@ -530,7 +519,7 @@ function TradfiSection({
       </p>
 
       {markets.length === 0 ? (
-        <EmptyBlock>No TradFi venues in this payload.</EmptyBlock>
+        <EmptyState title="No TradFi venues">No TradFi venues in this payload.</EmptyState>
       ) : (
         <Table className="text-[13px]">
           <TableHeader>
@@ -587,7 +576,9 @@ function IssuersSection({
       description={`${underlierName} → issuer → tokenized representation → issuer book.`}
     >
       {issuers.length === 0 ? (
-        <EmptyBlock>No issuers attached to wrappers in this payload.</EmptyBlock>
+        <EmptyState title="No issuers attached">
+          No issuers attached to wrappers in this payload.
+        </EmptyState>
       ) : (
         <Table className="text-[13px]">
           <TableHeader>
@@ -670,7 +661,7 @@ function EvidenceSection({
         Tokenized quotes path: <span className="font-mono">{pathUsed}</span>
       </p>
       {evidence.length === 0 ? (
-        <EmptyBlock>No CMC call evidence on this page load.</EmptyBlock>
+        <EmptyState title="No call evidence">No CMC call evidence on this page load.</EmptyState>
       ) : (
         <Table className="text-[13px]">
           <TableHeader>
@@ -724,41 +715,10 @@ function DeskSection({
   children: ReactNode;
 }) {
   return (
-    <section className="flex flex-col gap-3" aria-labelledby={id}>
-      <div className="flex flex-col gap-1 border-b border-border/80 pb-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-            {kicker}
-          </p>
-          <h2 id={id} className="text-lg font-semibold tracking-tight">
-            {title}
-          </h2>
-        </div>
-        {description ? (
-          <p className="max-w-xl text-xs text-muted-foreground sm:text-right">{description}</p>
-        ) : null}
-      </div>
+    <section className="flex flex-col gap-2.5" aria-labelledby={id}>
+      <SectionHead id={id} kicker={kicker} title={title} description={description} />
       {children}
     </section>
-  );
-}
-
-function QuoteStat({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="flex flex-col gap-1">
-      <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-        {label}
-      </p>
-      <div className="flex flex-wrap items-baseline gap-2">{children}</div>
-    </div>
-  );
-}
-
-function EmptyBlock({ children }: { children: ReactNode }) {
-  return (
-    <div className="border border-dashed border-border/80 px-4 py-8 text-center text-sm text-muted-foreground">
-      {children}
-    </div>
   );
 }
 
@@ -771,9 +731,9 @@ function SafeLogo({ src, name }: { src: string | null | undefined; name: string 
       src={src}
       alt=""
       title={name}
-      width={40}
-      height={40}
-      className="mt-1 size-10 shrink-0 rounded-md border border-border/80 bg-muted object-contain p-0.5"
+      width={36}
+      height={36}
+      className="mt-0.5 size-9 shrink-0 border border-border bg-surface object-contain p-0.5"
     />
   );
 }
@@ -831,11 +791,11 @@ function shortAbout(text: string | null | undefined): string | null {
 
 function spreadClass(value: number | null): string {
   if (value === null || !Number.isFinite(value) || value === 0) return "text-muted-foreground";
-  if (value > 0) return "text-amber-500/90";
-  return "text-emerald-500/90";
+  if (value > 0) return "text-down";
+  return "text-up";
 }
 
 function changeClass(value: number | null): string {
   if (value === null || !Number.isFinite(value) || value === 0) return "text-muted-foreground";
-  return value > 0 ? "text-emerald-500/90" : "text-red-400/90";
+  return value > 0 ? "text-up" : "text-down";
 }

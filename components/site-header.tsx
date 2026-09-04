@@ -24,21 +24,22 @@ export function SiteHeader({
   const pathname = usePathname();
 
   return (
-    <header className="border-b border-border/80">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0">
+    <header className="sticky top-0 z-40 border-b border-border bg-background">
+      <div className="h-px bg-mark" aria-hidden />
+      <div className="mx-auto flex w-full max-w-[88rem] flex-col gap-2 px-3 py-2 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+        <div className="flex min-w-0 items-baseline gap-3">
           <Link
             href="/"
-            className="text-[15px] font-semibold tracking-[0.04em] uppercase"
+            className="text-[13px] font-semibold tracking-[0.14em] uppercase focus-visible:outline-none"
           >
             Underlier Desk
           </Link>
-          <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">
-            The real asset behind every tokenized stock, treasury, and commodity.
+          <p className="hidden truncate text-[11px] text-muted-foreground md:block">
+            Tokenized RWA research
           </p>
         </div>
         <nav
-          className="flex flex-wrap items-center gap-1 text-sm"
+          className="-mx-1 flex flex-wrap items-center gap-x-0.5 overflow-x-auto text-[13px]"
           aria-label="Primary"
         >
           {LINKS.map((link) => {
@@ -49,10 +50,10 @@ export function SiteHeader({
                 href={link.href}
                 aria-current={current ? "page" : undefined}
                 className={cn(
-                  "rounded-md px-2 py-1",
+                  "border-b-2 px-2 py-1.5 focus-visible:outline-none",
                   current
-                    ? "bg-muted text-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    ? "border-mark text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground",
                 )}
               >
                 {link.label}
@@ -60,7 +61,7 @@ export function SiteHeader({
             );
           })}
           <span
-            className="ml-1 inline-flex items-center gap-1.5 rounded-md border border-border/80 px-2 py-1 font-mono text-[11px] tracking-wide text-muted-foreground"
+            className="ml-2 inline-flex items-center gap-1.5 border border-border px-1.5 py-0.5 font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase"
             title={
               source === "live"
                 ? "Serving live CoinMarketCap RWA endpoints"
@@ -68,15 +69,10 @@ export function SiteHeader({
             }
           >
             <span
-              className={cn(
-                "size-1.5 rounded-full",
-                source === "live" ? "bg-emerald-500" : "bg-muted-foreground/70",
-              )}
+              className={cn("size-1.5", source === "live" ? "bg-mark" : "bg-muted-foreground/70")}
               aria-hidden
             />
-            <span className="uppercase">
-              {source === "live" ? "Live" : "Fixture"}
-            </span>
+            {source === "live" ? "Live" : "Fixture"}
           </span>
           {evidence.length > 0 ? <EvidenceDrawer evidence={evidence} /> : null}
         </nav>

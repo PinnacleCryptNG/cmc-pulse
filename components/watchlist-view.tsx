@@ -3,6 +3,7 @@
 import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { WatchlistButton } from "@/components/watchlist-button";
+import { EmptyState, PageHeader, TextLink } from "@/components/desk-chrome";
 import {
   Table,
   TableBody,
@@ -20,31 +21,22 @@ export function WatchlistView() {
   const items = useSyncExternalStore(subscribeWatchlist, readWatchlist, () => EMPTY);
 
   return (
-    <div className="flex flex-col gap-8">
-      <header className="flex flex-col gap-2 border-b border-border/80 pb-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-            Saved locally
-          </p>
-          <h1 className="text-xl font-semibold tracking-tight">Watchlist</h1>
-        </div>
-        <p className="max-w-xl text-xs text-muted-foreground sm:text-right">
-          Names only, in this browser. Open an asset desk for tokenized quotes.
-        </p>
-      </header>
+    <div className="flex flex-col gap-3">
+      <PageHeader
+        kicker="Saved locally"
+        title="Watchlist"
+        description="Names only, in this browser. Open an asset desk for tokenized quotes."
+      />
 
       {items.length === 0 ? (
-        <div className="border border-dashed border-border/80 px-4 py-12 text-center">
-          <p className="text-sm font-medium">No saved underliers</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Star a row in Explorer or on an asset desk.
-          </p>
-          <Link href="/explore" className="mt-4 inline-block text-sm underline underline-offset-4">
-            Open explorer
-          </Link>
-        </div>
+        <EmptyState
+          title="No saved underliers"
+          actions={<TextLink href="/explore">Open explorer</TextLink>}
+        >
+          Star a row in Explorer or on an asset desk.
+        </EmptyState>
       ) : (
-        <Table className="text-[13px]">
+        <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead>Underlier</TableHead>
@@ -64,9 +56,9 @@ export function WatchlistView() {
                   >
                     {item.name}
                   </Link>
-                  <div className="font-mono text-xs text-muted-foreground">{item.symbol}</div>
+                  <div className="font-mono text-[11px] text-muted-foreground">{item.symbol}</div>
                 </TableCell>
-                <TableCell className="hidden capitalize sm:table-cell text-muted-foreground">
+                <TableCell className="hidden text-[11px] uppercase tracking-[0.08em] text-muted-foreground sm:table-cell">
                   {formatType(item.assetType)}
                 </TableCell>
                 <TableCell className="relative z-10 w-10 text-right">
