@@ -1,13 +1,7 @@
 import Link from "next/link";
-import { ArrowDown, ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { ExternalLink } from "@/components/external-link";
-import {
-  EmptyState,
-  QuoteBar,
-  QuoteStat,
-  SectionHead,
-  TextLink,
-} from "@/components/desk-chrome";
+import { EmptyState } from "@/components/desk-chrome";
 import {
   Table,
   TableBody,
@@ -28,13 +22,17 @@ export function IssuerBookView({ book }: { book: IssuerBook }) {
   const shown = tokens.length;
   const indexed = issuer.numTokens ?? issuer.totalSize;
   const truncated = issuer.hasMore || (indexed !== null && shown < indexed);
-  const uniqueUnderliers = new Set(
-    tokens.map((token) => token.rwaId).filter((id): id is number => id !== null),
-  ).size;
+  const status =
+    issuer.active === true ? "Active" : issuer.active === false ? "Inactive" : null;
+  const website = issuer.website && isHttpsUrl(issuer.website) ? issuer.website : null;
+  const identity = [
+    status,
+    indexed != null ? `${formatInt(indexed)} indexed tokens` : null,
+  ].filter((bit): bit is string => Boolean(bit));
 
   return (
-    <div className="flex flex-col gap-6">
-      <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px]">
+    <div className="flex flex-col gap-4">
+      <nav aria-label="Breadcrumb" className="text-[12px]">
         <Link
           href="/issuers"
           className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
@@ -42,67 +40,59 @@ export function IssuerBookView({ book }: { book: IssuerBook }) {
           <ArrowLeft className="size-3.5" aria-hidden />
           Issuers
         </Link>
-        <span className="text-muted-foreground">/</span>
-        <TextLink href="/" className="text-muted-foreground no-underline hover:text-foreground">
-          Desk
-        </TextLink>
+        <span className="text-muted-foreground"> / </span>
+        <span className="text-foreground">{issuer.name}</span>
       </nav>
 
-      <header className="flex flex-col gap-3">
+      <header className="border-b border-border pb-3">
         <div className="flex items-start gap-3">
           <SafeLogo src={issuer.logo} name={issuer.name} />
           <div className="min-w-0 flex-1">
             <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-              Issuer
+              Issuer book
             </p>
-            <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">{issuer.name}</h1>
-            <p className="mt-0.5 font-mono text-[11px] text-muted-foreground">{issuer.issuerId}</p>
+            <h1 className="text-[1.35rem] font-semibold tracking-tight sm:text-2xl">
+              {issuer.name}
+            </h1>
+            <p className="mt-0.5 font-mono text-[11px] text-muted-foreground">
+              issuer_id {issuer.issuerId}
+            </p>
+            {identity.length > 0 || website ? (
+              <p className="mt-1.5 text-[12px] text-muted-foreground">
+                {identity.join(" · ")}
+                {website ? (
+                  <>
+                    {identity.length > 0 ? " · " : null}
+                    <ExternalLink className="text-mark hover:underline" href={website}>
+                      {hostLabel(website)}
+                    </ExternalLink>
+                  </>
+                ) : null}
+              </p>
+            ) : null}
           </div>
         </div>
-        <QuoteBar>
-          <QuoteStat label="Indexed tokens">{formatInt(indexed ?? shown)}</QuoteStat>
-          <QuoteStat label="Status">
-            {issuer.active === true ? "Active" : issuer.active === false ? "Inactive" : "—"}
-          </QuoteStat>
-          <QuoteStat label="Underliers here">
-            {uniqueUnderliers > 0 ? uniqueUnderliers.toLocaleString("en-US") : "—"}
-          </QuoteStat>
-          <QuoteStat label="Website">
-            {issuer.website ? (
-              <ExternalLink className="font-sans text-[12px] text-mark hover:underline" href={issuer.website}>
-                {hostLabel(issuer.website)}
-              </ExternalLink>
-            ) : (
-              <span className="text-muted-foreground">—</span>
-            )}
-          </QuoteStat>
-        </QuoteBar>
       </header>
 
-      <section className="flex flex-col gap-2.5" aria-labelledby="what-they-wrap">
-        <SectionHead
-          id="what-they-wrap"
-          kicker="What they wrap"
-          title="Tokenized underliers"
-          description={
-            <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
-              <span>Issuer</span>
-              <ArrowDown className="size-3" aria-hidden />
-              <span>Token</span>
-              <ArrowDown className="size-3" aria-hidden />
-              <span>Underlier</span>
-            </span>
-          }
-        />
-
-        <p className="text-[12px] text-muted-foreground">
-          {truncated
-            ? `Showing ${shown.toLocaleString("en-US")} of ${(indexed ?? shown).toLocaleString("en-US")} indexed tokens.`
-            : `${shown.toLocaleString("en-US")} tokenized representation${shown === 1 ? "" : "s"} in this payload.`}
-        </p>
+      <section className="flex flex-col gap-2.5" aria-labelledby="tokenization-heading">
+        <div className="flex flex-col gap-0.5 border-b border-border pb-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              Underlier → tokenized representation
+            </p>
+            <h2 id="tokenization-heading" className="text-[15px] font-semibold tracking-tight">
+              What real-world assets does this issuer tokenize?
+            </h2>
+          </div>
+          <p className="text-[11px] text-muted-foreground sm:text-right">
+            {truncated
+              ? `Showing ${shown.toLocaleString("en-US")} of ${(indexed ?? shown).toLocaleString("en-US")} indexed tokens.`
+              : `${shown.toLocaleString("en-US")} tokenized representation${shown === 1 ? "" : "s"} in this payload.`}
+          </p>
+        </div>
 
         {tokens.length === 0 ? (
-          <EmptyState title="No linked tokens">
+          <EmptyState title="No tokenized underliers">
             This issuer has no linked tokens in the current CMC payload.
           </EmptyState>
         ) : (
@@ -111,62 +101,60 @@ export function IssuerBookView({ book }: { book: IssuerBook }) {
               <TableRow className="hover:bg-transparent">
                 <TableHead>Underlier</TableHead>
                 <TableHead>Token</TableHead>
-                <TableHead className="hidden sm:table-cell">crypto_id</TableHead>
-                <TableHead className="text-right">Asset desk</TableHead>
+                <TableHead className="text-right">View underlier</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {tokens.map((token) => (
-                <TableRow key={`${token.cryptoId}-${token.symbol}-${token.rwaId}`}>
-                  <TableCell className="whitespace-normal">
-                    {token.rwaId !== null ? (
-                      <TextLink href={`/asset/${token.rwaId}`} className="font-medium text-foreground">
-                        {token.underlierName ?? `rwa_id ${token.rwaId}`}
-                      </TextLink>
-                    ) : (
-                      <span className="text-muted-foreground">Underlier not linked</span>
-                    )}
-                    {token.underlierSymbol ? (
-                      <div className="font-mono text-[11px] text-muted-foreground">
-                        {token.underlierSymbol}
-                      </div>
-                    ) : token.rwaId !== null ? (
-                      <div className="font-mono text-[11px] text-muted-foreground">
-                        rwa_id {token.rwaId}
-                      </div>
-                    ) : null}
-                    <div className="mt-0.5 font-mono text-[11px] text-muted-foreground sm:hidden">
-                      {token.symbol}
-                      {token.cryptoId != null ? ` · ${token.cryptoId}` : ""}
-                    </div>
-                  </TableCell>
-                  <TableCell className="whitespace-normal">
-                    <div className="font-medium">{token.name}</div>
-                    <div className="font-mono text-[11px] text-muted-foreground">{token.symbol}</div>
-                  </TableCell>
-                  <TableCell className="hidden font-mono text-[11px] tabular-nums sm:table-cell">
-                    {token.cryptoId ?? "—"}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {token.rwaId !== null ? (
-                      <TextLink
-                        href={`/asset/${token.rwaId}`}
-                        className="inline-flex items-center justify-end gap-1 text-[12px]"
-                      >
-                        View
-                        <ArrowRight className="size-3" aria-hidden />
-                      </TextLink>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
-                </TableRow>
+                <TokenRow key={`${token.cryptoId}-${token.symbol}-${token.rwaId}`} token={token} />
               ))}
             </TableBody>
           </Table>
         )}
       </section>
     </div>
+  );
+}
+
+function TokenRow({ token }: { token: IssuerToken }) {
+  const underlierLabel = token.underlierName ?? (token.rwaId !== null ? `rwa_id ${token.rwaId}` : null);
+
+  return (
+    <TableRow className="focus-within:bg-muted/60">
+      <TableCell className="whitespace-normal">
+        {token.rwaId !== null && underlierLabel ? (
+          <Link
+            href={`/asset/${token.rwaId}`}
+            className="font-medium text-foreground hover:text-mark"
+          >
+            {underlierLabel}
+          </Link>
+        ) : (
+          <span className="text-muted-foreground">Underlier not linked</span>
+        )}
+        {token.underlierSymbol ? (
+          <div className="font-mono text-[11px] text-muted-foreground">{token.underlierSymbol}</div>
+        ) : token.rwaId !== null ? (
+          <div className="font-mono text-[11px] text-muted-foreground">rwa_id {token.rwaId}</div>
+        ) : null}
+      </TableCell>
+      <TableCell className="whitespace-normal">
+        <div className="font-medium">{token.name}</div>
+        <div className="font-mono text-[11px] text-muted-foreground">
+          {token.symbol}
+          {token.cryptoId != null ? ` · crypto_id ${token.cryptoId}` : ""}
+        </div>
+      </TableCell>
+      <TableCell className="text-right">
+        {token.rwaId !== null ? (
+          <Link href={`/asset/${token.rwaId}`} className="text-[12px] text-mark hover:underline">
+            View underlier
+          </Link>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        )}
+      </TableCell>
+    </TableRow>
   );
 }
 
