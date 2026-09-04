@@ -1,6 +1,7 @@
 import { AppFrame } from "@/components/app-frame";
 import { AssetDeskView } from "@/components/asset-desk-view";
 import { getAssetDesk } from "@/lib/cmc/service";
+import { isRwaIdParam } from "@/lib/search-params";
 import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
@@ -11,7 +12,7 @@ export default async function AssetPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  if (!/^\d+$/.test(id)) notFound();
+  if (!isRwaIdParam(id)) notFound();
   const desk = await getAssetDesk(id);
   const hasQuote =
     desk.quote.price !== null ||

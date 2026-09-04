@@ -10,9 +10,14 @@ export default function NotFound() {
       <p className="text-sm text-muted-foreground">
         That underlier or issuer is not in the current CMC payload.
       </p>
-      <Link href="/" className="text-sm underline underline-offset-4">
-        Back to the desk
-      </Link>
+      <div className="flex flex-wrap items-center gap-4">
+        <Link href="/" className="text-sm underline underline-offset-4">
+          Back to the desk
+        </Link>
+        <Link href="/issuers" className="text-sm underline underline-offset-4">
+          Issuer directory
+        </Link>
+      </div>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ExternalLink } from "@/components/external-link";
 import {
   Table,
   TableBody,
@@ -10,6 +11,7 @@ import {
 } from "@/components/ui/table";
 import { formatInt } from "@/lib/cmc/format";
 import type { IssuersResult } from "@/lib/cmc/types";
+import { hostLabel } from "@/lib/safe-url";
 
 export function IssuerDirectory({ data }: { data: IssuersResult }) {
   const rangeStart = data.issuers.length === 0 ? 0 : data.start;
@@ -47,7 +49,9 @@ export function IssuerDirectory({ data }: { data: IssuersResult }) {
             This page
           </p>
           <p className="font-mono text-lg tabular-nums">
-            {rangeStart.toLocaleString("en-US")}–{rangeEnd.toLocaleString("en-US")}
+            {data.issuers.length === 0
+              ? "—"
+              : `${rangeStart.toLocaleString("en-US")}–${rangeEnd.toLocaleString("en-US")}`}
           </p>
         </div>
         <div className="col-span-2 flex flex-col gap-1 sm:col-span-1">
@@ -64,7 +68,9 @@ export function IssuerDirectory({ data }: { data: IssuersResult }) {
         <div className="border border-dashed border-border/80 px-4 py-12 text-center">
           <p className="text-sm font-medium">No issuers in this view</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            The CMC issuer list returned an empty page.
+            {data.start > 1
+              ? "This page is past the end of the CMC issuer list. Go back to the previous page."
+              : "The CMC issuer list returned an empty page."}
           </p>
         </div>
       ) : (
@@ -111,15 +117,12 @@ export function IssuerDirectory({ data }: { data: IssuersResult }) {
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
                     {issuer.website ? (
-                      <a
+                      <ExternalLink
                         className="underline underline-offset-4"
                         href={issuer.website}
-                        rel="noreferrer"
-                        target="_blank"
                       >
                         {hostLabel(issuer.website)}
-                        <span className="sr-only"> (opens in a new tab)</span>
-                      </a>
+                      </ExternalLink>
                     ) : (
                       <span className="text-muted-foreground">—</span>
                     )}
@@ -166,12 +169,4 @@ export function IssuerDirectory({ data }: { data: IssuersResult }) {
       ) : null}
     </div>
   );
-}
-
-function hostLabel(url: string): string {
-  try {
-    return new URL(url).host;
-  } catch {
-    return url;
-  }
 }

@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowDown, ArrowLeft, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { ExternalLink } from "@/components/external-link";
 import { EvidenceDrawer } from "@/components/evidence-drawer";
 import {
   Table,
@@ -24,6 +25,7 @@ import {
   spreadVsUnderlier,
   summarizeWrappers,
 } from "@/lib/cmc/wrappers";
+import { isHttpsUrl, hostLabel } from "@/lib/safe-url";
 import { cn } from "@/lib/utils";
 
 export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string }) {
@@ -51,7 +53,7 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
         {info?.symbol ? (
           <>
             <span className="text-muted-foreground"> / </span>
-            <Link href={`/?q=${info.symbol}`} className="hover:underline">
+            <Link href={`/?q=${encodeURIComponent(info.symbol)}`} className="hover:underline">
               {info.symbol}
             </Link>
           </>
@@ -176,15 +178,9 @@ function UnderlierIdentity({ info, rwaId }: { info: AssetInfo | null; rwaId: str
     rows.push({
       label: "Website",
       value: (
-        <a
-          className="underline underline-offset-4"
-          href={info.website}
-          rel="noreferrer"
-          target="_blank"
-        >
+        <ExternalLink className="underline underline-offset-4" href={info.website}>
           {hostLabel(info.website)}
-          <span className="sr-only"> (opens in a new tab)</span>
-        </a>
+        </ExternalLink>
       ),
     });
   }
@@ -512,7 +508,7 @@ function TradfiSection({
   return (
     <DeskSection
       id="tradfi"
-      kicker="Traditional markets"
+      kicker="CMC-reported venue"
       title="TradFi market"
       description="Venue reported by CMC; not a cash last."
     >
@@ -548,16 +544,13 @@ function TradfiSection({
                 <TableCell className="font-mono">{market.symbol ?? "—"}</TableCell>
                 <TableCell>
                   {market.marketUrl ? (
-                    <a
+                    <ExternalLink
                       className="inline-flex items-center gap-1 underline underline-offset-4"
                       href={market.marketUrl}
-                      rel="noreferrer"
-                      target="_blank"
                     >
                       Open {market.exchange ?? "market"}
-                      <span className="sr-only"> (opens in a new tab)</span>
                       <ArrowRight className="size-3" aria-hidden />
-                    </a>
+                    </ExternalLink>
                   ) : (
                     <span className="text-muted-foreground">No market URL</span>
                   )}
@@ -875,23 +868,6 @@ function shortAbout(text: string | null | undefined): string | null {
   const cleaned = text.replace(/^#+\s+/gm, "").replace(/\n{3,}/g, "\n\n").trim();
   if (cleaned.length <= 420) return cleaned;
   return `${cleaned.slice(0, 420).replace(/\s+\S*$/, "")}…`;
-}
-
-function hostLabel(url: string): string {
-  try {
-    return new URL(url).host;
-  } catch {
-    return url;
-  }
-}
-
-function isHttpsUrl(value: string | null | undefined): value is string {
-  if (!value) return false;
-  try {
-    return new URL(value).protocol === "https:";
-  } catch {
-    return false;
-  }
 }
 
 function spreadClass(value: number | null): string {

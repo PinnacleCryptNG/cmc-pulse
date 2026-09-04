@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowDown, ArrowLeft, ArrowRight } from "lucide-react";
+import { ExternalLink } from "@/components/external-link";
 import {
   Table,
   TableBody,
@@ -11,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { formatInt } from "@/lib/cmc/format";
 import type { IssuerBook, IssuerToken } from "@/lib/cmc/types";
+import { hostLabel, isHttpsUrl } from "@/lib/safe-url";
 
 export function IssuerBookView({ book }: { book: IssuerBook }) {
   const issuer = book.issuer;
@@ -69,15 +71,12 @@ export function IssuerBookView({ book }: { book: IssuerBook }) {
             <IdentityRow
               label="Website"
               value={
-                <a
+                <ExternalLink
                   className="underline underline-offset-4"
                   href={issuer.website}
-                  rel="noreferrer"
-                  target="_blank"
                 >
                   {hostLabel(issuer.website)}
-                  <span className="sr-only"> (opens in a new tab)</span>
-                </a>
+                </ExternalLink>
               }
             />
           ) : null}
@@ -220,21 +219,4 @@ function SafeLogo({ src, name }: { src: string | null; name: string }) {
       className="mt-1 size-10 shrink-0 rounded-md border border-border/80 bg-muted object-contain p-0.5"
     />
   );
-}
-
-function hostLabel(url: string): string {
-  try {
-    return new URL(url).host;
-  } catch {
-    return url;
-  }
-}
-
-function isHttpsUrl(value: string | null): value is string {
-  if (!value) return false;
-  try {
-    return new URL(value).protocol === "https:";
-  } catch {
-    return false;
-  }
 }

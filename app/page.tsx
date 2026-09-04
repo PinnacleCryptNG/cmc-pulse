@@ -1,7 +1,12 @@
 import { AppFrame } from "@/components/app-frame";
 import { ScreenerView } from "@/components/screener-view";
 import { getScreener } from "@/lib/cmc/service";
-import { firstParam, parseAssetTypeParam } from "@/lib/search-params";
+import {
+  firstParam,
+  parseAssetTypeParam,
+  parseSortDir,
+  parseSortParam,
+} from "@/lib/search-params";
 
 export const dynamic = "force-dynamic";
 
@@ -15,9 +20,9 @@ export default async function HomePage({
   const data = await getScreener({
     q: firstParam(params.q),
     assetType: parseAssetTypeParam(firstParam(params.type)),
-    sort: firstParam(params.sort) || "rwa_rank",
-    sortDir: firstParam(params.dir) === "desc" ? "desc" : "asc",
-    start: Number.isFinite(start) ? start : 1,
+    sort: parseSortParam(firstParam(params.sort)),
+    sortDir: parseSortDir(firstParam(params.dir)),
+    start: Number.isFinite(start) && start > 0 ? start : 1,
     limit: 50,
   });
 

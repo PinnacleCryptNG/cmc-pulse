@@ -28,7 +28,7 @@ export function AppFrame({
             <span className="font-mono">/v5/real-world-assets/*</span>
             {source === "live"
               ? " · pro-api.coinmarketcap.com"
-              : " · fixture payloads until a key is set"}
+              : " · fixture payloads"}
           </p>
           <p>
             Tickers collide. Resolve <span className="font-mono">rwa_id</span>, then

@@ -8,5 +8,5 @@ export async function GET(request: Request) {
     start: Number(url.searchParams.get("start") || "1"),
     limit: Number(url.searchParams.get("limit") || "50"),
   });
-  return Response.json(data);
+  return Response.json(data, { headers: { "Cache-Control": "no-store" } });
 }

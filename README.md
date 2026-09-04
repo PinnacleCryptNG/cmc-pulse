@@ -1,24 +1,12 @@
-# Underlier
+# Underlier Desk
 
-Research desk for tokenized real-world assets. One underlier, every issuer that wrapped it, the markets those tokens trade on, and the TradFi instrument behind them.
+See the real asset behind every tokenized stock, treasury, and commodity.
 
-Built for the **Build with CMC: API Hackathon**, track **Real World Assets**.
+A research desk for the **Build with CMC: API Hackathon**, track **Real World Assets**.
 
-## What you need to provide
+**One-liner.** What real-world asset is being tokenized, who is tokenizing it, and where can you access it?
 
-| Need | Required? |
-|---|---|
-| `CMC_API_KEY` from [coinmarketcap.com/api](https://coinmarketcap.com/api) | **Yes** for live data |
-| Database | No |
-| AI model / OpenAI / Anthropic | No |
-
-Without a key the app still runs on checked-in fixture responses so the join can be developed and tested. Put the key in `.env.local`:
-
-```
-CMC_API_KEY=your_key_here
-```
-
-Never commit the key. `.env*` is gitignored; `.env.example` is not.
+CMC already publishes two views that do not meet: ranked *underliers* and ranked *wrapper tokens*. Tickers collide — `NVDA` is a Nasdaq stock and several issuer tokens; `SPCX` is a listing and a Backpack token. Underlier Desk resolves `rwa_id`, then joins metadata, tokenized quotes, issuer tokens, and the TradFi venue CMC actually reports.
 
 ## Run locally
 
@@ -31,11 +19,68 @@ npm run dev
 
 Dev server: [http://127.0.0.1:43147](http://127.0.0.1:43147)
 
-## What it does
+| Need | Required? |
+|---|---|
+| `CMC_API_KEY` from [coinmarketcap.com/api](https://coinmarketcap.com/api) | **Yes** for live data |
+| Database | No |
+| Auth / accounts | No |
+| AI model | No |
 
-CMC publishes two views that do not meet: ranked underliers and ranked wrapper tokens. Tickers collide (`NVDA` the Nasdaq stock vs several issuer tokens; `SPCX` the listing vs the Backpack token). Underlier resolves `rwa_id`, then joins metadata, tokenized quotes, issuer tokens, and market pairs.
+Without a key the app still runs on checked-in fixture responses so the underlier join can be developed and tested. Force fixtures even with a key by setting `CMC_USE_FIXTURES=1`.
 
-Search a ticker. Open the underlier. Compare every issuer token to the average tokenized price. That gap is the product.
+Never commit the key. `.env*` is gitignored; `.env.example` is not. The key is a **server-only** secret (`CMC_API_KEY`, never `NEXT_PUBLIC_*`). Evidence previews redact it if it ever appears in a payload.
+
+## Judge path (under two minutes)
+
+1. Open `/`.
+2. Search `NVDA` (or `GOLD`, `SPCX`, `TLT`).
+3. Open the asset desk. Compare issuer wrappers to the average tokenized price.
+4. Open an issuer book, then an underlier from that book.
+5. Open **Data & Evidence** — named CoinMarketCap endpoints and truncated envelopes from this load.
+
+## Architecture
+
+Pages are React Server Components. They call `lib/cmc/service.ts` on the server. The browser never fetches `/api/rwa/*`; those BFF routes exist for evidence and debugging only.
+
+```mermaid
+flowchart LR
+  subgraph ui [App Router RSC]
+    Home["/ Screener"]
+    Desk["/asset/id Desk"]
+    Issuers["/issuers Directory"]
+    Book["/issuer/id Book"]
+  end
+  subgraph svc [lib/cmc]
+    Service["service.ts"]
+    Client["client.ts"]
+    Parse["parse.ts"]
+  end
+  subgraph cmc [CoinMarketCap]
+    RWA["/v5/real-world-assets/*"]
+    Crypto["/v2/cryptocurrency/quotes/latest"]
+  end
+  Home --> Service
+  Desk --> Service
+  Issuers --> Service
+  Book --> Service
+  Service --> Client
+  Client -->|live key| RWA
+  Client -->|crypto_id fallback| Crypto
+  Client -->|no key or CMC_USE_FIXTURES=1| Fixtures["fixtures.ts"]
+  Client --> Parse
+```
+
+```mermaid
+flowchart TD
+  A[Land on Underlier Desk] --> B[Universe: type counts + ranked underliers]
+  B --> C[Search ticker / slug / rwa_id]
+  C --> D[Asset desk]
+  D --> E[Issuer wrappers vs average tokenized price]
+  D --> F[CMC-reported TradFi venue]
+  E --> G[Issuer book]
+  G --> D
+  D --> H[Data and Evidence drawer]
+```
 
 ## CMC endpoints used
 
@@ -48,9 +93,9 @@ Search a ticker. Open the underlier. Compare every issuer token to the average t
 7. `GET /v5/real-world-assets/issuers`
 8. `GET /v2/cryptocurrency/quotes/latest` — fallback when an RWA token has a `crypto_id` but no price
 
-Each page exposes an evidence drawer with the named endpoint and a truncated response. Sample envelopes: [`evidence/sample-cmc-map-spacex.json`](evidence/sample-cmc-map-spacex.json) (map) and [`evidence/live-nvda-quotes.json`](evidence/live-nvda-quotes.json) (live NVDA quotes, key stripped).
+Each page exposes **Data & Evidence** with the named endpoint and a truncated response. Sample envelopes: [`evidence/sample-cmc-map-spacex.json`](evidence/sample-cmc-map-spacex.json) and [`evidence/live-nvda-quotes.json`](evidence/live-nvda-quotes.json) (key stripped).
 
-BFF routes (same payloads the UI uses):
+Debug BFF routes (same payloads the UI uses):
 
 - `/api/rwa/screener`
 - `/api/rwa/asset/[id]`
@@ -59,19 +104,32 @@ BFF routes (same payloads the UI uses):
 
 ## What the API made possible / where it got in the way
 
-The RWA family is the first time CMC lets you walk **underlier → issuer → on-chain token → venue** without scraping HTML. `rwa_id` is a separate namespace from `crypto_id`, which is exactly the collision problem a person hits. A live `NVDA` lookup returns eight issuer tokens (Backed/xStock, Ondo, bStocks, Robinhood, Dinari, …) on one quotes call.
+The RWA family is the first time CMC lets you walk **underlier → issuer → on-chain token → venue** without scraping HTML. `rwa_id` is a separate namespace from `crypto_id`, which is exactly the collision a person hits. A live `NVDA` lookup returns multiple issuer tokens (Backed/xStock, Ondo, and others) on one quotes call.
 
-Friction from live calls on this key:
+Friction from live calls on a typical plan:
 
-- `GET /v5/real-world-assets/market-pairs/list` returns **error 1006** — not on the current plan. The desk still works from quotes + issuers.
-- `tradfi_markets` is venue identity (`exchange`, `ticker`, `market_url`), not a cash-market last price.
+- `GET /v5/real-world-assets/market-pairs/list` returns **error 1006** — not on the current plan. The desk still works from quotes + issuers. After the first 1006, later desks skip the call instead of repeating it.
+- `tradfi_markets` is venue identity (`exchange`, `ticker`, `market_url`), not a cash-market last price. The UI labels it **CMC-reported venue**.
 - There is **no name-search** parameter. Lookups are ticker, slug, or `rwa_id`.
-- `/issuers/list` does not include tokens; invert “who wrapped this underlier” requires `/issuers` per issuer unless quotes already attached `issuer_id`.
+- `/issuers/list` does not include tokens; inverting “who wrapped this underlier” requires `/issuers` per issuer unless quotes already attached `issuer_id`.
 - RWA list/quotes do not return `percent_change_24h`.
 - `/info` About text is a long markdown FAQ, not a one-line company blurb.
-- Asset-type taxonomy is uneven: 4685 stocks and 3121 ETFs in the map, zero `government_security` / `currency` / `real_estate` on this pull. Treasuries show up as ETFs.
+- Asset-type taxonomy is uneven: stocks and ETFs dominate the map; treasuries often show up as ETFs. Do not treat map `total_size` and `assets/list` `total_size` as the same universe.
 - Convert quotes arrive as a `quotes: [{ symbol: "USD", ... }]` array, not the crypto-style `quote.USD` object.
+
+## Security and data handling
+
+- CMC key stays on the server. It is never sent to the client, never committed, and stripped from evidence previews.
+- External website and market URLs must be `https:` before they become `href` or `src`.
+- Route params are allowlisted (`rwa_id` digits, issuer ids alphanumeric). Screener `sort` is allowlisted so a junk `?sort=` cannot trip a CMC error into a map fallback.
+- No accounts, cookies, or user-uploaded data. Responses are `Cache-Control: no-store` on the BFF.
 
 ## Stack
 
-Next.js App Router, TypeScript, Tailwind, shadcn/ui. CMC calls stay on the server. No database.
+Next.js App Router, TypeScript, Tailwind, shadcn/ui. Forced dark UI. CMC calls stay on the server. No database.
+
+```bash
+npm run lint
+npm test
+npm run build
+```

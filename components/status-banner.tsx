@@ -9,30 +9,50 @@ export function StatusBanner({
   warning: string | null;
 }) {
   const hasKey = liveKeyConfigured();
-  if (source === "live" && !warning) return null;
-
-  if (!hasKey) {
-    return (
+  const fixtureBanner =
+    source === "fixture" ? (
       <Alert>
         <AlertTitle>Fixture mode</AlertTitle>
         <AlertDescription>
-          No <code>CMC_API_KEY</code> is set. The desk is serving checked-in
-          responses so the underlier join still runs. Add a key to{" "}
-          <code>.env.local</code> to read live CoinMarketCap RWA endpoints.
+          {hasKey ? (
+            <>
+              <code>CMC_USE_FIXTURES=1</code> is set. Live CoinMarketCap calls
+              are skipped even though a key is configured.
+            </>
+          ) : (
+            <>
+              No <code>CMC_API_KEY</code> is set. The desk is serving checked-in
+              responses so the underlier join still runs. Add a key to{" "}
+              <code>.env.local</code> to read live CoinMarketCap RWA endpoints.
+            </>
+          )}
         </AlertDescription>
       </Alert>
-    );
-  }
+    ) : null;
 
-  if (warning) {
-    const planLimited = warning.toLowerCase().includes("not on this cmc plan");
-    return (
-      <Alert variant={planLimited ? "default" : "destructive"}>
-        <AlertTitle>{planLimited ? "Plan limit" : "CMC response issue"}</AlertTitle>
-        <AlertDescription>{warning}</AlertDescription>
-      </Alert>
-    );
-  }
+  const warningBanner = warning ? (
+    <Alert
+      variant={
+        warning.toLowerCase().includes("not on this cmc plan")
+          ? "default"
+          : "destructive"
+      }
+    >
+      <AlertTitle>
+        {warning.toLowerCase().includes("not on this cmc plan")
+          ? "Plan limit"
+          : "CMC response issue"}
+      </AlertTitle>
+      <AlertDescription>{warning}</AlertDescription>
+    </Alert>
+  ) : null;
 
-  return null;
+  if (!fixtureBanner && !warningBanner) return null;
+
+  return (
+    <div className="flex flex-col gap-2">
+      {fixtureBanner}
+      {warningBanner}
+    </div>
+  );
 }

@@ -77,6 +77,19 @@ test("info parser reads about + company fields without treating null as zero", (
   assert.equal(info?.employees, null);
   assert.equal(info?.cik, null);
   assert.equal(info?.description, "Metal");
+  assert.equal(info?.website, "https://example.com");
+});
+
+test("info parser drops non-https websites", () => {
+  const info = parseAssetInfo({
+    rwa_id: 1,
+    name: "Gold",
+    symbol: "GOLD",
+    slug: "gold",
+    asset_type: "commodity",
+    about: { website: "javascript:alert(1)" },
+  });
+  assert.equal(info?.website, null);
 });
 
 test("issuer inversion joins tokens back to an rwa_id", () => {

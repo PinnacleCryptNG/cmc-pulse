@@ -21,6 +21,12 @@ test("screener search resolves NVDA by ticker", async () => {
   assert.equal(result.assets[0].name, "NVIDIA");
 });
 
+test("invalid sort falls back to rwa_rank", async () => {
+  const result = await getScreener({ sort: "not_a_field" });
+  assert.equal(result.sort, "rwa_rank");
+  assert.ok(result.assets.length >= 1);
+});
+
 test("screener search for an unknown ticker returns no rows", async () => {
   const result = await getScreener({ q: "ZZZZNOPE" });
   assert.equal(result.assets.length, 0);

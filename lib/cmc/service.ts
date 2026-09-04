@@ -1,3 +1,4 @@
+import { parseSortDir, parseSortParam } from "../search-params";
 import { cmcGet, hasLiveKey, type CmcCall } from "./client";
 import {
   applyCryptoQuotes,
@@ -13,7 +14,7 @@ import {
   parseQuotesPayload,
   TYPE_LABELS,
 } from "./parse";
-import { ASSET_TYPES, type AssetDesk, type AssetType, type CallEvidence, type IssuerBook, type IssuerDetail, type IssuersResult, type QuotePath, type ScreenerResult, type TypeCount, type UnderlyingToken } from "./types";
+import { ASSET_TYPES, type AssetDesk, type AssetType, type CallEvidence, type DataSource, type IssuerBook, type IssuerDetail, type IssuersResult, type QuotePath, type ScreenerResult, type TypeCount, type UnderlyingToken } from "./types";
 
 const MAP = "/v5/real-world-assets/map";
 const INFO = "/v5/real-world-assets/info";
@@ -32,6 +33,12 @@ type IssuerIndex = {
 
 let issuerIndexMemo: IssuerIndex | null = null;
 const INDEX_TTL_MS = 5 * 60 * 1000;
+const COUNTS_TTL_MS = 5 * 60 * 1000;
+const PLAN_LIMIT_TTL_MS = 30 * 60 * 1000;
+
+let typeCountsMemo: { at: number; counts: TypeCount[]; evidence: CallEvidence[] } | null =
+  null;
+let pairsPlanLimitedUntil = 0;
 
 function pushEvidence(bucket: CallEvidence[], call: CmcCall) {
   bucket.push(call.evidence);
@@ -56,7 +63,38 @@ function warningFrom(calls: CmcCall[], extra?: string | null) {
   return parts.length ? parts.join(" · ") : null;
 }
 
+function syntheticPlanLimitCall(rwaId: string): CmcCall {
+  const source: DataSource = hasLiveKey() ? "live" : "fixture";
+  const evidence: CallEvidence = {
+    endpoint: `GET ${PAIRS}`,
+    method: "GET",
+    query: { rwa_id: rwaId, skipped: "plan_limit_cached" },
+    ok: false,
+    httpStatus: 403,
+    errorCode: 1006,
+    errorMessage:
+      "This endpoint is not on this CMC plan (cached after a prior 1006).",
+    creditCount: null,
+    elapsedMs: 0,
+    fetchedAt: new Date().toISOString(),
+    source,
+    responsePreview: { skipped: true, reason: "plan_limit_cached" },
+  };
+  return {
+    path: PAIRS,
+    endpoint: evidence.endpoint,
+    query: evidence.query,
+    ok: false,
+    source,
+    payload: null,
+    evidence,
+  };
+}
+
 async function typeCounts(): Promise<{ counts: TypeCount[]; evidence: CallEvidence[] }> {
+  if (typeCountsMemo && Date.now() - typeCountsMemo.at < COUNTS_TTL_MS) {
+    return { counts: typeCountsMemo.counts, evidence: typeCountsMemo.evidence };
+  }
   const evidence: CallEvidence[] = [];
   const allCall = await cmcGet(MAP, { start: 1, limit: 1, sort: "rwa_id" });
   evidence.push(allCall.evidence);
@@ -80,13 +118,15 @@ async function typeCounts(): Promise<{ counts: TypeCount[]; evidence: CallEviden
     }),
   );
 
-  return {
+  const result: { counts: TypeCount[]; evidence: CallEvidence[] } = {
     counts: [
       { type: "all", label: TYPE_LABELS.all, count: allCall.ok ? allParsed.totalSize : null },
       ...perType,
     ],
     evidence,
   };
+  typeCountsMemo = { at: Date.now(), ...result };
+  return result;
 }
 
 async function poolMap<T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>) {
@@ -143,12 +183,12 @@ export async function getScreener(input: {
   start?: number;
   limit?: number;
 }): Promise<ScreenerResult> {
-  const query = (input.q ?? "").trim();
+  const query = (input.q ?? "").trim().slice(0, 80);
   const assetType = (
     ASSET_TYPES.includes(input.assetType as AssetType) ? input.assetType : "all"
   ) as AssetType | "all";
-  const sort = input.sort || "rwa_rank";
-  const sortDir = input.sortDir === "desc" ? "desc" : "asc";
+  const sort = parseSortParam(input.sort);
+  const sortDir = parseSortDir(input.sortDir);
   const start = input.start && input.start > 0 ? input.start : 1;
   const limit = Math.min(Math.max(input.limit ?? 50, 1), 250);
   const evidence: CallEvidence[] = [];
@@ -291,14 +331,20 @@ export async function getScreener(input: {
 
 export async function getAssetDesk(rwaId: string): Promise<AssetDesk> {
   const evidence: CallEvidence[] = [];
+  const skipPairs = Date.now() < pairsPlanLimitedUntil;
   const [infoCall, quotesCall, pairsCall] = await Promise.all([
     cmcGet(INFO, { rwa_id: rwaId, skip_invalid: "true" }),
     cmcGet(QUOTES, { rwa_id: rwaId, convert: "USD", skip_invalid: "true" }),
-    cmcGet(PAIRS, { rwa_id: rwaId, convert: "USD", sort: "volume_24h", sort_dir: "desc" }),
+    skipPairs
+      ? Promise.resolve(syntheticPlanLimitCall(rwaId))
+      : cmcGet(PAIRS, { rwa_id: rwaId, convert: "USD", sort: "volume_24h", sort_dir: "desc" }),
   ]);
   pushEvidence(evidence, infoCall);
   pushEvidence(evidence, quotesCall);
   pushEvidence(evidence, pairsCall);
+  if (!skipPairs && isPlanLimited(pairsCall)) {
+    pairsPlanLimitedUntil = Date.now() + PLAN_LIMIT_TTL_MS;
+  }
 
   const info = parseInfoPayload(infoCall.payload)[0] ?? null;
   const quotes = parseQuotesPayload(quotesCall.payload);

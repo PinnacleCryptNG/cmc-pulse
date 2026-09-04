@@ -33,10 +33,34 @@ function compactQuery(query: Record<string, string | number | boolean | undefine
   return out;
 }
 
+export function redactSecrets(text: string): string {
+  let out = text;
+  const key = process.env.CMC_API_KEY?.trim();
+  if (key && key.length >= 8) {
+    out = out.split(key).join("[redacted-cmc-key]");
+  }
+  return out.replace(
+    /(?:X-CMC_PRO_API_KEY|CMC_API_KEY)\s*[:=]\s*["']?[^"'\s,}]+/gi,
+    "[redacted-cmc-key]",
+  );
+}
+
 function preview(payload: unknown) {
-  const text = JSON.stringify(payload);
+  let text: string;
+  try {
+    text = JSON.stringify(payload);
+  } catch {
+    return { error: "unserializable_payload" };
+  }
   if (!text) return payload;
-  if (text.length <= PREVIEW_LIMIT) return payload;
+  text = redactSecrets(text);
+  if (text.length <= PREVIEW_LIMIT) {
+    try {
+      return JSON.parse(text) as unknown;
+    } catch {
+      return { preview: text };
+    }
+  }
   return {
     truncated: true,
     preview: text.slice(0, PREVIEW_LIMIT),

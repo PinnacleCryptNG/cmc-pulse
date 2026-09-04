@@ -1,4 +1,9 @@
+import { safeHttpsUrl } from "../safe-url";
 import { ASSET_TYPES, type AssetType, type AssetInfo, type IssuerDetail, type IssuerSummary, type IssuerToken, type ListedAsset, type MappedAsset, type MarketPair, type TradfiMarket, type UnderlyingToken, type UsdQuote } from "./types";
+
+function asHttps(value: unknown): string | null {
+  return safeHttpsUrl(asString(value));
+}
 
 export function asRecord(value: unknown): Record<string, unknown> | null {
   if (value && typeof value === "object" && !Array.isArray(value)) {
@@ -174,12 +179,12 @@ export function parseAssetInfo(asset: unknown): AssetInfo | null {
       asString(pick(about, "description")) ??
       asString(pick(record, "description")),
     website:
-      asString(pick(about, "website")) ??
-      asString(pick(record, "website")) ??
-      asString(asArray(about.website)[0]),
+      asHttps(pick(about, "website")) ??
+      asHttps(pick(record, "website")) ??
+      asHttps(asArray(about.website)[0]),
     logo:
-      asString(pick(about, "logo")) ??
-      asString(pick(record, "logo", "logo_url")),
+      asHttps(pick(about, "logo")) ??
+      asHttps(pick(record, "logo", "logo_url")),
     primaryExchange: asString(
       pick(company, "primary_exchange", "primaryExchange", "exchange"),
     ),
@@ -230,7 +235,7 @@ export function parseTradfiMarket(market: unknown): TradfiMarket | null {
     symbol: asString(pick(record, "symbol", "ticker")),
     price: quote.price ?? asNumber(pick(record, "last", "close")),
     currency: asString(pick(record, "currency", "quote_currency")) ?? "USD",
-    marketUrl: asString(pick(record, "market_url", "url", "website")),
+    marketUrl: asHttps(pick(record, "market_url", "url", "website")),
   };
 }
 
@@ -264,8 +269,8 @@ export function parseIssuerSummary(issuer: unknown): IssuerSummary | null {
   return {
     issuerId,
     name,
-    website: asString(pick(record, "website")),
-    logo: asString(pick(record, "logo")),
+    website: asHttps(pick(record, "website")),
+    logo: asHttps(pick(record, "logo")),
     numTokens: asNumber(pick(record, "num_tokens", "numTokens", "token_count")),
     active: asBoolean(pick(record, "active", "is_active")),
   };
