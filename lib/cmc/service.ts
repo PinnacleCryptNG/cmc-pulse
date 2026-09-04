@@ -10,17 +10,15 @@ import {
   parseIssuersListPayload,
   parseListPayload,
   parseMapPayload,
-  parseMarketPairsPayload,
   parseQuotesPayload,
   TYPE_LABELS,
 } from "./parse";
-import { ASSET_TYPES, type AssetDesk, type AssetType, type CallEvidence, type DataSource, type IssuerBook, type IssuerDetail, type IssuersResult, type QuotePath, type ScreenerResult, type TypeCount, type UnderlyingToken } from "./types";
+import { ASSET_TYPES, type AssetDesk, type AssetType, type CallEvidence, type IssuerBook, type IssuerDetail, type IssuersResult, type QuotePath, type ScreenerResult, type TypeCount, type UnderlyingToken } from "./types";
 
 const MAP = "/v5/real-world-assets/map";
 const INFO = "/v5/real-world-assets/info";
 const LIST = "/v5/real-world-assets/assets/list";
 const QUOTES = "/v5/real-world-assets/quotes/latest";
-const PAIRS = "/v5/real-world-assets/market-pairs/list";
 const ISSUERS = "/v5/real-world-assets/issuers/list";
 const ISSUER = "/v5/real-world-assets/issuers";
 const CRYPTO_QUOTES = "/v2/cryptocurrency/quotes/latest";
@@ -34,11 +32,9 @@ type IssuerIndex = {
 let issuerIndexMemo: IssuerIndex | null = null;
 const INDEX_TTL_MS = 5 * 60 * 1000;
 const COUNTS_TTL_MS = 5 * 60 * 1000;
-const PLAN_LIMIT_TTL_MS = 30 * 60 * 1000;
 
 let typeCountsMemo: { at: number; counts: TypeCount[]; evidence: CallEvidence[] } | null =
   null;
-let pairsPlanLimitedUntil = 0;
 
 function isMissLookup(call: CmcCall) {
   const message = (call.evidence.errorMessage || "").toLowerCase();
@@ -58,51 +54,14 @@ function pushEvidence(bucket: CallEvidence[], call: CmcCall) {
   bucket.push(call.evidence);
 }
 
-function isPlanLimited(call: CmcCall) {
-  const message = (call.evidence.errorMessage || "").toLowerCase();
-  const code = String(call.evidence.errorCode ?? "");
-  return code === "1006" || message.includes("subscription plan doesn't support");
-}
-
 function warningFrom(calls: CmcCall[], extra?: string | null) {
   const failed = calls.filter((call) => !call.ok);
   const parts = failed.map((call) => {
     const detail = call.evidence.errorMessage ? `: ${call.evidence.errorMessage}` : "";
-    if (isPlanLimited(call)) {
-      return `${call.endpoint} is not on this CMC plan${detail}`;
-    }
     return `${call.endpoint} failed${detail}`;
   });
   if (extra) parts.push(extra);
   return parts.length ? parts.join(" · ") : null;
-}
-
-function syntheticPlanLimitCall(rwaId: string): CmcCall {
-  const source: DataSource = hasLiveKey() ? "live" : "fixture";
-  const evidence: CallEvidence = {
-    endpoint: `GET ${PAIRS}`,
-    method: "GET",
-    query: { rwa_id: rwaId, skipped: "plan_limit_cached" },
-    ok: false,
-    httpStatus: 403,
-    errorCode: 1006,
-    errorMessage:
-      "This endpoint is not on this CMC plan (cached after a prior 1006).",
-    creditCount: null,
-    elapsedMs: 0,
-    fetchedAt: new Date().toISOString(),
-    source,
-    responsePreview: { skipped: true, reason: "plan_limit_cached" },
-  };
-  return {
-    path: PAIRS,
-    endpoint: evidence.endpoint,
-    query: evidence.query,
-    ok: false,
-    source,
-    payload: null,
-    evidence,
-  };
 }
 
 async function typeCounts(): Promise<{ counts: TypeCount[]; evidence: CallEvidence[] }> {
@@ -348,24 +307,15 @@ export async function getScreener(input: {
 
 export async function getAssetDesk(rwaId: string): Promise<AssetDesk> {
   const evidence: CallEvidence[] = [];
-  const skipPairs = Date.now() < pairsPlanLimitedUntil;
-  const [infoCall, quotesCall, pairsCall] = await Promise.all([
+  const [infoCall, quotesCall] = await Promise.all([
     cmcGet(INFO, { rwa_id: rwaId, skip_invalid: "true" }),
     cmcGet(QUOTES, { rwa_id: rwaId, convert: "USD", skip_invalid: "true" }),
-    skipPairs
-      ? Promise.resolve(syntheticPlanLimitCall(rwaId))
-      : cmcGet(PAIRS, { rwa_id: rwaId, convert: "USD", sort: "volume_24h", sort_dir: "desc" }),
   ]);
   pushEvidence(evidence, infoCall);
   pushEvidence(evidence, quotesCall);
-  pushEvidence(evidence, pairsCall);
-  if (!skipPairs && isPlanLimited(pairsCall)) {
-    pairsPlanLimitedUntil = Date.now() + PLAN_LIMIT_TTL_MS;
-  }
 
   const info = parseInfoPayload(infoCall.payload)[0] ?? null;
   const quotes = parseQuotesPayload(quotesCall.payload);
-  const pairs = parseMarketPairsPayload(pairsCall.payload);
   let quote = quotes.assets[0]?.quote ?? {
     price: null,
     marketCap: null,
@@ -410,7 +360,7 @@ export async function getAssetDesk(rwaId: string): Promise<AssetDesk> {
     }
   }
 
-  const source = [infoCall, quotesCall, pairsCall].some((call) => call.source === "live")
+  const source = [infoCall, quotesCall].some((call) => call.source === "live")
     ? "live"
     : "fixture";
 
@@ -421,11 +371,11 @@ export async function getAssetDesk(rwaId: string): Promise<AssetDesk> {
     quote,
     tokens,
     tradfiMarkets: tradfi,
-    marketPairs: pairs.pairs,
-    numMarketPairs: pairs.numMarketPairs,
+    marketPairs: [],
+    numMarketPairs: null,
     evidence,
     warning: warningFrom(
-      [infoCall, quotesCall, pairsCall],
+      [infoCall, quotesCall],
       !info ? `No metadata for rwa_id ${rwaId}.` : null,
     ),
   };

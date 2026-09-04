@@ -48,7 +48,7 @@ test("asset desk joins NVDA underlier to Ondo and xStock tokens", async () => {
   assert.equal(desk.info?.cik, "0001045810");
   assert.equal(desk.tokens.length, 2);
   assert.ok(desk.tokens.some((token) => token.issuerName === "Ondo"));
-  assert.ok(desk.marketPairs.length >= 1);
+  assert.equal(desk.marketPairs.length, 0);
   assert.ok(desk.tradfiMarkets.length >= 1);
   assert.ok(desk.evidence.some((item) => item.endpoint.includes("/quotes/latest")));
 });

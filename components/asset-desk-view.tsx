@@ -34,7 +34,6 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
   const summary = summarizeWrappers(tokens, desk.quote.price);
   const closestId = summary.closest?.cryptoId;
   const mostVolumeId = summary.mostVolume?.cryptoId;
-  const pairsBlocked = (desk.warning || "").toLowerCase().includes("not on this cmc plan");
   const issuers = groupIssuers(tokens);
   const showTokenMcap = tokens.some((token) => token.quote.marketCap !== null);
   const showTokenChange = tokens.some((token) => token.quote.percentChange24h !== null);
@@ -135,9 +134,6 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
         underlierName={info?.name ?? `RWA ${rwaId}`}
         underlierSymbol={info?.symbol ?? null}
         markets={desk.tradfiMarkets}
-        marketPairs={desk.marketPairs}
-        numMarketPairs={desk.numMarketPairs}
-        pairsBlocked={pairsBlocked}
       />
 
       <IssuersSection issuers={issuers} underlierName={info?.name ?? `RWA ${rwaId}`} />
@@ -494,16 +490,10 @@ function TradfiSection({
   underlierName,
   underlierSymbol,
   markets,
-  marketPairs,
-  numMarketPairs,
-  pairsBlocked,
 }: {
   underlierName: string;
   underlierSymbol: string | null;
   markets: TradfiMarket[];
-  marketPairs: AssetDesk["marketPairs"];
-  numMarketPairs: number | null;
-  pairsBlocked: boolean;
 }) {
   return (
     <DeskSection
@@ -559,49 +549,6 @@ function TradfiSection({
             ))}
           </TableBody>
         </Table>
-      )}
-
-      {marketPairs.length > 0 ? (
-        <div className="flex flex-col gap-2">
-          <h3 className="text-sm font-medium">Reported market pairs</h3>
-          <p className="text-xs text-muted-foreground">
-            GET /v5/real-world-assets/market-pairs/list
-            {numMarketPairs !== null ? ` · ${numMarketPairs} pairs` : ""}
-          </p>
-          <Table className="text-[13px]">
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead>Venue</TableHead>
-                <TableHead>Pair</TableHead>
-                <TableHead className="hidden sm:table-cell">Category</TableHead>
-                <TableHead className="text-right">Price</TableHead>
-                <TableHead className="text-right">24h vol</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {marketPairs.map((pair) => (
-                <TableRow key={`${pair.exchange}-${pair.marketPair}`}>
-                  <TableCell>{pair.exchange ?? "—"}</TableCell>
-                  <TableCell className="font-mono">{pair.marketPair}</TableCell>
-                  <TableCell className="hidden sm:table-cell">{pair.category ?? "—"}</TableCell>
-                  <TableCell className="text-right font-mono tabular-nums">
-                    {formatUsd(pair.price)}
-                  </TableCell>
-                  <TableCell className="text-right font-mono tabular-nums">
-                    {formatUsd(pair.volume24h, { compact: true })}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      ) : pairsBlocked ? (
-        <p className="text-xs text-muted-foreground">
-          On-chain market pairs are omitted: this CMC plan does not include{" "}
-          <span className="font-mono">/v5/real-world-assets/market-pairs/list</span>.
-        </p>
-      ) : (
-        <p className="text-xs text-muted-foreground">No active market pairs returned.</p>
       )}
     </DeskSection>
   );

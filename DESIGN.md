@@ -59,11 +59,10 @@ flowchart TB
   C -->|otherwise| F
 ```
 
-In-process memos (TTL): universe type counts from `/map`, issuer index for the underlier join, and a 1006 plan-limit skip for `/market-pairs/list`.
+In-process memos (TTL): universe type counts from `/map`, and an issuer index for the underlier join.
 
 ## Honest API limits (do not paper over)
 
-- `/market-pairs/list` is often **1006 / 403**. The UI does not invent a pairs table.
 - `tradfi_markets` is venue identity, not a cash last. Copy: **CMC-reported venue**.
 - No name-search. Ticker, slug, or `rwa_id` only.
 - Two ID spaces: `rwaId` = underlier, `cryptoId` = wrapper token.

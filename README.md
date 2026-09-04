@@ -88,10 +88,9 @@ flowchart TD
 2. `GET /v5/real-world-assets/info`
 3. `GET /v5/real-world-assets/assets/list`
 4. `GET /v5/real-world-assets/quotes/latest`
-5. `GET /v5/real-world-assets/market-pairs/list`
-6. `GET /v5/real-world-assets/issuers/list`
-7. `GET /v5/real-world-assets/issuers`
-8. `GET /v2/cryptocurrency/quotes/latest` — fallback when an RWA token has a `crypto_id` but no price
+5. `GET /v5/real-world-assets/issuers/list`
+6. `GET /v5/real-world-assets/issuers`
+7. `GET /v2/cryptocurrency/quotes/latest` — fallback when an RWA token has a `crypto_id` but no price
 
 Each page exposes **Data & Evidence** with the named endpoint and a truncated response. Sample envelopes: [`evidence/sample-cmc-map-spacex.json`](evidence/sample-cmc-map-spacex.json) and [`evidence/live-nvda-quotes.json`](evidence/live-nvda-quotes.json) (key stripped).
 
@@ -108,7 +107,6 @@ The RWA family is the first time CMC lets you walk **underlier → issuer → on
 
 Friction from live calls on a typical plan:
 
-- `GET /v5/real-world-assets/market-pairs/list` returns **error 1006** — not on the current plan. The desk still works from quotes + issuers. After the first 1006, later desks skip the call instead of repeating it.
 - `tradfi_markets` is venue identity (`exchange`, `ticker`, `market_url`), not a cash-market last price. The UI labels it **CMC-reported venue**.
 - There is **no name-search** parameter. Lookups are ticker, slug, or `rwa_id`.
 - `/issuers/list` does not include tokens; inverting “who wrapped this underlier” requires `/issuers` per issuer unless quotes already attached `issuer_id`.
