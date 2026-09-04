@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+
 export default function ErrorView({
   error,
   reset,
@@ -9,17 +11,16 @@ export default function ErrorView({
 }) {
   return (
     <div className="mx-auto flex min-h-full max-w-lg flex-col gap-3 px-4 py-16">
-      <h1 className="text-xl font-semibold">This page failed to load</h1>
-      <p className="text-sm text-muted-foreground">
-        {error.message || "The CMC request did not complete."}
+      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+        Desk
       </p>
-      <button
-        type="button"
-        onClick={() => reset()}
-        className="inline-flex h-8 w-fit items-center rounded-lg border px-3 text-sm hover:bg-muted"
-      >
+      <h1 className="text-xl font-semibold tracking-tight">This page failed to load</h1>
+      <p className="text-sm text-muted-foreground">
+        {error.message || "The CoinMarketCap request did not complete."}
+      </p>
+      <Button type="button" variant="outline" className="w-fit" onClick={() => reset()}>
         Retry
-      </button>
+      </Button>
     </div>
   );
 }

@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Underlier — tokenized RWA desk",
+  title: "Underlier Desk — tokenized RWA research",
   description:
-    "See the real asset behind every tokenized stock, treasury, and commodity using CoinMarketCap RWA endpoints.",
+    "What real-world asset is being tokenized, who is tokenizing it, and where it can be accessed.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

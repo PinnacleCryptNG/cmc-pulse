@@ -12,15 +12,16 @@ import {
 export function EvidenceDrawer({ evidence }: { evidence: CallEvidence[] }) {
   return (
     <Sheet>
-      <SheetTrigger className="inline-flex h-7 items-center rounded-lg border border-border px-2.5 text-sm hover:bg-muted">
-        CMC calls ({evidence.length})
+      <SheetTrigger className="inline-flex h-7 items-center rounded-md border border-border/80 px-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground">
+        Evidence
+        <span className="ml-1.5 font-mono text-[11px] tabular-nums">{evidence.length}</span>
       </SheetTrigger>
       <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-lg">
         <SheetHeader>
-          <SheetTitle>CMC call evidence</SheetTitle>
+          <SheetTitle>Evidence</SheetTitle>
           <SheetDescription>
-            Named endpoints and the response envelope from this page load. Secrets are
-            never included.
+            Named CoinMarketCap endpoints and the response envelope from this page
+            load. Secrets are never included.
           </SheetDescription>
         </SheetHeader>
         <div className="flex flex-col gap-4 px-4 pb-6">

@@ -31,7 +31,7 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
     <div className="flex flex-col gap-6">
       <p className="text-sm">
         <Link href="/" className="underline">
-          Screener
+          Desk
         </Link>
         {info?.symbol ? (
           <>

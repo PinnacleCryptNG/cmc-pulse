@@ -14,12 +14,11 @@ export function StatusBanner({
   if (!hasKey) {
     return (
       <Alert>
-        <AlertTitle>Waiting on a CoinMarketCap API key</AlertTitle>
+        <AlertTitle>Fixture mode</AlertTitle>
         <AlertDescription>
-          Underlier is running on checked-in fixture responses so the join still
-          works. Put <code>CMC_API_KEY</code> in <code>.env.local</code> to make
-          live calls to <code>pro-api.coinmarketcap.com</code>. No database and no
-          AI model.
+          No <code>CMC_API_KEY</code> is set. The desk is serving checked-in
+          responses so the underlier join still runs. Add a key to{" "}
+          <code>.env.local</code> to read live CoinMarketCap RWA endpoints.
         </AlertDescription>
       </Alert>
     );
@@ -29,7 +28,7 @@ export function StatusBanner({
     const planLimited = warning.toLowerCase().includes("not on this cmc plan");
     return (
       <Alert variant={planLimited ? "default" : "destructive"}>
-        <AlertTitle>{planLimited ? "CMC plan limit" : "CMC response issue"}</AlertTitle>
+        <AlertTitle>{planLimited ? "Plan limit" : "CMC response issue"}</AlertTitle>
         <AlertDescription>{warning}</AlertDescription>
       </Alert>
     );
