@@ -431,6 +431,7 @@ export async function getIssuerBook(issuerId: string): Promise<IssuerBook> {
           ...token,
           underlierName: info.name,
           underlierSymbol: info.symbol,
+          underlierType: String(info.assetType),
         };
       });
     }

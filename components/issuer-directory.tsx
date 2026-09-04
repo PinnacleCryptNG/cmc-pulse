@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ExternalLink } from "@/components/external-link";
-import { EmptyState, PageHeader, Pager, TextLink } from "@/components/desk-chrome";
+import { EmptyState, PageHeader, Pager, StatusFlag, TextLink, DeskLogo } from "@/components/desk-chrome";
 import {
   Table,
   TableBody,
@@ -87,7 +87,8 @@ export function IssuerDirectory({ data }: { data: IssuersResult }) {
               <TableRow className="hover:bg-transparent">
                 <TableHead>Issuer</TableHead>
                 <TableHead className="text-right">Tokenized assets</TableHead>
-                <TableHead className="hidden sm:table-cell">Website / status</TableHead>
+                <TableHead className="hidden sm:table-cell">Status</TableHead>
+                <TableHead className="hidden sm:table-cell">Website</TableHead>
                 <TableHead className="text-right">Research</TableHead>
               </TableRow>
             </TableHeader>
@@ -124,23 +125,24 @@ export function IssuerDirectory({ data }: { data: IssuersResult }) {
 }
 
 function IssuerRow({ issuer }: { issuer: IssuerSummary }) {
-  const status =
-    issuer.active === true ? "Active" : issuer.active === false ? "Inactive" : null;
-
   return (
     <TableRow className="focus-within:bg-muted/60">
       <TableCell className="whitespace-normal">
-        <Link
-          href={`/issuer/${issuer.issuerId}`}
-          className="font-medium text-foreground hover:text-mark"
-        >
-          {issuer.name}
-        </Link>
-        <div className="font-mono text-[11px] text-muted-foreground">{issuer.issuerId}</div>
-        <div className="mt-0.5 text-[11px] text-muted-foreground sm:hidden">
-          {[status, issuer.website ? hostLabel(issuer.website) : null]
-            .filter(Boolean)
-            .join(" · ")}
+        <div className="flex items-center gap-2">
+          <DeskLogo src={issuer.logo} name={issuer.name} size="sm" />
+          <div className="min-w-0">
+            <Link
+              href={`/issuer/${issuer.issuerId}`}
+              className="font-medium text-foreground hover:text-mark"
+            >
+              {issuer.name}
+            </Link>
+            <div className="font-mono text-[11px] text-muted-foreground">{issuer.issuerId}</div>
+            <div className="mt-0.5 text-[11px] text-muted-foreground sm:hidden">
+              <StatusFlag active={issuer.active} />
+              {issuer.website ? ` · ${hostLabel(issuer.website)}` : ""}
+            </div>
+          </div>
         </div>
       </TableCell>
       <TableCell className="text-right">
@@ -148,8 +150,17 @@ function IssuerRow({ issuer }: { issuer: IssuerSummary }) {
           {formatInt(issuer.numTokens)}
         </span>
       </TableCell>
+      <TableCell className="hidden sm:table-cell">
+        <StatusFlag active={issuer.active} />
+      </TableCell>
       <TableCell className="hidden whitespace-normal text-[12px] sm:table-cell">
-        <IssuerMeta status={status} website={issuer.website} />
+        {issuer.website ? (
+          <ExternalLink className="text-mark hover:underline" href={issuer.website}>
+            {hostLabel(issuer.website)}
+          </ExternalLink>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        )}
       </TableCell>
       <TableCell className="text-right">
         <TextLink href={`/issuer/${issuer.issuerId}`} className="text-[12px]">
@@ -157,27 +168,5 @@ function IssuerRow({ issuer }: { issuer: IssuerSummary }) {
         </TextLink>
       </TableCell>
     </TableRow>
-  );
-}
-
-function IssuerMeta({
-  status,
-  website,
-}: {
-  status: string | null;
-  website: string | null;
-}) {
-  if (!status && !website) {
-    return <span className="text-muted-foreground">—</span>;
-  }
-  return (
-    <div className="leading-tight">
-      {status ? <div className="text-muted-foreground">{status}</div> : null}
-      {website ? (
-        <ExternalLink className="text-mark hover:underline" href={website}>
-          {hostLabel(website)}
-        </ExternalLink>
-      ) : null}
-    </div>
   );
 }

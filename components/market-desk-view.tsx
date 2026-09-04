@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatPct, formatType, formatUsd } from "@/lib/cmc/format";
+import { formatType, formatUsd } from "@/lib/cmc/format";
 import type { ScreenerResult, TypeCount } from "@/lib/cmc/types";
 import { SCREENER_SORTS, screenerHref } from "@/lib/search-params";
 import { cn } from "@/lib/utils";
@@ -53,7 +53,8 @@ export function MarketDeskView({ data }: { data: ScreenerResult }) {
   const tokenizedOnPage = data.assets.filter((asset) => asset.hasTokens).length;
   const rangeStart = data.assets.length === 0 ? 0 : data.start;
   const rangeEnd = data.assets.length === 0 ? 0 : data.start + data.assets.length - 1;
-  const showChange = data.assets.some((asset) => asset.quote.percentChange24h !== null);
+  const pageVolume = data.assets.reduce((sum, asset) => sum + (asset.quote.volume24h ?? 0), 0);
+  const hasPageVolume = data.assets.some((asset) => asset.quote.volume24h !== null);
   const typeLabel =
     data.assetType === "all"
       ? "All types"
@@ -66,6 +67,7 @@ export function MarketDeskView({ data }: { data: ScreenerResult }) {
         categories={categories}
         listed={data.assets.length}
         tokenizedOnPage={tokenizedOnPage}
+        pageVolume={hasPageVolume ? pageVolume : null}
         current={current}
       />
 
@@ -220,8 +222,10 @@ export function MarketDeskView({ data }: { data: ScreenerResult }) {
                 <TableRow className="hover:bg-transparent">
                   <TableHead>Underlier</TableHead>
                   <TableHead className="hidden sm:table-cell">Type</TableHead>
-                  <TableHead className="hidden md:table-cell">Tokenized exposure</TableHead>
-                  <TableHead className="text-right">Market data</TableHead>
+                  <TableHead className="hidden md:table-cell">Tokenized</TableHead>
+                  <TableHead className="text-right">24h vol</TableHead>
+                  <TableHead className="hidden text-right md:table-cell">Mkt cap</TableHead>
+                  <TableHead className="hidden text-right lg:table-cell">Rank</TableHead>
                   <TableHead className="text-right">Research</TableHead>
                 </TableRow>
               </TableHeader>
@@ -237,18 +241,10 @@ export function MarketDeskView({ data }: { data: ScreenerResult }) {
                       </Link>
                       <div className="font-mono text-[11px] text-muted-foreground">
                         {asset.symbol}
-                        {asset.rwaRank != null ? ` · #${asset.rwaRank}` : ""}
                         <span className="sm:hidden">
                           {" · "}
                           {formatType(asset.assetType)}
                         </span>
-                      </div>
-                      <div className="mt-0.5 text-[11px] md:hidden">
-                        {asset.hasTokens
-                          ? "Tokenized"
-                          : asset.hasTokens === false
-                            ? "Not tokenized"
-                            : "—"}
                       </div>
                     </TableCell>
                     <TableCell className="hidden text-[12px] text-muted-foreground sm:table-cell">
@@ -258,30 +254,24 @@ export function MarketDeskView({ data }: { data: ScreenerResult }) {
                       {asset.hasTokens ? (
                         <span>Tokenized</span>
                       ) : asset.hasTokens === false ? (
-                        <span className="text-muted-foreground">Not tokenized</span>
+                        <span className="text-muted-foreground">—</span>
                       ) : (
                         <span className="text-muted-foreground">—</span>
                       )}
                     </TableCell>
-                    <TableCell className="text-right font-mono text-[12px] tabular-nums leading-tight">
-                      <div>{formatUsd(asset.quote.price)}</div>
-                      <div className="text-[11px] text-muted-foreground">
-                        {formatUsd(asset.quote.marketCap, { compact: true })}
-                        <span className="ml-1 font-sans">mcap</span>
-                        <span className="mx-1 text-border">·</span>
-                        {formatUsd(asset.quote.volume24h, { compact: true })}
-                        <span className="ml-1 font-sans">vol</span>
-                      </div>
-                      {showChange ? (
-                        <div className={cn("text-[11px]", changeClass(asset.quote.percentChange24h))}>
-                          {formatPct(asset.quote.percentChange24h)}
-                        </div>
-                      ) : null}
+                    <TableCell className="text-right font-mono text-[12px] tabular-nums">
+                      {formatUsd(asset.quote.volume24h, { compact: true })}
+                    </TableCell>
+                    <TableCell className="hidden text-right font-mono text-[12px] tabular-nums md:table-cell">
+                      {formatUsd(asset.quote.marketCap, { compact: true })}
+                    </TableCell>
+                    <TableCell className="hidden text-right font-mono text-[12px] tabular-nums text-muted-foreground lg:table-cell">
+                      {asset.rwaRank != null ? `#${asset.rwaRank}` : "—"}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="inline-flex items-center justify-end gap-0.5">
                         <TextLink href={`/asset/${asset.rwaId}`} className="text-[12px]">
-                          Open desk
+                          View desk
                         </TextLink>
                         <WatchlistButton
                           rwaId={asset.rwaId}
@@ -342,12 +332,14 @@ function MarketSummary({
   categories,
   listed,
   tokenizedOnPage,
+  pageVolume,
   current,
 }: {
   universe: TypeCount | undefined;
   categories: TypeCount[];
   listed: number;
   tokenizedOnPage: number;
+  pageVolume: number | null;
   current: {
     q?: string;
     type: string;
@@ -357,66 +349,71 @@ function MarketSummary({
   };
 }) {
   const mixTotal = categories.reduce((sum, item) => sum + (item.count ?? 0), 0) || 1;
+  const ringStops: string[] = [];
+  let acc = 0;
+  const shades = [80, 50, 32, 18, 10];
+  categories.forEach((item, index) => {
+    const start = (acc / mixTotal) * 100;
+    acc += item.count ?? 0;
+    const end = (acc / mixTotal) * 100;
+    const shade = shades[Math.min(index, shades.length - 1)];
+    ringStops.push(
+      `color-mix(in oklch, var(--foreground) ${shade}%, transparent) ${start}% ${end}%`,
+    );
+  });
 
   return (
-    <section aria-labelledby="summary-heading" className="border-b border-border pb-3">
+    <section aria-labelledby="summary-heading">
       <h2 id="summary-heading" className="sr-only">
         Market summary
       </h2>
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-[auto_auto_1fr] lg:items-end lg:gap-6">
-        <div>
+      <div className="grid grid-cols-2 divide-x divide-y divide-border border border-border md:grid-cols-4 md:divide-y-0">
+        <div className="flex flex-col gap-0.5 px-3 py-2.5">
           <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
             Tracked universe
           </p>
           <p className="font-mono text-[15px] tabular-nums tracking-tight">
             {universe?.count == null ? "—" : universe.count.toLocaleString("en-US")}
-            <span className="ml-1.5 font-sans text-[11px] text-muted-foreground">
-              map underliers
-            </span>
           </p>
+          <p className="text-[11px] text-muted-foreground">Map underliers</p>
         </div>
-        <div>
+        <div className="flex flex-col gap-0.5 px-3 py-2.5">
           <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
             Tokenized in this view
           </p>
           <p className="font-mono text-[15px] tabular-nums tracking-tight">
             {listed === 0 ? "—" : tokenizedOnPage.toLocaleString("en-US")}
-            <span className="ml-1.5 font-sans text-[11px] text-muted-foreground">
-              {listed === 0 ? "no rows" : `of ${listed.toLocaleString("en-US")} listed`}
-            </span>
+          </p>
+          <p className="text-[11px] text-muted-foreground">
+            {listed === 0 ? "No rows" : `of ${listed.toLocaleString("en-US")} listed`}
           </p>
         </div>
-        <div className="min-w-0">
+        <div className="flex flex-col gap-0.5 px-3 py-2.5">
           <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-            Category mix
+            24h tokenized volume
+          </p>
+          <p className="font-mono text-[15px] tabular-nums tracking-tight">
+            {formatUsd(pageVolume, { compact: true })}
+          </p>
+          <p className="text-[11px] text-muted-foreground">In this view</p>
+        </div>
+        <div className="flex flex-col gap-1.5 px-3 py-2.5">
+          <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+            By asset type
           </p>
           {categories.length === 0 ? (
-            <p className="text-[12px] text-muted-foreground">No category mix returned.</p>
+            <p className="text-[12px] text-muted-foreground">No mix returned.</p>
           ) : (
-            <>
+            <div className="flex items-center gap-3">
               <div
-                className="mt-1.5 flex h-1 overflow-hidden bg-muted"
+                className="size-10 shrink-0 rounded-full"
+                style={{
+                  background: `conic-gradient(${ringStops.join(", ")})`,
+                }}
                 role="img"
                 aria-label="Asset category distribution"
-              >
-                {categories.map((item, index) => (
-                  <div
-                    key={item.type}
-                    className={cn(
-                      "h-full",
-                      index === 0
-                        ? "bg-foreground/80"
-                        : index === 1
-                          ? "bg-foreground/45"
-                          : index === 2
-                            ? "bg-foreground/25"
-                            : "bg-foreground/12",
-                    )}
-                    style={{ width: `${((item.count ?? 0) / mixTotal) * 100}%` }}
-                  />
-                ))}
-              </div>
-              <ul className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px]">
+              />
+              <ul className="min-w-0 flex flex-wrap gap-x-2.5 gap-y-0.5 text-[11px]">
                 {categories.map((item) => (
                   <li key={item.type}>
                     <Link
@@ -431,7 +428,7 @@ function MarketSummary({
                   </li>
                 ))}
               </ul>
-            </>
+            </div>
           )}
         </div>
       </div>
@@ -465,11 +462,4 @@ function EmptyUniverse({
       </p>
     </EmptyState>
   );
-}
-
-function changeClass(value: number | null) {
-  if (value === null || !Number.isFinite(value) || value === 0) {
-    return "text-muted-foreground";
-  }
-  return value > 0 ? "text-up" : "text-down";
 }

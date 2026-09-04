@@ -288,6 +288,7 @@ export function parseIssuerToken(token: unknown): IssuerToken | null {
     rwaId: asNumber(pick(record, "rwa_id", "rwaId")),
     underlierName: asString(pick(record, "underlier_name", "underlierName")),
     underlierSymbol: asString(pick(record, "underlier_symbol", "underlierSymbol")),
+    underlierType: asString(pick(record, "underlier_type", "underlierType", "asset_type")),
   };
 }
 

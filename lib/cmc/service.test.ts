@@ -65,4 +65,5 @@ test("issuer book lists every token Backpack minted", async () => {
   assert.equal(book.issuer?.name, "Backpack");
   assert.equal(book.issuer?.tokens[0]?.rwaId, 9);
   assert.equal(book.issuer?.tokens[0]?.underlierName, "SpaceX");
+  assert.equal(book.issuer?.tokens[0]?.underlierType, "stock");
 });

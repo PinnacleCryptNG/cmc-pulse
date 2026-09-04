@@ -1,9 +1,16 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { WatchlistButton } from "@/components/watchlist-button";
-import { EmptyState, IdentityRow, QuoteBar, QuoteStat, SectionHead, TextLink } from "@/components/desk-chrome";
+import {
+  DeskLogo,
+  EmptyState,
+  IdentityRow,
+  QuoteBar,
+  QuoteStat,
+  SectionHead,
+  TextLink,
+} from "@/components/desk-chrome";
 import { ExternalLink } from "@/components/external-link";
 import {
   Table,
@@ -26,7 +33,7 @@ import {
   spreadVsUnderlier,
   summarizeWrappers,
 } from "@/lib/cmc/wrappers";
-import { isHttpsUrl, hostLabel } from "@/lib/safe-url";
+import { hostLabel } from "@/lib/safe-url";
 import { cn } from "@/lib/utils";
 
 export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string }) {
@@ -39,6 +46,7 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
   const showTokenMcap = tokens.some((token) => token.quote.marketCap !== null);
   const showTokenChange = tokens.some((token) => token.quote.percentChange24h !== null);
   const identityBits = identityLine(info);
+  const name = info?.name ?? `RWA ${rwaId}`;
 
   return (
     <div className="flex flex-col gap-4">
@@ -48,12 +56,15 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
           className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-3.5" aria-hidden />
-          Desk
+          Underlier universe
         </Link>
         {info?.symbol ? (
           <>
             <span className="text-muted-foreground"> / </span>
-            <Link href={info.symbol ? `/?q=${encodeURIComponent(info.symbol)}` : "/"} className="font-mono hover:text-mark">
+            <Link
+              href={`/?q=${encodeURIComponent(info.symbol)}`}
+              className="font-mono hover:text-mark"
+            >
               {info.symbol}
             </Link>
           </>
@@ -61,21 +72,26 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
         <span className="text-muted-foreground"> / rwa_id {rwaId}</span>
       </nav>
 
-      <header className="flex flex-col gap-3">
+      <header className="flex flex-col gap-3 border-b border-border pb-3">
         <div className="flex items-start gap-3">
-          <SafeLogo src={info?.logo} name={info?.name ?? `RWA ${rwaId}`} />
           <div className="min-w-0 flex-1">
             <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
               Underlier
             </p>
-            <h1 className="font-mono text-[1.35rem] font-semibold tracking-tight">
-              {info?.symbol ?? `RWA ${rwaId}`}
-            </h1>
+            <h1 className="text-[1.35rem] font-semibold tracking-tight">{name}</h1>
             <p className="mt-0.5 text-[12px] text-muted-foreground">
-              <span className="text-foreground">{info?.name ?? `RWA ${rwaId}`}</span>
-              {identityBits.length > 0 ? ` · ${identityBits.join(" · ")}` : null}
+              {info?.symbol ? (
+                <span className="font-mono text-foreground">{info.symbol}</span>
+              ) : null}
+              {identityBits.length > 0 ? (
+                <>
+                  {info?.symbol ? " · " : null}
+                  {identityBits.join(" · ")}
+                </>
+              ) : null}
             </p>
           </div>
+          <DeskLogo src={info?.logo} name={name} />
           {info ? (
             <WatchlistButton
               rwaId={info.rwaId}
@@ -108,42 +124,48 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
         </p>
       </header>
 
-      <UnderlierIdentity info={info} rwaId={rwaId} />
-      {info?.assetType ? (
-        <p className="text-[12px] text-muted-foreground">
-          <TextLink href={`/?type=${encodeURIComponent(String(info.assetType))}`}>
-            More {formatType(String(info.assetType))} underliers
-          </TextLink>
-        </p>
-      ) : null}
+      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(16rem,18rem)_minmax(0,1fr)_minmax(15rem,17rem)] lg:items-start">
+        <div className="order-2 lg:order-1">
+          <UnderlierIdentity info={info} rwaId={rwaId} />
+          {info?.assetType ? (
+            <p className="mt-3 text-[12px] text-muted-foreground">
+              <TextLink href={`/?type=${encodeURIComponent(String(info.assetType))}`}>
+                More {formatType(String(info.assetType))} underliers
+              </TextLink>
+            </p>
+          ) : null}
+        </div>
 
-      <TokenizedExposure
-        tokens={tokens}
-        underlierPrice={desk.quote.price}
-        underlierName={info?.name ?? `RWA ${rwaId}`}
-        closestId={closestId}
-        mostVolumeId={mostVolumeId}
-        showMcap={showTokenMcap}
-        showChange={showTokenChange}
-      />
+        <div className="order-1 min-w-0 lg:order-2">
+          <TokenizedExposure
+            tokens={tokens}
+            underlierPrice={desk.quote.price}
+            underlierName={name}
+            closestId={closestId}
+            mostVolumeId={mostVolumeId}
+            showMcap={showTokenMcap}
+            showChange={showTokenChange}
+          />
+        </div>
+
+        <aside className="order-3 flex flex-col gap-6">
+          <TradfiSection
+            underlierName={name}
+            underlierSymbol={info?.symbol ?? null}
+            markets={desk.tradfiMarkets}
+          />
+          <IssuersSection issuers={issuers} underlierName={name} />
+          <EvidenceSection evidence={desk.evidence} pathUsed={desk.pathUsed} />
+        </aside>
+      </div>
 
       <ComparisonSection
-        underlierName={info?.name ?? `RWA ${rwaId}`}
+        underlierName={name}
         underlierSymbol={info?.symbol ?? null}
         underlierPrice={desk.quote.price}
         summary={summary}
         tokens={tokens}
       />
-
-      <TradfiSection
-        underlierName={info?.name ?? `RWA ${rwaId}`}
-        underlierSymbol={info?.symbol ?? null}
-        markets={desk.tradfiMarkets}
-      />
-
-      <IssuersSection issuers={issuers} underlierName={info?.name ?? `RWA ${rwaId}`} />
-
-      <EvidenceSection evidence={desk.evidence} pathUsed={desk.pathUsed} />
     </div>
   );
 }
@@ -190,20 +212,20 @@ function UnderlierIdentity({ info, rwaId }: { info: AssetInfo | null; rwaId: str
   return (
     <DeskSection
       id="underlier"
-      kicker="Real-world asset"
+      kicker="About the underlier"
       title="Underlier"
       description="The instrument being tokenized — not the on-chain wrapper."
     >
-      <dl className="grid gap-x-8 gap-y-1.5 sm:grid-cols-2">
+      {about ? (
+        <p className="text-[13px] text-muted-foreground">{about}</p>
+      ) : (
+        <p className="text-[13px] text-muted-foreground">No About block returned for this underlier.</p>
+      )}
+      <dl className="mt-2 grid gap-y-1.5">
         {rows.map((row) => (
           <IdentityRow key={row.label} label={row.label} value={row.value} />
         ))}
       </dl>
-      {about ? (
-        <p className="max-w-3xl text-[13px] text-muted-foreground">{about}</p>
-      ) : (
-        <p className="text-[13px] text-muted-foreground">No About block returned for this underlier.</p>
-      )}
     </DeskSection>
   );
 }
@@ -245,30 +267,28 @@ function TokenizedExposure({
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
-              <TableHead>Wrapper</TableHead>
+              <TableHead>Token</TableHead>
               <TableHead className="hidden sm:table-cell">Issuer</TableHead>
               <TableHead className="text-right">Price</TableHead>
               {showChange ? (
                 <TableHead className="hidden text-right md:table-cell">24h</TableHead>
               ) : null}
-              {showMcap ? (
-                <TableHead className="hidden text-right md:table-cell">Mkt cap</TableHead>
-              ) : null}
               <TableHead className="hidden text-right md:table-cell">24h vol</TableHead>
-              <TableHead className="text-right">Vs underlier</TableHead>
+              {showMcap ? (
+                <TableHead className="hidden text-right lg:table-cell">Mkt cap</TableHead>
+              ) : null}
+              <TableHead className="text-right">Research</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {tokens.map((token) => {
-              const spread = spreadVsUnderlier(token.quote.price, underlierPrice);
               const isClosest =
-                closestId !== null &&
-                closestId !== undefined &&
-                token.cryptoId === closestId;
+                closestId !== null && closestId !== undefined && token.cryptoId === closestId;
               const isMostVolume =
                 mostVolumeId !== null &&
                 mostVolumeId !== undefined &&
                 token.cryptoId === mostVolumeId;
+              const spread = spreadVsUnderlier(token.quote.price, underlierPrice);
               return (
                 <TableRow
                   key={`${token.cryptoId}-${token.symbol}-${token.issuerId}`}
@@ -288,8 +308,6 @@ function TokenizedExposure({
                       ) : (
                         (token.issuerName ?? "Issuer not named")
                       )}
-                      {" · "}
-                      {formatUsd(token.quote.volume24h, { compact: true })} vol
                     </div>
                   </TableCell>
                   <TableCell className="hidden whitespace-normal sm:table-cell">
@@ -303,21 +321,15 @@ function TokenizedExposure({
                     ) : (
                       (token.issuerName ?? "—")
                     )}
-                    <div className="mt-0.5 flex flex-wrap gap-1">
-                      {isClosest ? (
-                        <Badge variant="outline" className="font-normal">
-                          Closest
-                        </Badge>
-                      ) : null}
-                      {isMostVolume ? (
-                        <Badge variant="secondary" className="font-normal">
-                          Most volume
-                        </Badge>
-                      ) : null}
+                    <div className="mt-0.5 text-[11px] text-muted-foreground">
+                      {[isClosest ? "Closest" : null, isMostVolume ? "Most volume" : null]
+                        .filter(Boolean)
+                        .join(" · ")}
                     </div>
                   </TableCell>
                   <TableCell className="text-right font-mono tabular-nums">
                     {formatUsd(token.quote.price)}
+                    <div className={cn("text-[11px]", spreadClass(spread))}>{formatPct(spread)}</div>
                   </TableCell>
                   {showChange ? (
                     <TableCell
@@ -329,24 +341,22 @@ function TokenizedExposure({
                       {formatPct(token.quote.percentChange24h)}
                     </TableCell>
                   ) : null}
-                  {showMcap ? (
-                    <TableCell className="hidden text-right font-mono tabular-nums md:table-cell">
-                      {formatUsd(token.quote.marketCap, { compact: true })}
-                    </TableCell>
-                  ) : null}
                   <TableCell className="hidden text-right font-mono tabular-nums md:table-cell">
                     {formatUsd(token.quote.volume24h, { compact: true })}
                   </TableCell>
-                  <TableCell
-                    className={cn(
-                      "text-right font-mono tabular-nums",
-                      spreadClass(spread),
+                  {showMcap ? (
+                    <TableCell className="hidden text-right font-mono tabular-nums lg:table-cell">
+                      {formatUsd(token.quote.marketCap, { compact: true })}
+                    </TableCell>
+                  ) : null}
+                  <TableCell className="text-right">
+                    {token.issuerId ? (
+                      <TextLink href={`/issuer/${token.issuerId}`} className="text-[12px]">
+                        View issuer
+                      </TextLink>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
                     )}
-                  >
-                    {formatPct(spread)}
-                    <div className="text-[11px] font-sans font-normal text-muted-foreground sm:hidden">
-                      {isClosest ? "Closest" : isMostVolume ? "Most volume" : null}
-                    </div>
                   </TableCell>
                 </TableRow>
               );
@@ -375,8 +385,8 @@ function ComparisonSection({
     return (
       <DeskSection
         id="comparison"
-        kicker="Underlier ↔ token"
-        title="Comparison"
+        kicker="How it compares"
+        title="Tokenized vs underlier"
         description="Spread versus the average tokenized price of the underlier."
       >
         <EmptyState title="No wrappers to compare">
@@ -386,102 +396,59 @@ function ComparisonSection({
     );
   }
 
+  const closestToken = tokens.find((token) => token.cryptoId === summary.closest?.cryptoId);
+  const volumeToken = tokens.find((token) => token.cryptoId === summary.mostVolume?.cryptoId);
+
   return (
     <DeskSection
       id="comparison"
-      kicker="Underlier ↔ token"
-      title="Comparison"
+      kicker="How it compares"
+      title="Tokenized vs underlier (average)"
       description="Existing spread versus the average tokenized underlier price. Not a cash-market premium."
     >
-      <Table>
-        <TableHeader>
-          <TableRow className="hover:bg-transparent">
-            <TableHead>Leg</TableHead>
-            <TableHead>Instrument</TableHead>
-            <TableHead className="text-right">Price</TableHead>
-            <TableHead className="text-right">Spread</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <TableRow>
-            <TableCell className="text-muted-foreground">Underlier</TableCell>
-            <TableCell className="whitespace-normal">
-              <span className="font-medium">{underlierName}</span>
-              {underlierSymbol ? (
-                <div className="font-mono text-[11px] text-muted-foreground">{underlierSymbol}</div>
-              ) : null}
-              <div className="text-[11px] text-muted-foreground">Average tokenized price</div>
-            </TableCell>
-            <TableCell className="text-right font-mono tabular-nums">
-              {formatUsd(underlierPrice)}
-            </TableCell>
-            <TableCell className="text-right font-mono text-muted-foreground">—</TableCell>
-          </TableRow>
-          {summary.closest ? (
-            <TableRow>
-              <TableCell className="text-muted-foreground">Closest</TableCell>
-              <TableCell className="whitespace-normal">
-                <span className="font-mono font-medium">{summary.closest.symbol}</span>
-                {summary.closest.issuerName ? (
-                  <div className="text-[11px] text-muted-foreground">{summary.closest.issuerName}</div>
-                ) : null}
-              </TableCell>
-              <TableCell className="text-right font-mono tabular-nums">
-                {formatUsd(
-                  tokens.find((token) => token.cryptoId === summary.closest?.cryptoId)?.quote
-                    .price ?? null,
-                )}
-              </TableCell>
-              <TableCell
-                className={cn(
-                  "text-right font-mono tabular-nums",
-                  spreadClass(summary.closest.spreadPct),
-                )}
-              >
-                {formatPct(summary.closest.spreadPct)}
-              </TableCell>
-            </TableRow>
-          ) : null}
-          {summary.mostVolume &&
-          summary.mostVolume.cryptoId !== summary.closest?.cryptoId ? (
-            <TableRow>
-              <TableCell className="text-muted-foreground">Most volume</TableCell>
-              <TableCell className="whitespace-normal">
-                <span className="font-mono font-medium">{summary.mostVolume.symbol}</span>
-                {summary.mostVolume.issuerName ? (
-                  <div className="text-[11px] text-muted-foreground">
-                    {summary.mostVolume.issuerName}
-                  </div>
-                ) : null}
-              </TableCell>
-              <TableCell className="text-right font-mono tabular-nums">
-                {formatUsd(
-                  tokens.find((token) => token.cryptoId === summary.mostVolume?.cryptoId)
-                    ?.quote.price ?? null,
-                )}
-              </TableCell>
-              <TableCell
-                className={cn(
-                  "text-right font-mono tabular-nums",
-                  spreadClass(summary.mostVolume.spreadPct),
-                )}
-              >
-                {formatPct(summary.mostVolume.spreadPct)}
-              </TableCell>
-            </TableRow>
-          ) : summary.mostVolume ? (
-            <TableRow>
-              <TableCell className="text-muted-foreground">Most volume</TableCell>
-              <TableCell colSpan={3} className="text-[13px] text-muted-foreground">
-                Same wrapper as closest
-                {summary.mostVolume.volume24h != null
-                  ? ` · ${formatUsd(summary.mostVolume.volume24h, { compact: true })} 24h vol`
-                  : ""}
-              </TableCell>
-            </TableRow>
-          ) : null}
-        </TableBody>
-      </Table>
+      <div className="grid grid-cols-1 divide-y divide-border border border-border md:grid-cols-3 md:divide-x md:divide-y-0">
+        <div className="px-3 py-2.5">
+          <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+            Average tokenized price
+          </p>
+          <p className="mt-1 font-mono text-[15px] tabular-nums">{formatUsd(underlierPrice)}</p>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">
+            {underlierName}
+            {underlierSymbol ? ` · ${underlierSymbol}` : ""}
+          </p>
+        </div>
+        <div className="px-3 py-2.5">
+          <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+            Closest price
+          </p>
+          <p className="mt-1 font-mono text-[15px] tabular-nums">
+            {formatUsd(closestToken?.quote.price ?? null)}
+            <span className={cn("ml-2 text-[12px]", spreadClass(summary.closest?.spreadPct ?? null))}>
+              {formatPct(summary.closest?.spreadPct ?? null)}
+            </span>
+          </p>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">
+            {summary.closest
+              ? `${summary.closest.symbol}${summary.closest.issuerName ? ` · ${summary.closest.issuerName}` : ""}`
+              : "—"}
+          </p>
+        </div>
+        <div className="px-3 py-2.5">
+          <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+            Most volume
+          </p>
+          <p className="mt-1 font-mono text-[15px] tabular-nums">
+            {formatUsd(volumeToken?.quote.volume24h ?? summary.mostVolume?.volume24h ?? null, {
+              compact: true,
+            })}
+          </p>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">
+            {summary.mostVolume
+              ? `${summary.mostVolume.symbol}${summary.mostVolume.issuerName ? ` · ${summary.mostVolume.issuerName}` : ""}`
+              : "—"}
+          </p>
+        </div>
+      </div>
       <p className="text-[11px] text-muted-foreground">
         {summary.pricedCount} of {summary.tokenCount} wrappers have a tokenized price in this
         payload.
@@ -514,13 +481,9 @@ function TradfiSection({
             <span className="font-mono text-[11px]">{underlierSymbol}</span>
           </>
         ) : null}
-        {" → CMC-reported venue"}
       </p>
-
       {markets.length === 0 ? (
-        <EmptyState title="No CMC-reported venues">
-          No venue identity in this payload.
-        </EmptyState>
+        <p className="text-[12px] text-muted-foreground">No venue identity in this payload.</p>
       ) : (
         <Table>
           <TableHeader>
@@ -538,9 +501,6 @@ function TradfiSection({
               >
                 <TableCell className="whitespace-normal">
                   {market.exchange ?? market.name}
-                  {market.exchange && market.name && market.name !== market.exchange ? (
-                    <div className="text-[11px] text-muted-foreground">{market.name}</div>
-                  ) : null}
                 </TableCell>
                 <TableCell className="font-mono">{market.symbol ?? "—"}</TableCell>
                 <TableCell className="text-right">
@@ -573,67 +533,43 @@ function IssuersSection({
       id="issuers"
       kicker="Who wrapped it"
       title="Issuers"
-      description={`${underlierName} → issuer → tokenized representation → issuer book.`}
+      description={`${underlierName} → issuer → tokenized representation.`}
     >
       {issuers.length === 0 ? (
-        <EmptyState title="No issuers attached">
+        <p className="text-[12px] text-muted-foreground">
           No issuers attached to wrappers in this payload.
-        </EmptyState>
+        </p>
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead>Issuer</TableHead>
-              <TableHead>Tokenized representation</TableHead>
-              <TableHead className="hidden text-right sm:table-cell">Research</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {issuers.map((group) => (
-              <TableRow key={group.key} className="focus-within:bg-muted/60">
-                <TableCell className="whitespace-normal font-medium">
-                  {group.issuerId ? (
-                    <Link
-                      className="text-foreground hover:text-mark"
-                      href={`/issuer/${group.issuerId}`}
-                    >
-                      {group.name}
-                    </Link>
-                  ) : (
-                    group.name
-                  )}
-                </TableCell>
-                <TableCell className="whitespace-normal">
-                  <ul className="flex flex-col gap-0.5">
-                    {group.tokens.map((token) => (
-                      <li key={`${token.cryptoId}-${token.symbol}`} className="font-mono text-[11px]">
-                        {token.symbol}
-                        <span className="ml-1.5 font-sans text-muted-foreground">{token.name}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  {group.issuerId ? (
-                    <TextLink
-                      href={`/issuer/${group.issuerId}`}
-                      className="mt-1 inline-flex text-[12px] sm:hidden"
-                    >
-                      View issuer
-                    </TextLink>
-                  ) : null}
-                </TableCell>
-                <TableCell className="hidden text-right sm:table-cell">
-                  {group.issuerId ? (
-                    <TextLink href={`/issuer/${group.issuerId}`} className="text-[12px]">
-                      View issuer
-                    </TextLink>
-                  ) : (
-                    <span className="text-muted-foreground">—</span>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <ul className="flex flex-col divide-y divide-border border border-border">
+          {issuers.map((group) => (
+            <li key={group.key} className="flex items-baseline justify-between gap-3 px-3 py-2">
+              <div className="min-w-0">
+                {group.issuerId ? (
+                  <Link
+                    className="font-medium text-foreground hover:text-mark"
+                    href={`/issuer/${group.issuerId}`}
+                  >
+                    {group.name}
+                  </Link>
+                ) : (
+                  <span className="font-medium">{group.name}</span>
+                )}
+                <p className="font-mono text-[11px] text-muted-foreground">
+                  {group.tokens.map((token) => token.symbol).join(" · ")}
+                </p>
+              </div>
+              {group.issuerId ? (
+                <TextLink href={`/issuer/${group.issuerId}`} className="shrink-0 text-[12px]">
+                  View issuer
+                </TextLink>
+              ) : (
+                <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
+                  {group.tokens.length}
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
       )}
     </DeskSection>
   );
@@ -651,47 +587,25 @@ function EvidenceSection({
       id="evidence"
       kicker="Data provenance"
       title="Evidence"
-      description="These relationships come from named CoinMarketCap RWA calls on this page load. Secrets are never included."
+      description="Named CoinMarketCap RWA calls on this page load."
     >
       <p className="text-[11px] text-muted-foreground">
-        Tokenized quotes path: <span className="font-mono">{pathUsed}</span>
+        Quotes path: <span className="font-mono">{pathUsed}</span>
       </p>
       {evidence.length === 0 ? (
-        <EmptyState title="No call evidence">No CMC call evidence on this page load.</EmptyState>
+        <p className="text-[12px] text-muted-foreground">No CMC call evidence on this page load.</p>
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead>Endpoint</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="hidden sm:table-cell">Source</TableHead>
-              <TableHead className="hidden text-right md:table-cell">Latency</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {evidence.map((item, index) => (
-              <TableRow key={`${item.endpoint}-${index}`}>
-                <TableCell className="whitespace-normal font-mono text-[11px]">
-                  {item.endpoint}
-                  {item.errorMessage ? (
-                    <div className="font-sans text-[11px] text-destructive">{item.errorMessage}</div>
-                  ) : null}
-                </TableCell>
-                <TableCell>
-                  {item.ok ? (
-                    <span>HTTP {item.httpStatus}</span>
-                  ) : (
-                    <span className="text-destructive">HTTP {item.httpStatus}</span>
-                  )}
-                </TableCell>
-                <TableCell className="hidden capitalize sm:table-cell">{item.source}</TableCell>
-                <TableCell className="hidden text-right font-mono tabular-nums md:table-cell">
-                  {item.elapsedMs}ms
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <ul className="flex flex-col gap-1.5">
+          {evidence.map((item, index) => (
+            <li key={`${item.endpoint}-${index}`} className="text-[11px]">
+              <span className="font-mono">{item.endpoint}</span>
+              <span className="ml-2 text-muted-foreground">
+                {item.ok ? `HTTP ${item.httpStatus}` : `error ${item.httpStatus}`}
+                {` · ${item.elapsedMs}ms`}
+              </span>
+            </li>
+          ))}
+        </ul>
       )}
     </DeskSection>
   );
@@ -715,22 +629,6 @@ function DeskSection({
       <SectionHead id={id} kicker={kicker} title={title} description={description} />
       {children}
     </section>
-  );
-}
-
-function SafeLogo({ src, name }: { src: string | null | undefined; name: string }) {
-  if (!isHttpsUrl(src)) return null;
-  return (
-    // CMC host is not in next/image remotePatterns; native img keeps this presentation-only.
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={src}
-      alt=""
-      title={name}
-      width={36}
-      height={36}
-      className="mt-0.5 size-9 shrink-0 border border-border bg-surface object-contain p-0.5"
-    />
   );
 }
 

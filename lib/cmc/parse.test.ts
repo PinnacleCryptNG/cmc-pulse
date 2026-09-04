@@ -111,6 +111,7 @@ test("issuer inversion joins tokens back to an rwa_id", () => {
           rwaId: 9,
           underlierName: null,
           underlierSymbol: null,
+          underlierType: null,
         },
       ],
     },

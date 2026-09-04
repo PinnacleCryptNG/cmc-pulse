@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
+import { isHttpsUrl } from "@/lib/safe-url";
 import { cn } from "@/lib/utils";
 
 export function PageHeader({
@@ -202,6 +203,50 @@ export function IdentityRow({ label, value }: { label: string; value: ReactNode 
       <dd className="min-w-0 break-words text-foreground">{value}</dd>
     </div>
   );
+}
+
+export function DeskLogo({
+  src,
+  name,
+  size = "md",
+}: {
+  src: string | null | undefined;
+  name: string;
+  size?: "sm" | "md";
+}) {
+  if (!isHttpsUrl(src)) return null;
+  const dim = size === "sm" ? "size-6" : "size-9";
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt=""
+      title={name}
+      width={size === "sm" ? 24 : 36}
+      height={size === "sm" ? 24 : 36}
+      className={`${dim} shrink-0 border border-border bg-surface object-contain p-0.5`}
+    />
+  );
+}
+
+export function StatusFlag({ active }: { active: boolean | null }) {
+  if (active === true) {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-[11px] text-up">
+        <span className="size-1.5 bg-up" aria-hidden />
+        Active
+      </span>
+    );
+  }
+  if (active === false) {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
+        <span className="size-1.5 bg-muted-foreground/50" aria-hidden />
+        Inactive
+      </span>
+    );
+  }
+  return <span className="text-muted-foreground">—</span>;
 }
 
 export function LoadingShell({ children }: { children: ReactNode }) {

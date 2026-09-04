@@ -67,7 +67,7 @@ export function SiteHeader({
             <span
               className={cn(
                 "mr-1.5 inline-block size-1.5 align-middle",
-                source === "live" ? "bg-mark" : "bg-muted-foreground/50",
+                source === "live" ? "bg-up" : "bg-muted-foreground/50",
               )}
               aria-hidden
             />

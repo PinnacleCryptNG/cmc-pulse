@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { ExternalLink } from "@/components/external-link";
-import { EmptyState, SectionHead, TextLink } from "@/components/desk-chrome";
+import { DeskLogo, EmptyState, SectionHead, StatusFlag, TextLink } from "@/components/desk-chrome";
 import {
   Table,
   TableBody,
@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatInt } from "@/lib/cmc/format";
+import { formatInt, formatType } from "@/lib/cmc/format";
 import type { IssuerBook, IssuerToken } from "@/lib/cmc/types";
 import { hostLabel, isHttpsUrl } from "@/lib/safe-url";
 
@@ -22,13 +22,7 @@ export function IssuerBookView({ book }: { book: IssuerBook }) {
   const shown = tokens.length;
   const indexed = issuer.numTokens ?? issuer.totalSize;
   const truncated = issuer.hasMore || (indexed !== null && shown < indexed);
-  const status =
-    issuer.active === true ? "Active" : issuer.active === false ? "Inactive" : null;
   const website = issuer.website && isHttpsUrl(issuer.website) ? issuer.website : null;
-  const identity = [
-    status,
-    indexed != null ? `${formatInt(indexed)} indexed tokens` : null,
-  ].filter((bit): bit is string => Boolean(bit));
 
   return (
     <div className="flex flex-col gap-4">
@@ -44,41 +38,59 @@ export function IssuerBookView({ book }: { book: IssuerBook }) {
         <span className="text-foreground">{issuer.name}</span>
       </nav>
 
-      <header className="border-b border-border pb-3">
+      <header className="flex flex-col gap-4 border-b border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-start gap-3">
-          <SafeLogo src={issuer.logo} name={issuer.name} />
-          <div className="min-w-0 flex-1">
+          <DeskLogo src={issuer.logo} name={issuer.name} />
+          <div className="min-w-0">
             <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
               Issuer book
             </p>
-            <h1 className="text-[1.35rem] font-semibold tracking-tight">
-              {issuer.name}
-            </h1>
+            <h1 className="text-[1.35rem] font-semibold tracking-tight">{issuer.name}</h1>
             <p className="mt-0.5 font-mono text-[11px] text-muted-foreground">
               issuer_id {issuer.issuerId}
             </p>
-            {identity.length > 0 || website ? (
-              <p className="mt-1.5 text-[12px] text-muted-foreground">
-                {identity.join(" · ")}
-                {website ? (
-                  <>
-                    {identity.length > 0 ? " · " : null}
-                    <ExternalLink className="text-mark hover:underline" href={website}>
-                      {hostLabel(website)}
-                    </ExternalLink>
-                  </>
-                ) : null}
-              </p>
-            ) : null}
           </div>
         </div>
+        <dl className="flex flex-wrap gap-x-6 gap-y-2 text-[12px] sm:justify-end">
+          {website ? (
+            <div>
+              <dt className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                Website
+              </dt>
+              <dd>
+                <ExternalLink className="text-mark hover:underline" href={website}>
+                  {hostLabel(website)}
+                </ExternalLink>
+              </dd>
+            </div>
+          ) : null}
+          <div>
+            <dt className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+              Status
+            </dt>
+            <dd>
+              <StatusFlag active={issuer.active} />
+            </dd>
+          </div>
+          <div>
+            <dt className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+              Indexed by CMC
+            </dt>
+            <dd className="font-mono text-[15px] tabular-nums tracking-tight">
+              {formatInt(indexed)}
+              <span className="ml-1.5 font-sans text-[11px] text-muted-foreground">
+                tokenized assets
+              </span>
+            </dd>
+          </div>
+        </dl>
       </header>
 
       <section className="flex flex-col gap-2.5" aria-labelledby="tokenization-heading">
         <SectionHead
           id="tokenization-heading"
           kicker="Underlier → tokenized representation"
-          title="What real-world assets does this issuer tokenize?"
+          title="Real-world assets tokenized by this issuer"
           description={
             truncated
               ? `Showing ${shown.toLocaleString("en-US")} of ${(indexed ?? shown).toLocaleString("en-US")} indexed tokens.`
@@ -95,7 +107,9 @@ export function IssuerBookView({ book }: { book: IssuerBook }) {
             <TableHeader>
               <TableRow className="hover:bg-transparent">
                 <TableHead>Underlier</TableHead>
+                <TableHead className="hidden sm:table-cell">Type</TableHead>
                 <TableHead>Token</TableHead>
+                <TableHead className="hidden md:table-cell">Notes</TableHead>
                 <TableHead className="text-right">Research</TableHead>
               </TableRow>
             </TableHeader>
@@ -113,6 +127,7 @@ export function IssuerBookView({ book }: { book: IssuerBook }) {
 
 function TokenRow({ token }: { token: IssuerToken }) {
   const underlierLabel = token.underlierName ?? (token.rwaId !== null ? `rwa_id ${token.rwaId}` : null);
+  const typeLabel = token.underlierType ? formatType(token.underlierType) : null;
 
   return (
     <TableRow className="focus-within:bg-muted/60">
@@ -132,13 +147,16 @@ function TokenRow({ token }: { token: IssuerToken }) {
         ) : token.rwaId !== null ? (
           <div className="font-mono text-[11px] text-muted-foreground">rwa_id {token.rwaId}</div>
         ) : null}
-      </TableCell>
-      <TableCell className="whitespace-normal">
-        <div className="font-medium">{token.name}</div>
-        <div className="font-mono text-[11px] text-muted-foreground">
-          {token.symbol}
-          {token.cryptoId != null ? ` · crypto_id ${token.cryptoId}` : ""}
+        <div className="mt-0.5 text-[11px] text-muted-foreground sm:hidden">
+          {typeLabel ?? "—"}
         </div>
+      </TableCell>
+      <TableCell className="hidden text-[12px] text-muted-foreground sm:table-cell">
+        {typeLabel ?? "—"}
+      </TableCell>
+      <TableCell className="font-mono">{token.symbol}</TableCell>
+      <TableCell className="hidden max-w-md whitespace-normal text-[12px] text-muted-foreground md:table-cell">
+        {token.name}
       </TableCell>
       <TableCell className="text-right">
         {token.rwaId !== null ? (
@@ -162,19 +180,4 @@ function sortTokens(tokens: IssuerToken[]): IssuerToken[] {
     if (byName !== 0) return byName;
     return a.symbol.localeCompare(b.symbol);
   });
-}
-
-function SafeLogo({ src, name }: { src: string | null; name: string }) {
-  if (!isHttpsUrl(src)) return null;
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={src}
-      alt=""
-      title={name}
-      width={36}
-      height={36}
-      className="mt-0.5 size-9 shrink-0 border border-border bg-surface object-contain p-0.5"
-    />
-  );
 }
