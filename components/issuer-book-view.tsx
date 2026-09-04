@@ -55,7 +55,7 @@ export function IssuerBookView({ book }: { book: IssuerBook }) {
           This issuer mints tokenized representations of real-world underliers.
         </p>
         <dl className="grid gap-x-8 gap-y-2 text-sm sm:grid-cols-2">
-          <IdentityRow label="Indexed tokens" value={formatInt(indexed)} />
+          <IdentityRow label="Indexed tokens" value={formatInt(indexed ?? shown)} />
           {issuer.active !== null ? (
             <IdentityRow label="Status" value={issuer.active ? "Active" : "Inactive"} />
           ) : null}
