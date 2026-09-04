@@ -514,7 +514,7 @@ function TradfiSection({
       id="tradfi"
       kicker="Traditional markets"
       title="TradFi market"
-      description="Venue identity for the real-world instrument. This CMC RWA payload does not include a reliable cash last."
+      description="Venue reported by CMC; not a cash last."
     >
       <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
         <span className="text-foreground">{underlierName}</span>
@@ -522,7 +522,7 @@ function TradfiSection({
           <span className="font-mono text-xs">{underlierSymbol}</span>
         ) : null}
         <ArrowDown className="size-3.5" aria-hidden />
-        <span>Traditional listing</span>
+        <span>CMC-reported venue</span>
       </p>
 
       {markets.length === 0 ? (
@@ -668,7 +668,7 @@ function IssuersSection({
                       className="mt-1 inline-flex text-xs underline underline-offset-4 sm:hidden"
                       href={`/issuer/${group.issuerId}`}
                     >
-                      Open issuer book
+                      View issuer
                     </Link>
                   ) : null}
                 </TableCell>
@@ -678,7 +678,7 @@ function IssuersSection({
                       className="inline-flex items-center gap-1 underline underline-offset-4"
                       href={`/issuer/${group.issuerId}`}
                     >
-                      Open book
+                      View issuer
                       <ArrowRight className="size-3" aria-hidden />
                     </Link>
                   ) : (

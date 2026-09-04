@@ -142,14 +142,19 @@ export function ScreenerView({ data }: { data: ScreenerResult }) {
           <>
             <div className="flex flex-wrap items-baseline justify-between gap-2 text-xs text-muted-foreground">
               <p>
+                Showing{" "}
                 <span className="tabular-nums text-foreground">
                   {rangeStart.toLocaleString("en-US")}–{rangeEnd.toLocaleString("en-US")}
                 </span>
-                {" of "}
-                <span className="tabular-nums">
-                  {data.totalSize.toLocaleString("en-US")}
-                </span>
-                {" matching underliers"}
+                {data.query || data.assetType !== "all" ? (
+                  <>
+                    {" of "}
+                    <span className="tabular-nums">
+                      {data.totalSize.toLocaleString("en-US")}
+                    </span>
+                    {" matching this lookup"}
+                  </>
+                ) : null}
               </p>
               <p>Click a column to sort.</p>
             </div>

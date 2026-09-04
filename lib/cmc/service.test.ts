@@ -21,6 +21,20 @@ test("screener search resolves NVDA by ticker", async () => {
   assert.equal(result.assets[0].name, "NVIDIA");
 });
 
+test("screener search for an unknown ticker returns no rows", async () => {
+  const result = await getScreener({ q: "ZZZZNOPE" });
+  assert.equal(result.assets.length, 0);
+});
+
+test("screener search resolves TLT to rwa_id 204", async () => {
+  const result = await getScreener({ q: "TLT" });
+  assert.equal(result.assets.length, 1);
+  assert.equal(result.assets[0].symbol, "TLT");
+  assert.equal(result.assets[0].rwaId, 204);
+  const desk = await getAssetDesk("204");
+  assert.equal(desk.info?.symbol, "TLT");
+});
+
 test("asset desk joins NVDA underlier to Ondo and xStock tokens", async () => {
   const desk = await getAssetDesk("2");
   assert.equal(desk.source, "fixture");

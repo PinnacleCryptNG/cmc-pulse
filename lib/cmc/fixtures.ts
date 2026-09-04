@@ -202,7 +202,7 @@ const ASSETS: RawAsset[] = [
     ],
   },
   {
-    rwa_id: 15,
+    rwa_id: 204,
     name: "iShares 20+ Year Treasury Bond ETF",
     symbol: "TLT",
     slug: "ishares-20-year-treasury-bond-etf",
@@ -230,7 +230,7 @@ const ASSETS: RawAsset[] = [
         crypto_id: 32201,
         name: "iShares 20+ Year Treasury Bond Tokenized ETF (Ondo)",
         symbol: "TLTon",
-        rwa_id: 15,
+        rwa_id: 204,
         issuer_id: ONDO_ID,
         issuer_name: "Ondo",
         price: 85.93,
@@ -354,7 +354,7 @@ const ISSUERS = [
         crypto_id: 32201,
         name: "iShares 20+ Year Treasury Bond Tokenized ETF (Ondo)",
         symbol: "TLTon",
-        rwa_id: 15,
+        rwa_id: 204,
       },
       {
         crypto_id: 33001,

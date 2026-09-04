@@ -213,6 +213,24 @@ export async function getScreener(input: {
   const parsed = parseListPayload(listCall.payload);
 
   if (!listCall.ok) {
+    if (query) {
+      return {
+        source: listCall.source,
+        pathUsed: "none",
+        query,
+        assetType,
+        sort,
+        sortDir,
+        start,
+        limit,
+        totalSize: 0,
+        hasMore: false,
+        typeCounts: counts.counts,
+        assets: [],
+        evidence,
+        warning: warningFrom([listCall]),
+      };
+    }
     const mapFallback = await cmcGet(MAP, {
       start,
       limit,

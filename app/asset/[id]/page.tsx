@@ -13,6 +13,11 @@ export default async function AssetPage({
   const { id } = await params;
   if (!/^\d+$/.test(id)) notFound();
   const desk = await getAssetDesk(id);
+  const hasQuote =
+    desk.quote.price !== null ||
+    desk.quote.marketCap !== null ||
+    desk.quote.volume24h !== null;
+  if (!desk.info && desk.tokens.length === 0 && !hasQuote) notFound();
 
   return (
     <AppFrame evidence={desk.evidence} source={desk.source} warning={desk.warning}>

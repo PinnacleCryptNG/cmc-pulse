@@ -68,8 +68,7 @@ export function IssuerDirectory({ data }: { data: IssuersResult }) {
           </p>
         </div>
       ) : (
-        <>
-          <Table className="text-[13px]">
+        <Table className="text-[13px]">
             <TableHeader>
               <TableRow className="hover:bg-transparent">
                 <TableHead>Issuer</TableHead>
@@ -138,6 +137,8 @@ export function IssuerDirectory({ data }: { data: IssuersResult }) {
               ))}
             </TableBody>
           </Table>
+      )}
+      {data.start > 1 || data.hasMore ? (
           <div className="flex items-center justify-between text-sm">
             {data.start > 1 ? (
               <Link
@@ -162,8 +163,7 @@ export function IssuerDirectory({ data }: { data: IssuersResult }) {
               <span />
             )}
           </div>
-        </>
-      )}
+      ) : null}
     </div>
   );
 }
