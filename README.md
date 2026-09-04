@@ -8,7 +8,7 @@ A research desk for the **Build with CMC: API Hackathon**, track **Real World As
 
 CMC already publishes two views that do not meet: ranked *underliers* and ranked *wrapper tokens*. Tickers collide — `NVDA` is a Nasdaq stock and several issuer tokens; `SPCX` is a listing and a Backpack token. Underlier Desk resolves `rwa_id`, then joins metadata, tokenized quotes, issuer tokens, and the TradFi venue CMC actually reports.
 
-There is no splash screen. `/` is the ranked overview. The wordmark in the header is the name; a small tab icon is enough.
+There is no splash screen. `/` is the Market Desk: universe summary plus the underlier table.
 
 ## Run locally
 
@@ -36,23 +36,23 @@ Never commit the key. `.env*` is gitignored; `.env.example` is not. The key is a
 
 | Route | What it is |
 |---|---|
-| `/` | Overview — map counts plus the ranked book of 50 underliers |
-| `/explore` | Screener: ticker / slug / `rwa_id`, type filter, sort |
+| `/` | Market Desk — universe summary, lookup, type/sort, underlier table |
+| `/explore` | Alias; redirects to `/` with the same query string |
 | `/classes` | CMC asset-type taxonomy from `/map` |
 | `/watchlist` | Browser-local saved names (no live quotes on this page) |
 | `/asset/[id]` | Underlier desk: wrappers vs average tokenized price, issuers, venue |
 | `/issuers` | Issuer directory |
 | `/issuer/[id]` | Issuer book of tokenized underliers (no quotes on those rows) |
 
-Old `/?q=` / `?type=` / `?sort=` / `?dir=` / `?start=` query strings redirect to `/explore`.
+Query strings `q`, `type`, `sort`, `dir`, and `start` belong on `/`.
 
 ## Judge path (under two minutes)
 
-1. Open `/` (Overview). Stats and leaderboards are from **one** ranked `assets/list` pull of 50 rows, plus cached map type counts.
-2. Open Explorer and search `NVDA` (or `GOLD`, `SPCX`, `TLT`).
+1. Open `/` (Market Desk). Summary plus the ranked underlier table from **one** `assets/list` pull, plus cached map type counts.
+2. Search `NVDA` (or `GOLD`, `SPCX`, `TLT`) on the desk.
 3. Open the asset desk. Compare issuer wrappers to the average tokenized price.
 4. Open an issuer book, then an underlier from that book.
-5. Open **Data & Evidence** — named CoinMarketCap endpoints and truncated envelopes from this load.
+5. Open **Evidence** — named CoinMarketCap endpoints and truncated envelopes from this load.
 
 ## Architecture
 
@@ -61,8 +61,7 @@ Pages are React Server Components. They call `lib/cmc/service.ts` on the server.
 ```mermaid
 flowchart LR
   subgraph ui [App Router RSC]
-    Home["/ Overview"]
-    Explore["/explore Screener"]
+    Home["/ Market Desk"]
     Desk["/asset/id Desk"]
     Classes["/classes"]
     Watch["/watchlist"]
@@ -79,7 +78,6 @@ flowchart LR
     Crypto["/v2/cryptocurrency/quotes/latest"]
   end
   Home --> Service
-  Explore --> Service
   Desk --> Service
   Classes --> Service
   Issuers --> Service
@@ -93,7 +91,7 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-  A[Land on Overview] --> B[Universe: type counts + ranked underliers]
+  A[Land on Market Desk] --> B[Universe: type counts + ranked underliers]
   B --> C[Search ticker / slug / rwa_id]
   C --> D[Asset desk]
   D --> E[Issuer wrappers vs average tokenized price]

@@ -43,8 +43,8 @@ export function IssuerBookView({ book }: { book: IssuerBook }) {
           Issuers
         </Link>
         <span className="text-muted-foreground">/</span>
-        <TextLink href="/explore" className="text-muted-foreground no-underline hover:text-foreground">
-          Explorer
+        <TextLink href="/" className="text-muted-foreground no-underline hover:text-foreground">
+          Desk
         </TextLink>
       </nav>
 

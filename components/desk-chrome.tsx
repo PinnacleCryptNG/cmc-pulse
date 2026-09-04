@@ -161,13 +161,15 @@ export function TextLink({
 export function Pager({
   prevHref,
   nextHref,
+  className,
 }: {
   prevHref?: string | null;
   nextHref?: string | null;
+  className?: string;
 }) {
   if (!prevHref && !nextHref) return null;
   return (
-    <div className="flex items-center justify-between text-xs">
+    <div className={cn("flex items-center justify-between gap-2 text-xs", className)}>
       {prevHref ? (
         <Link
           href={prevHref}

@@ -1,8 +1,12 @@
-import { redirect } from "next/navigation";
 import { AppFrame } from "@/components/app-frame";
-import { OverviewView } from "@/components/overview-view";
+import { MarketDeskView } from "@/components/market-desk-view";
 import { getScreener } from "@/lib/cmc/service";
-import { firstParam, parseAssetTypeParam, screenerHref } from "@/lib/search-params";
+import {
+  firstParam,
+  parseAssetTypeParam,
+  parseSortDir,
+  parseSortParam,
+} from "@/lib/search-params";
 
 export const dynamic = "force-dynamic";
 
@@ -12,32 +16,19 @@ export default async function HomePage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
-  if (
-    firstParam(params.q) ||
-    firstParam(params.type) ||
-    firstParam(params.sort) ||
-    firstParam(params.dir) ||
-    firstParam(params.start)
-  ) {
-    redirect(
-      screenerHref(
-        {},
-        {
-          q: firstParam(params.q),
-          type: parseAssetTypeParam(firstParam(params.type)),
-          sort: firstParam(params.sort),
-          dir: firstParam(params.dir),
-          start: firstParam(params.start),
-        },
-      ),
-    );
-  }
-
-  const ranked = await getScreener({ sort: "rwa_rank", sortDir: "asc", limit: 50 });
+  const start = Number(firstParam(params.start) || "1");
+  const data = await getScreener({
+    q: firstParam(params.q),
+    assetType: parseAssetTypeParam(firstParam(params.type)),
+    sort: parseSortParam(firstParam(params.sort)),
+    sortDir: parseSortDir(firstParam(params.dir)),
+    start: Number.isFinite(start) && start > 0 ? start : 1,
+    limit: 50,
+  });
 
   return (
-    <AppFrame evidence={ranked.evidence} source={ranked.source} warning={ranked.warning}>
-      <OverviewView ranked={ranked} />
+    <AppFrame evidence={data.evidence} source={data.source} warning={data.warning}>
+      <MarketDeskView data={data} />
     </AppFrame>
   );
 }

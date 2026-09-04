@@ -44,16 +44,16 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
     <div className="flex flex-col gap-6">
       <nav aria-label="Breadcrumb" className="text-[12px]">
         <Link
-          href="/explore"
+          href="/"
           className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-3.5" aria-hidden />
-          Explorer
+          Desk
         </Link>
         {info?.symbol ? (
           <>
             <span className="text-muted-foreground"> / </span>
-            <Link href={`/explore?q=${encodeURIComponent(info.symbol)}`} className="font-mono hover:text-mark">
+            <Link href={info.symbol ? `/?q=${encodeURIComponent(info.symbol)}` : "/"} className="font-mono hover:text-mark">
               {info.symbol}
             </Link>
           </>
@@ -112,7 +112,7 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
       {info?.assetType ? (
         <p className="text-sm text-muted-foreground">
           <Link
-            href={`/explore?type=${encodeURIComponent(String(info.assetType))}`}
+            href={`/?type=${encodeURIComponent(String(info.assetType))}`}
             className="underline underline-offset-4"
           >
             More {formatType(String(info.assetType))} underliers

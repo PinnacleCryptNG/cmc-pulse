@@ -1,11 +1,8 @@
-import { AppFrame } from "@/components/app-frame";
-import { ScreenerView } from "@/components/screener-view";
-import { getScreener } from "@/lib/cmc/service";
+import { redirect } from "next/navigation";
 import {
   firstParam,
   parseAssetTypeParam,
-  parseSortDir,
-  parseSortParam,
+  screenerHref,
 } from "@/lib/search-params";
 
 export const dynamic = "force-dynamic";
@@ -16,19 +13,16 @@ export default async function ExplorePage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
-  const start = Number(firstParam(params.start) || "1");
-  const data = await getScreener({
-    q: firstParam(params.q),
-    assetType: parseAssetTypeParam(firstParam(params.type)),
-    sort: parseSortParam(firstParam(params.sort)),
-    sortDir: parseSortDir(firstParam(params.dir)),
-    start: Number.isFinite(start) && start > 0 ? start : 1,
-    limit: 50,
-  });
-
-  return (
-    <AppFrame evidence={data.evidence} source={data.source} warning={data.warning}>
-      <ScreenerView data={data} />
-    </AppFrame>
+  redirect(
+    screenerHref(
+      {},
+      {
+        q: firstParam(params.q),
+        type: parseAssetTypeParam(firstParam(params.type)),
+        sort: firstParam(params.sort),
+        dir: firstParam(params.dir),
+        start: firstParam(params.start),
+      },
+    ),
   );
 }

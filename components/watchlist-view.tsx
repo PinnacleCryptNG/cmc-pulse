@@ -31,7 +31,7 @@ export function WatchlistView() {
       {items.length === 0 ? (
         <EmptyState
           title="No saved underliers"
-          actions={<TextLink href="/explore">Open explorer</TextLink>}
+          actions={<TextLink href="/">Open desk</TextLink>}
         >
           Star a row in Explorer or on an asset desk.
         </EmptyState>

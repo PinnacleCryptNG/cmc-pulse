@@ -19,14 +19,16 @@ export function EvidenceDrawer({ evidence }: { evidence: CallEvidence[] }) {
         render={
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             size="sm"
-            className="border-border font-normal text-[12px] tracking-[0.04em] text-muted-foreground hover:text-foreground"
+            className="h-7 px-1.5 font-normal text-[11px] tracking-[0.08em] text-muted-foreground hover:text-foreground"
           />
         }
       >
-        Data & Evidence
-        <span className="ml-1.5 font-mono text-[11px] tabular-nums">{evidence.length}</span>
+        Evidence
+        <span className="ml-1 font-mono text-[10px] tabular-nums text-muted-foreground">
+          {evidence.length}
+        </span>
       </SheetTrigger>
       <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-lg">
         <SheetHeader>

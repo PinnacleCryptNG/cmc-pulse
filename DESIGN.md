@@ -26,8 +26,8 @@ One-line pitch: *See the real asset behind every tokenized stock, treasury, and 
 ## Routes (locked)
 
 ```
-/              → Overview (ranked book of 50; mcap/volume derived in JS)
-/explore       → RWA Explorer (screener)
+/              → Market Desk (summary + screener table)
+/explore       → Redirects to / with the same query string
 /classes       → CMC asset-class taxonomy
 /watchlist     → Browser-local saved underliers
 /asset/[id]    → AssetDeskView
@@ -35,7 +35,7 @@ One-line pitch: *See the real asset behind every tokenized stock, treasury, and 
 /issuer/[id]   → IssuerBookView
 ```
 
-No splash / start page. `/` is the research overview.
+No splash / start page. `/` is the Market Desk.
 
 Data flow: **RSC → `lib/cmc/service.ts`**. Pages do not fetch `/api/rwa/*` from the client. Those BFF routes exist for evidence and debugging only.
 
@@ -71,8 +71,7 @@ In-process memos (TTL): universe type counts from `/map`, and an issuer index fo
 - `tradfi_markets` is venue identity, not a cash last. Copy: **CMC-reported venue**.
 - No name-search. Ticker, slug, or `rwa_id` only.
 - Two ID spaces: `rwaId` = underlier, `cryptoId` = wrapper token.
-- Homepage **Tracked universe** is the map count. Do not show a competing `assets/list` total as if it were the same universe.
-- Homepage leaderboards are **among the ranked book of 50**, not separate CMC sorts. One `getScreener` call.
+- Homepage **Tracked universe** is the map count. **Tokenized in this view** is `hasTokens` among the current table rows, not a map-wide tokenized census.
 - Issuer tokens on the issuer book have **no quotes**. Do not invent market columns there.
 
 ## What “done” means

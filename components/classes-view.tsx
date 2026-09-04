@@ -71,7 +71,7 @@ export function ClassesView({ counts }: { counts: TypeCount[] }) {
                     <span className="text-[12px] text-muted-foreground">None in map</span>
                   ) : (
                     <TextLink
-                      href={`/explore?type=${type}`}
+                      href={`/?type=${type}`}
                       className="inline-flex items-center justify-end gap-1 text-[12px]"
                     >
                       Open
