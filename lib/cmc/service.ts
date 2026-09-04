@@ -40,6 +40,20 @@ let typeCountsMemo: { at: number; counts: TypeCount[]; evidence: CallEvidence[] 
   null;
 let pairsPlanLimitedUntil = 0;
 
+function isMissLookup(call: CmcCall) {
+  const message = (call.evidence.errorMessage || "").toLowerCase();
+  return (
+    !call.ok &&
+    (call.evidence.httpStatus === 400 ||
+      message.includes("invalid parameter") ||
+      message.includes("invalid value"))
+  );
+}
+
+function listHasNoRows(call: CmcCall) {
+  return isMissLookup(call) || (call.ok && parseListPayload(call.payload).assets.length === 0);
+}
+
 function pushEvidence(bucket: CallEvidence[], call: CmcCall) {
   bucket.push(call.evidence);
 }
@@ -217,7 +231,7 @@ export async function getScreener(input: {
         symbol: query.toUpperCase(),
         skip_invalid: "true",
       });
-      if (listCall.ok && parseListPayload(listCall.payload).assets.length === 0) {
+      if (listHasNoRows(listCall)) {
         const slug = query.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
         const slugCall = await cmcGet(LIST, {
           ...listQuery,
@@ -227,7 +241,7 @@ export async function getScreener(input: {
         evidence.push(listCall.evidence);
         listCall = slugCall;
       }
-      if (listCall.ok && parseListPayload(listCall.payload).assets.length === 0) {
+      if (listHasNoRows(listCall)) {
         const mapCall = await cmcGet(MAP, { symbol: query.toUpperCase() });
         evidence.push(mapCall.evidence);
         const mapped = parseMapPayload(mapCall.payload).assets;
@@ -268,7 +282,10 @@ export async function getScreener(input: {
         typeCounts: counts.counts,
         assets: [],
         evidence,
-        warning: warningFrom([listCall]),
+        warning: isMissLookup(listCall)
+          ? hint ??
+            "CMC has no name-search parameter. Underlier tries symbol, slug, then rwa_id."
+          : warningFrom([listCall]),
       };
     }
     const mapFallback = await cmcGet(MAP, {

@@ -33,7 +33,8 @@ export function StatusBanner({
   const warningBanner = warning ? (
     <Alert
       variant={
-        warning.toLowerCase().includes("not on this cmc plan")
+        warning.toLowerCase().includes("not on this cmc plan") ||
+        warning.toLowerCase().includes("no name-search")
           ? "default"
           : "destructive"
       }
@@ -41,7 +42,9 @@ export function StatusBanner({
       <AlertTitle>
         {warning.toLowerCase().includes("not on this cmc plan")
           ? "Plan limit"
-          : "CMC response issue"}
+          : warning.toLowerCase().includes("no name-search")
+            ? "How lookup works"
+            : "CMC response issue"}
       </AlertTitle>
       <AlertDescription>{warning}</AlertDescription>
     </Alert>
