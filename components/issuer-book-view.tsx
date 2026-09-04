@@ -198,6 +198,9 @@ function IdentityRow({ label, value }: { label: string; value: ReactNode }) {
 
 function sortTokens(tokens: IssuerToken[]): IssuerToken[] {
   return [...tokens].sort((a, b) => {
+    const aLinked = a.rwaId !== null ? 0 : 1;
+    const bLinked = b.rwaId !== null ? 0 : 1;
+    if (aLinked !== bLinked) return aLinked - bLinked;
     const byName = (a.underlierName ?? "").localeCompare(b.underlierName ?? "");
     if (byName !== 0) return byName;
     return a.symbol.localeCompare(b.symbol);
