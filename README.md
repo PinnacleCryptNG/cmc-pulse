@@ -32,8 +32,8 @@ Never commit the key. `.env*` is gitignored; `.env.example` is not. The key is a
 
 ## Judge path (under two minutes)
 
-1. Open `/`.
-2. Search `NVDA` (or `GOLD`, `SPCX`, `TLT`).
+1. Open `/` (Desk overview).
+2. Open Explorer and search `NVDA` (or `GOLD`, `SPCX`, `TLT`).
 3. Open the asset desk. Compare issuer wrappers to the average tokenized price.
 4. Open an issuer book, then an underlier from that book.
 5. Open **Data & Evidence** — named CoinMarketCap endpoints and truncated envelopes from this load.
@@ -45,8 +45,11 @@ Pages are React Server Components. They call `lib/cmc/service.ts` on the server.
 ```mermaid
 flowchart LR
   subgraph ui [App Router RSC]
-    Home["/ Screener"]
+    Home["/ Desk overview"]
+    Explore["/explore Screener"]
     Desk["/asset/id Desk"]
+    Classes["/classes"]
+    Watch["/watchlist"]
     Issuers["/issuers Directory"]
     Book["/issuer/id Book"]
   end
@@ -60,7 +63,9 @@ flowchart LR
     Crypto["/v2/cryptocurrency/quotes/latest"]
   end
   Home --> Service
+  Explore --> Service
   Desk --> Service
+  Classes --> Service
   Issuers --> Service
   Book --> Service
   Service --> Client

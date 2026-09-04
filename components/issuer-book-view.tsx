@@ -37,7 +37,7 @@ export function IssuerBookView({ book }: { book: IssuerBook }) {
           <ArrowLeft className="size-3.5" aria-hidden />
           Back to issuers
         </Link>
-        <Link href="/" className="text-muted-foreground hover:text-foreground">
+        <Link href="/explore" className="text-muted-foreground hover:text-foreground">
           Underlier Universe
         </Link>
       </nav>

@@ -1,12 +1,8 @@
+import { redirect } from "next/navigation";
 import { AppFrame } from "@/components/app-frame";
-import { ScreenerView } from "@/components/screener-view";
+import { OverviewView } from "@/components/overview-view";
 import { getScreener } from "@/lib/cmc/service";
-import {
-  firstParam,
-  parseAssetTypeParam,
-  parseSortDir,
-  parseSortParam,
-} from "@/lib/search-params";
+import { firstParam, parseAssetTypeParam, screenerHref } from "@/lib/search-params";
 
 export const dynamic = "force-dynamic";
 
@@ -16,19 +12,40 @@ export default async function HomePage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
-  const start = Number(firstParam(params.start) || "1");
-  const data = await getScreener({
-    q: firstParam(params.q),
-    assetType: parseAssetTypeParam(firstParam(params.type)),
-    sort: parseSortParam(firstParam(params.sort)),
-    sortDir: parseSortDir(firstParam(params.dir)),
-    start: Number.isFinite(start) && start > 0 ? start : 1,
-    limit: 50,
-  });
+  if (
+    firstParam(params.q) ||
+    firstParam(params.type) ||
+    firstParam(params.sort) ||
+    firstParam(params.dir) ||
+    firstParam(params.start)
+  ) {
+    redirect(
+      screenerHref(
+        {},
+        {
+          q: firstParam(params.q),
+          type: parseAssetTypeParam(firstParam(params.type)),
+          sort: firstParam(params.sort),
+          dir: firstParam(params.dir),
+          start: firstParam(params.start),
+        },
+      ),
+    );
+  }
+
+  const [ranked, byVolume, byMcap] = await Promise.all([
+    getScreener({ sort: "rwa_rank", sortDir: "asc", limit: 50 }),
+    getScreener({ sort: "tokenized_volume_24h", sortDir: "desc", limit: 10 }),
+    getScreener({ sort: "tokenized_market_cap", sortDir: "desc", limit: 10 }),
+  ]);
 
   return (
-    <AppFrame evidence={data.evidence} source={data.source} warning={data.warning}>
-      <ScreenerView data={data} />
+    <AppFrame
+      evidence={[...ranked.evidence, ...byVolume.evidence, ...byMcap.evidence]}
+      source={ranked.source}
+      warning={ranked.warning ?? byVolume.warning ?? byMcap.warning}
+    >
+      <OverviewView ranked={ranked} byVolume={byVolume} byMcap={byMcap} />
     </AppFrame>
   );
 }

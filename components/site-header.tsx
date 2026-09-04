@@ -6,6 +6,14 @@ import { EvidenceDrawer } from "@/components/evidence-drawer";
 import type { CallEvidence, DataSource } from "@/lib/cmc/types";
 import { cn } from "@/lib/utils";
 
+const LINKS = [
+  { href: "/", label: "Desk", match: (path: string) => path === "/" || path.startsWith("/asset/") },
+  { href: "/explore", label: "Explorer", match: (path: string) => path.startsWith("/explore") },
+  { href: "/classes", label: "Classes", match: (path: string) => path.startsWith("/classes") },
+  { href: "/watchlist", label: "Watchlist", match: (path: string) => path.startsWith("/watchlist") },
+  { href: "/issuers", label: "Issuers", match: (path: string) => path.startsWith("/issuer") },
+] as const;
+
 export function SiteHeader({
   evidence,
   source,
@@ -14,8 +22,6 @@ export function SiteHeader({
   source: DataSource;
 }) {
   const pathname = usePathname();
-  const onDesk = pathname === "/" || pathname.startsWith("/asset/");
-  const onIssuers = pathname.startsWith("/issuer");
 
   return (
     <header className="border-b border-border/80">
@@ -35,30 +41,24 @@ export function SiteHeader({
           className="flex flex-wrap items-center gap-1 text-sm"
           aria-label="Desk"
         >
-          <Link
-            href="/"
-            aria-current={onDesk ? "page" : undefined}
-            className={cn(
-              "rounded-md px-2 py-1",
-              onDesk
-                ? "bg-muted text-foreground"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground",
-            )}
-          >
-            Desk
-          </Link>
-          <Link
-            href="/issuers"
-            aria-current={onIssuers ? "page" : undefined}
-            className={cn(
-              "rounded-md px-2 py-1",
-              onIssuers
-                ? "bg-muted text-foreground"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground",
-            )}
-          >
-            Issuers
-          </Link>
+          {LINKS.map((link) => {
+            const current = link.match(pathname);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                aria-current={current ? "page" : undefined}
+                className={cn(
+                  "rounded-md px-2 py-1",
+                  current
+                    ? "bg-muted text-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                )}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
           <span
             className="ml-1 inline-flex items-center gap-1.5 rounded-md border border-border/80 px-2 py-1 font-mono text-[11px] tracking-wide text-muted-foreground"
             title={

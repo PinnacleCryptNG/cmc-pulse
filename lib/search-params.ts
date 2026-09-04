@@ -56,7 +56,7 @@ export function screenerHref(
   if (dir !== "asc") params.set("dir", dir);
   if (next.start && next.start !== "1") params.set("start", next.start);
   const qs = params.toString();
-  return qs ? `/?${qs}` : "/";
+  return qs ? `/explore?${qs}` : "/explore";
 }
 
 export function parseAssetTypeParam(value: string | undefined): AssetType | "all" {

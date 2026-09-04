@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowDown, ArrowUp, Search } from "lucide-react";
+import { WatchlistButton } from "@/components/watchlist-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +20,13 @@ import { cn } from "@/lib/utils";
 
 const SUGGESTED = ["NVDA", "GOLD", "SPCX", "TLT"] as const;
 
-export function ScreenerView({ data }: { data: ScreenerResult }) {
+export function ScreenerView({
+  data,
+  variant = "full",
+}: {
+  data: ScreenerResult;
+  variant?: "full" | "explorer";
+}) {
   const current = {
     q: data.query || undefined,
     type: data.assetType,
@@ -43,18 +50,20 @@ export function ScreenerView({ data }: { data: ScreenerResult }) {
 
   return (
     <div className="flex flex-col gap-8">
-      <MarketOverview
-        universe={universe}
-        categories={categories}
-        listed={data.assets.length}
-        tokenizedOnPage={tokenizedOnPage}
-      />
+      {variant === "full" ? (
+        <MarketOverview
+          universe={universe}
+          categories={categories}
+          listed={data.assets.length}
+          tokenizedOnPage={tokenizedOnPage}
+        />
+      ) : null}
 
       <section className="flex flex-col gap-3" aria-labelledby="universe-heading">
         <div className="flex flex-col gap-1 border-b border-border/80 pb-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-              Underlier explorer
+              RWA Explorer
             </p>
             <h2 id="universe-heading" className="text-lg font-semibold tracking-tight">
               {data.query ? `Results for ${data.query}` : "Underlier Universe"}
@@ -66,7 +75,7 @@ export function ScreenerView({ data }: { data: ScreenerResult }) {
           </p>
         </div>
 
-        <form className="flex flex-col gap-2 sm:flex-row" action="/" method="get">
+        <form className="flex flex-col gap-2 sm:flex-row" action="/explore" method="get">
           {data.assetType !== "all" ? (
             <input type="hidden" name="type" value={data.assetType} />
           ) : null}
@@ -97,7 +106,7 @@ export function ScreenerView({ data }: { data: ScreenerResult }) {
           {SUGGESTED.map((ticker) => (
             <Link
               key={ticker}
-              href={`/?q=${ticker}`}
+              href={`/explore?q=${ticker}`}
               className={cn(
                 "font-mono hover:text-foreground",
                 data.query.toUpperCase() === ticker
@@ -194,6 +203,9 @@ export function ScreenerView({ data }: { data: ScreenerResult }) {
                       defaultDir="desc"
                     />
                   </TableHead>
+                  <TableHead className="w-10">
+                    <span className="sr-only">Watchlist</span>
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -254,6 +266,14 @@ export function ScreenerView({ data }: { data: ScreenerResult }) {
                     </TableCell>
                     <TableCell className="hidden text-right font-mono tabular-nums lg:table-cell">
                       {formatUsd(asset.quote.volume24h, { compact: true })}
+                    </TableCell>
+                    <TableCell className="relative z-10 w-10 text-right">
+                      <WatchlistButton
+                        rwaId={asset.rwaId}
+                        name={asset.name}
+                        symbol={asset.symbol}
+                        assetType={String(asset.assetType)}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -419,10 +439,10 @@ function EmptyUniverse({ query }: { query: string }) {
         )}
       </p>
       <div className="mt-4 flex justify-center gap-3 text-sm">
-        <Link href="/" className="underline underline-offset-4 hover:text-foreground">
+        <Link href="/explore" className="underline underline-offset-4 hover:text-foreground">
           Reset universe
         </Link>
-        <Link href="/?q=NVDA" className="underline underline-offset-4 hover:text-foreground">
+        <Link href="/explore?q=NVDA" className="underline underline-offset-4 hover:text-foreground">
           Open NVDA
         </Link>
       </div>

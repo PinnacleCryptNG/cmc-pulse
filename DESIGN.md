@@ -26,7 +26,10 @@ One-line pitch: *See the real asset behind every tokenized stock, treasury, and 
 ## Routes (locked)
 
 ```
-/              → ScreenerView (RWA Market + Underlier Universe)
+/              → Overview (Desk)
+/explore       → RWA Explorer (screener)
+/classes       → CMC asset-class taxonomy
+/watchlist     → Browser-local saved underliers
 /asset/[id]    → AssetDeskView
 /issuers       → IssuerDirectory
 /issuer/[id]   → IssuerBookView
@@ -34,7 +37,7 @@ One-line pitch: *See the real asset behind every tokenized stock, treasury, and 
 
 Data flow: **RSC → `lib/cmc/service.ts`**. Pages do not fetch `/api/rwa/*` from the client. Those BFF routes exist for evidence and debugging only.
 
-Do not add auth, a database, a chart library, extra routes, or a second component library. Do not invent fields or fake prices.
+Do not add auth, a database, a chart library, or a second component library. Do not invent fields or fake prices.
 
 ## Architecture
 

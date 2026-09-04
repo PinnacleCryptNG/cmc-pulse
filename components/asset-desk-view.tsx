@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowDown, ArrowLeft, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { WatchlistButton } from "@/components/watchlist-button";
 import { ExternalLink } from "@/components/external-link";
 import { EvidenceDrawer } from "@/components/evidence-drawer";
 import {
@@ -43,7 +44,7 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
     <div className="flex flex-col gap-8">
       <nav aria-label="Breadcrumb" className="text-sm">
         <Link
-          href="/"
+          href="/explore"
           className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-3.5" aria-hidden />
@@ -52,7 +53,7 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
         {info?.symbol ? (
           <>
             <span className="text-muted-foreground"> / </span>
-            <Link href={`/?q=${encodeURIComponent(info.symbol)}`} className="hover:underline">
+            <Link href={`/explore?q=${encodeURIComponent(info.symbol)}`} className="hover:underline">
               {info.symbol}
             </Link>
           </>
@@ -80,6 +81,14 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
               ) : null}
             </p>
           </div>
+          {info ? (
+            <WatchlistButton
+              rwaId={info.rwaId}
+              name={info.name}
+              symbol={info.symbol}
+              assetType={String(info.assetType)}
+            />
+          ) : null}
         </div>
 
         <div className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-4">
@@ -111,6 +120,16 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
       </header>
 
       <UnderlierIdentity info={info} rwaId={rwaId} />
+      {info?.assetType ? (
+        <p className="text-sm text-muted-foreground">
+          <Link
+            href={`/explore?type=${encodeURIComponent(String(info.assetType))}`}
+            className="underline underline-offset-4"
+          >
+            More {formatType(String(info.assetType))} underliers
+          </Link>
+        </p>
+      ) : null}
 
       <TokenizedExposure
         tokens={tokens}
