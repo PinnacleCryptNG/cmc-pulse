@@ -26,9 +26,10 @@ export function StatusBanner({
   }
 
   if (warning) {
+    const planLimited = warning.toLowerCase().includes("not on this cmc plan");
     return (
-      <Alert variant="destructive">
-        <AlertTitle>CMC response issue</AlertTitle>
+      <Alert variant={planLimited ? "default" : "destructive"}>
+        <AlertTitle>{planLimited ? "CMC plan limit" : "CMC response issue"}</AlertTitle>
         <AlertDescription>{warning}</AlertDescription>
       </Alert>
     );

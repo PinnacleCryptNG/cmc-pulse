@@ -110,6 +110,12 @@ function usdFromQuoteBag(bag: unknown): UsdQuote {
 export function parseUsdQuote(asset: unknown): UsdQuote {
   const record = asRecord(asset);
   const fromQuote = usdFromQuoteBag(record?.quote);
+  const fromQuotesArray = (() => {
+    const rows = asArray(record?.quotes).map(asRecord).filter(Boolean) as Record<string, unknown>[];
+    const usd =
+      rows.find((row) => asString(row.symbol)?.toUpperCase() === "USD") ?? rows[0];
+    return usdFromQuoteBag(usd);
+  })();
   const direct: UsdQuote = {
     price: asNumber(
       pick(record, "average_tokenized_price", "tokenized_price", "price"),
@@ -123,10 +129,13 @@ export function parseUsdQuote(asset: unknown): UsdQuote {
     percentChange24h: asNumber(pick(record, "percent_change_24h")),
   };
   return {
-    price: fromQuote.price ?? direct.price,
-    marketCap: fromQuote.marketCap ?? direct.marketCap,
-    volume24h: fromQuote.volume24h ?? direct.volume24h,
-    percentChange24h: fromQuote.percentChange24h ?? direct.percentChange24h,
+    price: fromQuote.price ?? fromQuotesArray.price ?? direct.price,
+    marketCap: fromQuote.marketCap ?? fromQuotesArray.marketCap ?? direct.marketCap,
+    volume24h: fromQuote.volume24h ?? fromQuotesArray.volume24h ?? direct.volume24h,
+    percentChange24h:
+      fromQuote.percentChange24h ??
+      fromQuotesArray.percentChange24h ??
+      direct.percentChange24h,
   };
 }
 
@@ -206,19 +215,22 @@ export function parseUnderlyingToken(token: unknown): UnderlyingToken | null {
 export function parseTradfiMarket(market: unknown): TradfiMarket | null {
   const record = asRecord(market);
   if (!record) return null;
+  const exchangeRecord = asRecord(record.exchange);
   const name =
     asString(pick(record, "name", "market", "venue")) ??
-    asString(pick(asRecord(record.exchange), "name"));
+    asString(pick(exchangeRecord, "name")) ??
+    asString(pick(record, "ticker", "symbol"));
   if (!name) return null;
   const quote = parseUsdQuote(market);
   return {
     name,
     exchange:
-      asString(pick(asRecord(record.exchange), "name")) ??
+      asString(pick(exchangeRecord, "name")) ??
       asString(pick(record, "exchange")),
     symbol: asString(pick(record, "symbol", "ticker")),
     price: quote.price ?? asNumber(pick(record, "last", "close")),
     currency: asString(pick(record, "currency", "quote_currency")) ?? "USD",
+    marketUrl: asString(pick(record, "market_url", "url", "website")),
   };
 }
 

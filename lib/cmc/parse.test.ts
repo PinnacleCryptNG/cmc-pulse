@@ -10,6 +10,8 @@ import {
   parseMapPayload,
   parseMarketPairsPayload,
   parseQuotesPayload,
+  parseTradfiMarket,
+  parseUsdQuote,
 } from "./parse.ts";
 import { fixtureAssetList, fixtureCryptoQuotes, fixtureMap, fixtureQuotes } from "./fixtures.ts";
 
@@ -124,6 +126,37 @@ test("mergeTokens prefers quote prices from the RWA quotes payload", () => {
   );
   assert.equal(merged[0].quote.price, 225);
   assert.equal(merged[0].issuerName, "Backpack");
+});
+
+test("quotes array convert payload is read when quote.USD is absent", () => {
+  const parsed = parseUsdQuote({
+    rwa_id: 2,
+    name: "Nvidia Corp",
+    symbol: "NVDA",
+    quotes: [
+      {
+        symbol: "USD",
+        crypto_id: 2781,
+        average_tokenized_price: 230.81,
+        tokenized_market_cap: 112844289.48,
+        tokenized_volume_24h: 137496753.78,
+      },
+    ],
+  });
+  assert.equal(parsed.price, 230.81);
+  assert.equal(parsed.marketCap, 112844289.48);
+});
+
+test("tradfi venue payload uses nested exchange, ticker, and market_url", () => {
+  const market = parseTradfiMarket({
+    exchange: { slug: "binance", name: "Binance", exchange_id: 270 },
+    ticker: "NVDA",
+    market_url: "https://www.binance.com/en/stocks/EQ_NVDA",
+  });
+  assert.equal(market?.name, "Binance");
+  assert.equal(market?.symbol, "NVDA");
+  assert.equal(market?.marketUrl, "https://www.binance.com/en/stocks/EQ_NVDA");
+  assert.equal(market?.price, null);
 });
 
 test("crypto quotes fallback fills missing token prices by crypto_id", () => {

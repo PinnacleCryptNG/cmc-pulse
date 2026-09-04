@@ -39,7 +39,7 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
           <Badge variant="secondary">{formatType(info?.assetType ?? "unknown")}</Badge>
         </div>
         <p className="max-w-3xl text-sm text-muted-foreground">
-          {info?.description ?? "No About block returned for this underlier."}
+          {shortAbout(info?.description) ?? "No About block returned for this underlier."}
         </p>
       </div>
 
@@ -103,8 +103,10 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
 
         <Card>
           <CardHeader>
-            <CardTitle>TradFi markets</CardTitle>
-            <CardDescription>From GET /v5/real-world-assets/quotes/latest</CardDescription>
+            <CardTitle>TradFi venues</CardTitle>
+            <CardDescription>
+              From quotes/latest. CMC returns venue identity here, not a cash-market last price.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {desk.tradfiMarkets.length === 0 ? (
@@ -115,9 +117,9 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Market</TableHead>
-                    <TableHead>Symbol</TableHead>
-                    <TableHead className="text-right">Price</TableHead>
+                    <TableHead>Venue</TableHead>
+                    <TableHead>Ticker</TableHead>
+                    <TableHead>Link</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -125,13 +127,21 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
                     <TableRow key={`${market.name}-${market.symbol}`}>
                       <TableCell>
                         {market.name}
-                        {market.exchange ? (
+                        {market.exchange && market.exchange !== market.name ? (
                           <div className="text-xs text-muted-foreground">{market.exchange}</div>
                         ) : null}
                       </TableCell>
                       <TableCell className="font-mono">{market.symbol ?? "—"}</TableCell>
-                      <TableCell className="text-right font-mono">
-                        {formatUsd(market.price)}
+                      <TableCell>
+                        {market.marketUrl ? (
+                          <a className="underline" href={market.marketUrl} rel="noreferrer" target="_blank">
+                            Open
+                          </a>
+                        ) : market.price !== null ? (
+                          formatUsd(market.price)
+                        ) : (
+                          "—"
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -253,4 +263,11 @@ function Row({ label, value }: { label: string; value: ReactNode }) {
       <span className="break-all">{value}</span>
     </div>
   );
+}
+
+function shortAbout(text: string | null | undefined): string | null {
+  if (!text) return null;
+  const cleaned = text.replace(/^#+\s+/gm, "").replace(/\n{3,}/g, "\n\n").trim();
+  if (cleaned.length <= 420) return cleaned;
+  return `${cleaned.slice(0, 420).replace(/\s+\S*$/, "")}…`;
 }

@@ -1,0 +1,59 @@
+{
+  "note": "Redacted live envelope from 2026-09-04. No API key. Values move; this proves the call shape.",
+  "endpoint": "GET /v5/real-world-assets/quotes/latest",
+  "query": { "rwa_id": "2", "convert": "USD" },
+  "status": {
+    "error_code": 0,
+    "credit_count": 1
+  },
+  "data": {
+    "rwa_assets": [
+      {
+        "rwa_id": 2,
+        "name": "Nvidia Corp",
+        "symbol": "NVDA",
+        "slug": "nvidia",
+        "asset_type": "stock",
+        "rwa_rank": 2,
+        "has_tokens": true,
+        "average_tokenized_price": 230.81337909094518,
+        "tokenized_market_cap": 112844289.48897357,
+        "tokenized_volume_24h": 137496753.78442156,
+        "quotes": [
+          {
+            "symbol": "USD",
+            "crypto_id": 2781,
+            "average_tokenized_price": 230.81337909094518,
+            "tokenized_market_cap": 112844289.48897357,
+            "tokenized_volume_24h": 137496753.78442156
+          }
+        ],
+        "tradfi_markets": [
+          {
+            "exchange": { "slug": "binance", "name": "Binance", "exchange_id": 270 },
+            "ticker": "NVDA",
+            "market_url": "https://www.binance.com/en/stocks/EQ_NVDA"
+          }
+        ],
+        "tokens": [
+          {
+            "symbol": "NVDAX",
+            "name": "NVIDIA tokenized stock (xStock)",
+            "crypto_id": 36992,
+            "issuer_id": "6878977dcbbf471de3366e85",
+            "issuer_name": "Backed Assets",
+            "price": 230.94898385736855
+          },
+          {
+            "symbol": "NVDAon",
+            "name": "NVIDIA Tokenized Stock (Ondo)",
+            "crypto_id": 38093,
+            "issuer_id": "688ca4ccabae9b5b9fb3167a",
+            "issuer_name": "Ondo Assets",
+            "price": 230.88268185547784
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { getAssetDesk, getIssuerBook, getScreener } from "./service.ts";
 
+process.env.CMC_USE_FIXTURES = "1";
+
 test("screener returns fixture underliers and type counts without a live key", async () => {
   const result = await getScreener({ sort: "rwa_rank", sortDir: "asc" });
   assert.equal(result.source, "fixture");

@@ -37,12 +37,21 @@ function pushEvidence(bucket: CallEvidence[], call: CmcCall) {
   bucket.push(call.evidence);
 }
 
+function isPlanLimited(call: CmcCall) {
+  const message = (call.evidence.errorMessage || "").toLowerCase();
+  const code = String(call.evidence.errorCode ?? "");
+  return code === "1006" || message.includes("subscription plan doesn't support");
+}
+
 function warningFrom(calls: CmcCall[], extra?: string | null) {
   const failed = calls.filter((call) => !call.ok);
-  const parts = failed.map(
-    (call) =>
-      `${call.endpoint} failed${call.evidence.errorMessage ? `: ${call.evidence.errorMessage}` : ""}`,
-  );
+  const parts = failed.map((call) => {
+    const detail = call.evidence.errorMessage ? `: ${call.evidence.errorMessage}` : "";
+    if (isPlanLimited(call)) {
+      return `${call.endpoint} is not on this CMC plan${detail}`;
+    }
+    return `${call.endpoint} failed${detail}`;
+  });
   if (extra) parts.push(extra);
   return parts.length ? parts.join(" · ") : null;
 }
@@ -316,7 +325,7 @@ export async function getAssetDesk(rwaId: string): Promise<AssetDesk> {
     evidence.push(cryptoCall.evidence);
     if (cryptoCall.ok) {
       tokens = applyCryptoQuotes(tokens, parseCryptoQuotes(cryptoCall.payload));
-      pathUsed = "crypto-fallback";
+      if (pathUsed === "none") pathUsed = "crypto-fallback";
     }
   }
 

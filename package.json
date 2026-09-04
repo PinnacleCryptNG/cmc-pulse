@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start --port 43147 --hostname 127.0.0.1",
     "lint": "eslint",
-    "test": "tsx --test lib/cmc/parse.test.ts lib/cmc/service.test.ts"
+    "test": "CMC_USE_FIXTURES=1 tsx --test lib/cmc/parse.test.ts lib/cmc/service.test.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

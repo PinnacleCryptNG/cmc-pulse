@@ -83,6 +83,7 @@ export type TradfiMarket = {
   symbol: string | null;
   price: number | null;
   currency: string | null;
+  marketUrl: string | null;
 };
 
 export type MarketPair = {
