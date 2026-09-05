@@ -1,7 +1,14 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { ExternalLink } from "@/components/external-link";
-import { DeskLogo, EmptyState, SectionHead, StatusFlag, TextLink } from "@/components/desk-chrome";
+import {
+  ActionLink,
+  DeskLogo,
+  EmptyState,
+  Panel,
+  SectionHead,
+  StatusFlag,
+} from "@/components/desk-chrome";
 import {
   Table,
   TableBody,
@@ -32,7 +39,7 @@ export function IssuerBookView({ book }: { book: IssuerBook }) {
           className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-3.5" aria-hidden />
-          Issuers
+          Back to Issuers
         </Link>
         <span className="text-muted-foreground"> / </span>
         <span className="text-foreground">{issuer.name}</span>
@@ -51,34 +58,39 @@ export function IssuerBookView({ book }: { book: IssuerBook }) {
             </p>
           </div>
         </div>
-        <dl className="flex flex-wrap gap-x-6 gap-y-2 text-[12px] sm:justify-end">
+        <dl className="grid grid-cols-2 border border-border bg-surface sm:grid-cols-3">
           {website ? (
-            <div>
+            <div className="border-border px-3 py-2.5 sm:border-r">
               <dt className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
                 Website
               </dt>
-              <dd>
+              <dd className="mt-1">
                 <ExternalLink className="text-mark hover:underline" href={website}>
                   {hostLabel(website)}
                 </ExternalLink>
               </dd>
             </div>
-          ) : null}
-          <div>
+          ) : (
+            <div className="border-border px-3 py-2.5 text-muted-foreground sm:border-r">
+              <dt className="text-[10px] font-medium uppercase tracking-[0.16em]">Website</dt>
+              <dd className="mt-1 text-[12px]">—</dd>
+            </div>
+          )}
+          <div className="border-border px-3 py-2.5 max-sm:border-l sm:border-r">
             <dt className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
               Status
             </dt>
-            <dd>
+            <dd className="mt-1">
               <StatusFlag active={issuer.active} />
             </dd>
           </div>
-          <div>
+          <div className="border-border px-3 py-2.5 max-sm:col-span-2 max-sm:border-t">
             <dt className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
               Indexed by CMC
             </dt>
-            <dd className="font-mono text-[15px] tabular-nums tracking-tight">
+            <dd className="mt-1 font-mono text-[22px] leading-none font-medium tabular-nums tracking-tight">
               {formatInt(indexed)}
-              <span className="ml-1.5 font-sans text-[11px] text-muted-foreground">
+              <span className="ml-1.5 font-sans text-[11px] font-normal text-muted-foreground">
                 tokenized assets
               </span>
             </dd>
@@ -86,40 +98,47 @@ export function IssuerBookView({ book }: { book: IssuerBook }) {
         </dl>
       </header>
 
-      <section className="flex flex-col gap-2.5" aria-labelledby="tokenization-heading">
-        <SectionHead
-          id="tokenization-heading"
-          kicker="Underlier → tokenized representation"
-          title="Real-world assets tokenized by this issuer"
-          description={
-            truncated
-              ? `Showing ${shown.toLocaleString("en-US")} of ${(indexed ?? shown).toLocaleString("en-US")} indexed tokens.`
-              : `${shown.toLocaleString("en-US")} tokenized representation${shown === 1 ? "" : "s"} in this payload.`
-          }
-        />
+      <section aria-labelledby="tokenization-heading">
+        <Panel>
+          <div className="border-b border-border px-3 pt-3">
+            <SectionHead
+              id="tokenization-heading"
+              kicker="Underlier → tokenized representation"
+              title="Real-world assets tokenized by this issuer"
+              className="border-b-0 pb-3"
+              description={
+                truncated
+                  ? `Showing ${shown.toLocaleString("en-US")} of ${(indexed ?? shown).toLocaleString("en-US")} indexed tokens.`
+                  : `${shown.toLocaleString("en-US")} tokenized representation${shown === 1 ? "" : "s"} in this payload.`
+              }
+            />
+          </div>
 
-        {tokens.length === 0 ? (
-          <EmptyState title="No tokenized underliers">
-            This issuer has no linked tokens in the current CMC payload.
-          </EmptyState>
-        ) : (
-          <Table sticky>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead>Underlier</TableHead>
-                <TableHead className="hidden sm:table-cell">Type</TableHead>
-                <TableHead>Token</TableHead>
-                <TableHead className="hidden md:table-cell">Notes</TableHead>
-                <TableHead className="text-right">Research</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {tokens.map((token) => (
-                <TokenRow key={`${token.cryptoId}-${token.symbol}-${token.rwaId}`} token={token} />
-              ))}
-            </TableBody>
-          </Table>
-        )}
+          {tokens.length === 0 ? (
+            <div className="p-3">
+              <EmptyState title="No tokenized underliers">
+                This issuer has no linked tokens in the current CMC payload.
+              </EmptyState>
+            </div>
+          ) : (
+            <Table sticky bare>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead>Underlier</TableHead>
+                  <TableHead className="hidden sm:table-cell">Type</TableHead>
+                  <TableHead>Token</TableHead>
+                  <TableHead className="hidden md:table-cell">Notes</TableHead>
+                  <TableHead className="text-right">Research</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {tokens.map((token) => (
+                  <TokenRow key={`${token.cryptoId}-${token.symbol}-${token.rwaId}`} token={token} />
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </Panel>
       </section>
     </div>
   );
@@ -160,9 +179,7 @@ function TokenRow({ token }: { token: IssuerToken }) {
       </TableCell>
       <TableCell className="text-right">
         {token.rwaId !== null ? (
-          <TextLink href={`/asset/${token.rwaId}`} className="text-[12px]">
-            View underlier
-          </TextLink>
+          <ActionLink href={`/asset/${token.rwaId}`}>View underlier</ActionLink>
         ) : (
           <span className="text-muted-foreground">—</span>
         )}

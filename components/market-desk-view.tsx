@@ -1,7 +1,14 @@
 import Link from "next/link";
 import { ArrowDown, ArrowUp, Search } from "lucide-react";
 import { WatchlistButton } from "@/components/watchlist-button";
-import { EmptyState, PageHeader, Pager, TextLink } from "@/components/desk-chrome";
+import {
+  ActionLink,
+  EmptyState,
+  PageHeader,
+  Pager,
+  Panel,
+  TextLink,
+} from "@/components/desk-chrome";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -71,21 +78,24 @@ export function MarketDeskView({ data }: { data: ScreenerResult }) {
         current={current}
       />
 
-      <section className="flex flex-col gap-2.5" aria-labelledby="universe-heading">
-        <PageHeader
-          id="universe-heading"
-          kicker="Market desk"
-          title="Underlier universe"
-          description={
-            <>
-              Lookup is ticker, slug, or <span className="font-mono">rwa_id</span> — not a
-              company-name search.
-            </>
-          }
-        />
+      <Panel>
+        <div className="px-3 pt-3">
+          <PageHeader
+            id="universe-heading"
+            kicker="Underlier map"
+            title="Underlier universe"
+            className="border-b-0 pb-2"
+            description={
+              <>
+                Lookup is ticker, slug, or <span className="font-mono">rwa_id</span> — not a
+                company-name search.
+              </>
+            }
+          />
+        </div>
 
         <form
-          className="flex flex-col gap-2 border border-border bg-surface/40 px-2 py-2 sm:flex-row sm:items-center"
+          className="mx-3 mb-2 flex flex-col gap-2 border border-border bg-background px-2 py-2 sm:flex-row sm:items-center"
           action="/"
           method="get"
         >
@@ -118,20 +128,20 @@ export function MarketDeskView({ data }: { data: ScreenerResult }) {
               className="h-7 border-0 bg-transparent pl-7 focus-visible:ring-0"
             />
           </div>
-          <Button type="submit" variant="outline" size="sm" className="h-7 shrink-0">
+          <Button type="submit" variant="outline" size="sm" className="h-7 shrink-0 rounded-sm">
             Find
           </Button>
         </form>
 
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px]">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 pb-2 text-[11px]">
           <span className="uppercase tracking-[0.14em] text-muted-foreground">Examples</span>
           {SUGGESTED.map((ticker) => (
             <Link
               key={ticker}
               href={screenerHref({}, { q: ticker })}
               className={cn(
-                "font-mono hover:text-mark",
-                data.query.toUpperCase() === ticker ? "text-mark" : "text-muted-foreground",
+                "font-mono hover:text-foreground",
+                data.query.toUpperCase() === ticker ? "text-up" : "text-muted-foreground",
               )}
             >
               {ticker}
@@ -139,12 +149,12 @@ export function MarketDeskView({ data }: { data: ScreenerResult }) {
           ))}
         </div>
 
-        <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+        <div className="flex flex-col gap-2 border-t border-border px-3 py-2 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0">
             <p className="mb-1 text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
               Type
             </p>
-            <div className="flex flex-wrap gap-x-0 border-b border-border">
+            <div className="flex flex-wrap gap-x-0">
               {visibleTypes.map((item) => {
                 const selected = data.assetType === item.type;
                 return (
@@ -155,7 +165,7 @@ export function MarketDeskView({ data }: { data: ScreenerResult }) {
                     className={cn(
                       "inline-flex items-center gap-1.5 border-b-2 px-2 py-1.5 text-[13px]",
                       selected
-                        ? "border-mark text-foreground"
+                        ? "border-up text-foreground"
                         : "border-transparent text-muted-foreground hover:text-foreground",
                     )}
                   >
@@ -174,7 +184,7 @@ export function MarketDeskView({ data }: { data: ScreenerResult }) {
             <p className="mb-1 text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
               Sort
             </p>
-            <div className="flex flex-wrap gap-x-0 border-b border-border">
+            <div className="flex flex-wrap gap-x-0">
               {SCREENER_SORTS.map((field) => {
                 const active = data.sort === field;
                 const nextDir = active
@@ -189,7 +199,7 @@ export function MarketDeskView({ data }: { data: ScreenerResult }) {
                     className={cn(
                       "inline-flex items-center gap-0.5 border-b-2 px-2 py-1.5 text-[13px]",
                       active
-                        ? "border-mark text-foreground"
+                        ? "border-up text-foreground"
                         : "border-transparent text-muted-foreground hover:text-foreground",
                     )}
                   >
@@ -209,15 +219,17 @@ export function MarketDeskView({ data }: { data: ScreenerResult }) {
         </div>
 
         {data.assets.length === 0 ? (
-          <EmptyUniverse
-            query={data.query}
-            typeLabel={typeLabel}
-            typeActive={data.assetType !== "all"}
-            resetHref={screenerHref({}, {})}
-          />
+          <div className="px-3 pb-3">
+            <EmptyUniverse
+              query={data.query}
+              typeLabel={typeLabel}
+              typeActive={data.assetType !== "all"}
+              resetHref={screenerHref({}, {})}
+            />
+          </div>
         ) : (
           <>
-            <Table sticky>
+            <Table sticky bare>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
                   <TableHead>Underlier</TableHead>
@@ -235,7 +247,7 @@ export function MarketDeskView({ data }: { data: ScreenerResult }) {
                     <TableCell className="whitespace-normal">
                       <Link
                         href={`/asset/${asset.rwaId}`}
-                        className="font-medium text-foreground hover:text-mark"
+                        className="font-medium text-foreground hover:text-foreground/80"
                       >
                         {asset.name}
                       </Link>
@@ -252,27 +264,23 @@ export function MarketDeskView({ data }: { data: ScreenerResult }) {
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
                       {asset.hasTokens ? (
-                        <span>Tokenized</span>
-                      ) : asset.hasTokens === false ? (
-                        <span className="text-muted-foreground">—</span>
+                        <span className="text-[11px] font-medium text-up">Tokenized</span>
                       ) : (
-                        <span className="text-muted-foreground">—</span>
+                        <span className="text-[11px] text-muted-foreground">—</span>
                       )}
                     </TableCell>
                     <TableCell className="text-right font-mono text-[12px] tabular-nums">
                       {formatUsd(asset.quote.volume24h, { compact: true })}
                     </TableCell>
-                    <TableCell className="hidden text-right font-mono text-[12px] tabular-nums md:table-cell">
+                    <TableCell className="hidden text-right font-mono text-[12px] tabular-nums text-muted-foreground md:table-cell">
                       {formatUsd(asset.quote.marketCap, { compact: true })}
                     </TableCell>
                     <TableCell className="hidden text-right font-mono text-[12px] tabular-nums text-muted-foreground lg:table-cell">
                       {asset.rwaRank != null ? `#${asset.rwaRank}` : "—"}
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="inline-flex items-center justify-end gap-0.5">
-                        <TextLink href={`/asset/${asset.rwaId}`} className="text-[12px]">
-                          View desk
-                        </TextLink>
+                      <div className="inline-flex items-center justify-end gap-1">
+                        <ActionLink href={`/asset/${asset.rwaId}`}>View desk</ActionLink>
                         <WatchlistButton
                           rwaId={asset.rwaId}
                           name={asset.name}
@@ -286,7 +294,7 @@ export function MarketDeskView({ data }: { data: ScreenerResult }) {
               </TableBody>
             </Table>
 
-            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-2">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-3 py-2">
               <p className="text-[11px] text-muted-foreground">
                 <span className="font-mono tabular-nums text-foreground">
                   {rangeStart.toLocaleString("en-US")}–{rangeEnd.toLocaleString("en-US")}
@@ -322,7 +330,7 @@ export function MarketDeskView({ data }: { data: ScreenerResult }) {
             </div>
           </>
         )}
-      </section>
+      </Panel>
     </div>
   );
 }
@@ -364,41 +372,30 @@ function MarketSummary({
 
   return (
     <section aria-labelledby="summary-heading">
-      <h2 id="summary-heading" className="sr-only">
-        Market summary
-      </h2>
-      <div className="grid grid-cols-2 divide-x divide-y divide-border border border-border md:grid-cols-4 md:divide-y-0">
-        <div className="flex flex-col gap-0.5 px-3 py-2.5">
-          <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-            Tracked universe
-          </p>
-          <p className="font-mono text-[15px] tabular-nums tracking-tight">
-            {universe?.count == null ? "—" : universe.count.toLocaleString("en-US")}
-          </p>
-          <p className="text-[11px] text-muted-foreground">Map underliers</p>
-        </div>
-        <div className="flex flex-col gap-0.5 px-3 py-2.5">
-          <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-            Tokenized in this view
-          </p>
-          <p className="font-mono text-[15px] tabular-nums tracking-tight">
-            {listed === 0 ? "—" : tokenizedOnPage.toLocaleString("en-US")}
-          </p>
-          <p className="text-[11px] text-muted-foreground">
-            {listed === 0 ? "No rows" : `of ${listed.toLocaleString("en-US")} listed`}
-          </p>
-        </div>
-        <div className="flex flex-col gap-0.5 px-3 py-2.5">
-          <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-            24h tokenized volume
-          </p>
-          <p className="font-mono text-[15px] tabular-nums tracking-tight">
-            {formatUsd(pageVolume, { compact: true })}
-          </p>
-          <p className="text-[11px] text-muted-foreground">In this view</p>
-        </div>
-        <div className="flex flex-col gap-1.5 px-3 py-2.5">
-          <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+      <p
+        id="summary-heading"
+        className="mb-2 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground"
+      >
+        RWA market
+      </p>
+      <div className="grid grid-cols-2 border border-border bg-surface md:grid-cols-4">
+        <MetricCell
+          label="Tracked universe"
+          value={universe?.count == null ? "—" : universe.count.toLocaleString("en-US")}
+          hint="Underliers"
+        />
+        <MetricCell
+          label="Tokenized in this view"
+          value={listed === 0 ? "—" : tokenizedOnPage.toLocaleString("en-US")}
+          hint={listed === 0 ? "No rows" : `of ${listed.toLocaleString("en-US")} listed`}
+        />
+        <MetricCell
+          label="24h tokenized volume"
+          value={formatUsd(pageVolume, { compact: true })}
+          hint="In this view"
+        />
+        <div className="flex flex-col gap-1.5 border-border px-3.5 py-3 max-md:border-t md:border-l">
+          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
             By asset type
           </p>
           {categories.length === 0 ? (
@@ -406,14 +403,15 @@ function MarketSummary({
           ) : (
             <div className="flex items-center gap-3">
               <div
-                className="size-10 shrink-0 rounded-full"
+                className="size-11 shrink-0 rounded-full"
                 style={{
                   background: `conic-gradient(${ringStops.join(", ")})`,
+                  boxShadow: "inset 0 0 0 3px var(--surface)",
                 }}
                 role="img"
                 aria-label="Asset category distribution"
               />
-              <ul className="min-w-0 flex flex-wrap gap-x-2.5 gap-y-0.5 text-[11px]">
+              <ul className="flex min-w-0 flex-wrap gap-x-2.5 gap-y-0.5 text-[11px]">
                 {categories.map((item) => (
                   <li key={item.type}>
                     <Link
@@ -433,6 +431,28 @@ function MarketSummary({
         </div>
       </div>
     </section>
+  );
+}
+
+function MetricCell({
+  label,
+  value,
+  hint,
+}: {
+  label: string;
+  value: string;
+  hint: string;
+}) {
+  return (
+    <div className="border-border px-3.5 py-3 max-md:[&:nth-child(odd)]:border-r max-md:[&:nth-child(-n+2)]:border-b md:not-last:border-r">
+      <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-1.5 font-mono text-[26px] leading-none font-medium tracking-tight tabular-nums">
+        {value}
+      </p>
+      <p className="mt-1.5 text-[11px] text-muted-foreground">{hint}</p>
+    </div>
   );
 }
 

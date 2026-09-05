@@ -3,9 +3,11 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { WatchlistButton } from "@/components/watchlist-button";
 import {
+  ActionLink,
   DeskLogo,
   EmptyState,
   IdentityRow,
+  Panel,
   QuoteBar,
   QuoteStat,
   SectionHead,
@@ -56,7 +58,7 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
           className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-3.5" aria-hidden />
-          Underlier universe
+          Back to underlier universe
         </Link>
         {info?.symbol ? (
           <>
@@ -72,40 +74,53 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
         <span className="text-muted-foreground"> / rwa_id {rwaId}</span>
       </nav>
 
-      <header className="flex flex-col gap-3 border-b border-border pb-3">
-        <div className="flex items-start gap-3">
-          <div className="min-w-0 flex-1">
+      <header className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
             <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
               Underlier
             </p>
-            <h1 className="text-[1.35rem] font-semibold tracking-tight">{name}</h1>
-            <p className="mt-0.5 text-[12px] text-muted-foreground">
+            <h1 className="text-[1.35rem] font-semibold tracking-tight">
+              {name}
               {info?.symbol ? (
-                <span className="font-mono text-foreground">{info.symbol}</span>
+                <span className="ml-2 font-mono text-[15px] font-medium text-muted-foreground">
+                  [{info.symbol}]
+                </span>
               ) : null}
-              {identityBits.length > 0 ? (
-                <>
-                  {info?.symbol ? " · " : null}
-                  {identityBits.join(" · ")}
-                </>
-              ) : null}
-            </p>
+            </h1>
+            {identityBits.length > 0 ? (
+              <p className="mt-0.5 text-[12px] text-muted-foreground">{identityBits.join(" · ")}</p>
+            ) : null}
           </div>
-          <DeskLogo src={info?.logo} name={name} />
-          {info ? (
-            <WatchlistButton
-              rwaId={info.rwaId}
-              name={info.name}
-              symbol={info.symbol}
-              assetType={String(info.assetType)}
-            />
-          ) : null}
+          <div className="flex items-start gap-3 sm:justify-end">
+            <div className="text-left sm:text-right">
+              <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                Tokenized price
+              </p>
+              <p className="mt-0.5 font-mono text-[26px] leading-none font-medium tracking-tight tabular-nums">
+                {formatUsd(desk.quote.price)}
+              </p>
+              {info?.rwaRank != null ? (
+                <p className="mt-1 font-mono text-[11px] text-muted-foreground">
+                  Rank #{info.rwaRank}
+                </p>
+              ) : null}
+            </div>
+            <DeskLogo src={info?.logo} name={name} />
+            {info ? (
+              <WatchlistButton
+                rwaId={info.rwaId}
+                name={info.name}
+                symbol={info.symbol}
+                assetType={String(info.assetType)}
+              />
+            ) : null}
+          </div>
         </div>
 
+        <MetaStrip info={info} />
+
         <QuoteBar>
-          <QuoteStat label="Tokenized price">
-            <span className="text-xl md:text-2xl">{formatUsd(desk.quote.price)}</span>
-          </QuoteStat>
           <QuoteStat label="Tokenized market cap">
             {formatUsd(desk.quote.marketCap, { compact: true })}
           </QuoteStat>
@@ -118,17 +133,19 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
               {summary.tokenCount === 1 ? "wrapper" : "wrappers"}
             </span>
           </QuoteStat>
+          <QuoteStat label="Source">
+            <span className="font-sans text-[12px] text-muted-foreground">
+              Average across issuer wrappers, not a cash last
+            </span>
+          </QuoteStat>
         </QuoteBar>
-        <p className="text-[11px] text-muted-foreground">
-          Tokenized market data — average across issuer wrappers, not a cash-market last.
-        </p>
       </header>
 
-      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(16rem,18rem)_minmax(0,1fr)_minmax(15rem,17rem)] lg:items-start">
+      <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(16rem,18rem)_minmax(0,1fr)_minmax(15rem,17rem)] lg:items-start">
         <div className="order-2 lg:order-1">
           <UnderlierIdentity info={info} rwaId={rwaId} />
           {info?.assetType ? (
-            <p className="mt-3 text-[12px] text-muted-foreground">
+            <p className="mt-2 px-0.5 text-[12px] text-muted-foreground">
               <TextLink href={`/?type=${encodeURIComponent(String(info.assetType))}`}>
                 More {formatType(String(info.assetType))} underliers
               </TextLink>
@@ -136,7 +153,7 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
           ) : null}
         </div>
 
-        <div className="order-1 min-w-0 lg:order-2">
+        <div className="order-1 flex min-w-0 flex-col gap-4 lg:order-2">
           <TokenizedExposure
             tokens={tokens}
             underlierPrice={desk.quote.price}
@@ -146,9 +163,16 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
             showMcap={showTokenMcap}
             showChange={showTokenChange}
           />
+          <ComparisonSection
+            underlierName={name}
+            underlierSymbol={info?.symbol ?? null}
+            underlierPrice={desk.quote.price}
+            summary={summary}
+            tokens={tokens}
+          />
         </div>
 
-        <aside className="order-3 flex flex-col gap-6">
+        <aside className="order-3 flex flex-col gap-4">
           <TradfiSection
             underlierName={name}
             underlierSymbol={info?.symbol ?? null}
@@ -158,15 +182,49 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
           <EvidenceSection evidence={desk.evidence} pathUsed={desk.pathUsed} />
         </aside>
       </div>
-
-      <ComparisonSection
-        underlierName={name}
-        underlierSymbol={info?.symbol ?? null}
-        underlierPrice={desk.quote.price}
-        summary={summary}
-        tokens={tokens}
-      />
     </div>
+  );
+}
+
+function MetaStrip({ info }: { info: AssetInfo | null }) {
+  if (!info) return null;
+  const cells: { label: string; value: ReactNode }[] = [];
+  if (info.primaryExchange) {
+    cells.push({ label: "Primary exchange", value: info.primaryExchange });
+  }
+  if (info.industry) {
+    cells.push({ label: "Industry", value: info.industry });
+  }
+  if (info.founded) {
+    cells.push({ label: "Founded", value: info.founded.slice(0, 10) });
+  }
+  if (info.employees != null) {
+    cells.push({ label: "Employees", value: formatInt(info.employees) });
+  }
+  if (info.cik) {
+    cells.push({
+      label: "CIK",
+      value: <span className="font-mono">{info.cik}</span>,
+    });
+  }
+  if (cells.length === 0) return null;
+
+  return (
+    <dl
+      className={cn(
+        "grid border border-border bg-surface",
+        cells.length >= 5 ? "grid-cols-2 sm:grid-cols-5" : "grid-cols-2 sm:grid-cols-4",
+      )}
+    >
+      {cells.map((cell) => (
+        <div key={cell.label} className="border-border px-3 py-2 not-last:border-r max-sm:[&:nth-child(odd)]:border-r max-sm:[&:nth-child(-n+2)]:border-b sm:border-b-0">
+          <dt className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+            {cell.label}
+          </dt>
+          <dd className="mt-0.5 truncate text-[12.5px] text-foreground">{cell.value}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 
@@ -212,16 +270,16 @@ function UnderlierIdentity({ info, rwaId }: { info: AssetInfo | null; rwaId: str
   return (
     <DeskSection
       id="underlier"
-      kicker="About the underlier"
-      title="Underlier"
+      kicker="Real-world asset"
+      title="About the underlier"
       description="The instrument being tokenized — not the on-chain wrapper."
     >
       {about ? (
-        <p className="text-[13px] text-muted-foreground">{about}</p>
+        <p className="text-[13px] leading-relaxed text-muted-foreground">{about}</p>
       ) : (
         <p className="text-[13px] text-muted-foreground">No About block returned for this underlier.</p>
       )}
-      <dl className="mt-2 grid gap-y-1.5">
+      <dl className="mt-3 grid gap-y-1.5">
         {rows.map((row) => (
           <IdentityRow key={row.label} label={row.label} value={row.value} />
         ))}
@@ -250,8 +308,8 @@ function TokenizedExposure({
   return (
     <DeskSection
       id="tokenized-exposure"
-      kicker="On-chain wrappers"
-      title="Tokenized exposure"
+      kicker="Tokenized exposure"
+      title="Issuer wrappers"
       description={
         <>
           Each row is a tokenized representation of {underlierName}, not a standalone
@@ -264,7 +322,7 @@ function TokenizedExposure({
           No tokenized exposure in this CMC payload. Underlier metadata still stands.
         </EmptyState>
       ) : (
-        <Table>
+        <Table bare>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead>Token</TableHead>
@@ -321,7 +379,7 @@ function TokenizedExposure({
                     ) : (
                       (token.issuerName ?? "—")
                     )}
-                    <div className="mt-0.5 text-[11px] text-muted-foreground">
+                    <div className="mt-0.5 text-[11px] text-up">
                       {[isClosest ? "Closest" : null, isMostVolume ? "Most volume" : null]
                         .filter(Boolean)
                         .join(" · ")}
@@ -351,9 +409,7 @@ function TokenizedExposure({
                   ) : null}
                   <TableCell className="text-right">
                     {token.issuerId ? (
-                      <TextLink href={`/issuer/${token.issuerId}`} className="text-[12px]">
-                        View issuer
-                      </TextLink>
+                      <ActionLink href={`/issuer/${token.issuerId}`}>View issuer</ActionLink>
                     ) : (
                       <span className="text-muted-foreground">—</span>
                     )}
@@ -406,7 +462,7 @@ function ComparisonSection({
       title="Tokenized vs underlier (average)"
       description="Existing spread versus the average tokenized underlier price. Not a cash-market premium."
     >
-      <div className="grid grid-cols-1 divide-y divide-border border border-border md:grid-cols-3 md:divide-x md:divide-y-0">
+      <div className="grid grid-cols-1 divide-y divide-border border border-border bg-background md:grid-cols-3 md:divide-x md:divide-y-0">
         <div className="px-3 py-2.5">
           <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
             Average tokenized price
@@ -469,7 +525,7 @@ function TradfiSection({
   return (
     <DeskSection
       id="tradfi"
-      kicker="Venue identity"
+      kicker="Market / venue"
       title="CMC-reported venue"
       description="Venue identity from this CMC payload. Not a cash-market last, and not necessarily a traditional listing."
     >
@@ -485,7 +541,7 @@ function TradfiSection({
       {markets.length === 0 ? (
         <p className="text-[12px] text-muted-foreground">No venue identity in this payload.</p>
       ) : (
-        <Table>
+        <Table bare>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead>Exchange</TableHead>
@@ -505,7 +561,10 @@ function TradfiSection({
                 <TableCell className="font-mono">{market.symbol ?? "—"}</TableCell>
                 <TableCell className="text-right">
                   {market.marketUrl ? (
-                    <ExternalLink className="text-[12px] text-mark hover:underline" href={market.marketUrl}>
+                    <ExternalLink
+                      className="inline-flex h-6 items-center border border-border px-2 text-[10px] text-muted-foreground hover:border-foreground/25 hover:text-foreground"
+                      href={market.marketUrl}
+                    >
                       Open venue
                     </ExternalLink>
                   ) : (
@@ -531,8 +590,8 @@ function IssuersSection({
   return (
     <DeskSection
       id="issuers"
-      kicker="Who wrapped it"
-      title="Issuers"
+      kicker="Issuer"
+      title="Who wrapped it"
       description={`${underlierName} → issuer → tokenized representation.`}
     >
       {issuers.length === 0 ? (
@@ -540,7 +599,7 @@ function IssuersSection({
           No issuers attached to wrappers in this payload.
         </p>
       ) : (
-        <ul className="flex flex-col divide-y divide-border border border-border">
+        <ul className="flex flex-col divide-y divide-border border border-border bg-background">
           {issuers.map((group) => (
             <li key={group.key} className="flex items-baseline justify-between gap-3 px-3 py-2">
               <div className="min-w-0">
@@ -559,9 +618,9 @@ function IssuersSection({
                 </p>
               </div>
               {group.issuerId ? (
-                <TextLink href={`/issuer/${group.issuerId}`} className="shrink-0 text-[12px]">
+                <ActionLink href={`/issuer/${group.issuerId}`} className="shrink-0">
                   View issuer
-                </TextLink>
+                </ActionLink>
               ) : (
                 <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
                   {group.tokens.length}
@@ -585,8 +644,8 @@ function EvidenceSection({
   return (
     <DeskSection
       id="evidence"
-      kicker="Data provenance"
-      title="Evidence"
+      kicker="Evidence"
+      title="Data & Evidence"
       description="Named CoinMarketCap RWA calls on this page load."
     >
       <p className="text-[11px] text-muted-foreground">
@@ -600,7 +659,11 @@ function EvidenceSection({
             <li key={`${item.endpoint}-${index}`} className="text-[11px]">
               <span className="font-mono">{item.endpoint}</span>
               <span className="ml-2 text-muted-foreground">
-                {item.ok ? `HTTP ${item.httpStatus}` : `error ${item.httpStatus}`}
+                {item.ok ? (
+                  <span className="text-up">HTTP {item.httpStatus}</span>
+                ) : (
+                  `error ${item.httpStatus}`
+                )}
                 {` · ${item.elapsedMs}ms`}
               </span>
             </li>
@@ -625,9 +688,19 @@ function DeskSection({
   children: ReactNode;
 }) {
   return (
-    <section className="flex flex-col gap-2.5" aria-labelledby={id}>
-      <SectionHead id={id} kicker={kicker} title={title} description={description} />
-      {children}
+    <section aria-labelledby={id}>
+      <Panel>
+        <div className="border-b border-border px-3 pt-3">
+          <SectionHead
+            id={id}
+            kicker={kicker}
+            title={title}
+            description={description}
+            className="border-b-0 pb-3"
+          />
+        </div>
+        <div className="flex flex-col gap-2.5 p-3">{children}</div>
+      </Panel>
     </section>
   );
 }

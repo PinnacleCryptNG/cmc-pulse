@@ -1,6 +1,15 @@
 import Link from "next/link";
 import { ExternalLink } from "@/components/external-link";
-import { EmptyState, PageHeader, Pager, StatusFlag, TextLink, DeskLogo } from "@/components/desk-chrome";
+import {
+  ActionLink,
+  DeskLogo,
+  EmptyState,
+  PageHeader,
+  Pager,
+  Panel,
+  StatusFlag,
+  TextLink,
+} from "@/components/desk-chrome";
 import {
   Table,
   TableBody,
@@ -41,33 +50,36 @@ export function IssuerDirectory({ data }: { data: IssuersResult }) {
         }
       />
 
+      <Panel>
       {data.issuers.length === 0 ? (
         <>
-          <EmptyState
-            title="No issuers found"
-            actions={
-              pastEnd && prevHref ? <TextLink href={prevHref}>Previous page</TextLink> : undefined
-            }
-          >
-            {pastEnd ? (
-              <>
-                This page is past the end of the CMC issuer list.
-                {data.totalSize > 0 ? (
-                  <>
-                    {" "}
-                    Tracked issuers:{" "}
-                    <span className="font-mono tabular-nums text-foreground">
-                      {data.totalSize.toLocaleString("en-US")}
-                    </span>
-                    .
-                  </>
-                ) : null}
-              </>
-            ) : (
-              "The CMC issuer list returned an empty page."
-            )}
-          </EmptyState>
-          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-2">
+          <div className="p-3">
+            <EmptyState
+              title="No issuers found"
+              actions={
+                pastEnd && prevHref ? <TextLink href={prevHref}>Previous page</TextLink> : undefined
+              }
+            >
+              {pastEnd ? (
+                <>
+                  This page is past the end of the CMC issuer list.
+                  {data.totalSize > 0 ? (
+                    <>
+                      {" "}
+                      Tracked issuers:{" "}
+                      <span className="font-mono tabular-nums text-foreground">
+                        {data.totalSize.toLocaleString("en-US")}
+                      </span>
+                      .
+                    </>
+                  ) : null}
+                </>
+              ) : (
+                "The CMC issuer list returned an empty page."
+              )}
+            </EmptyState>
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-3 py-2">
             <p className="text-[11px] text-muted-foreground">
               No rows on this page
               {data.start > 1 ? (
@@ -82,7 +94,7 @@ export function IssuerDirectory({ data }: { data: IssuersResult }) {
         </>
       ) : (
         <>
-          <Table sticky>
+          <Table sticky bare>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
                 <TableHead>Issuer</TableHead>
@@ -99,7 +111,7 @@ export function IssuerDirectory({ data }: { data: IssuersResult }) {
             </TableBody>
           </Table>
 
-          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-3 py-2">
             <p className="text-[11px] text-muted-foreground">
               <span className="font-mono tabular-nums text-foreground">
                 {rangeStart.toLocaleString("en-US")}–{rangeEnd.toLocaleString("en-US")}
@@ -120,6 +132,7 @@ export function IssuerDirectory({ data }: { data: IssuersResult }) {
           </div>
         </>
       )}
+      </Panel>
     </div>
   );
 }
@@ -163,9 +176,7 @@ function IssuerRow({ issuer }: { issuer: IssuerSummary }) {
         )}
       </TableCell>
       <TableCell className="text-right">
-        <TextLink href={`/issuer/${issuer.issuerId}`} className="text-[12px]">
-          View issuer
-        </TextLink>
+        <ActionLink href={`/issuer/${issuer.issuerId}`}>View issuer</ActionLink>
       </TableCell>
     </TableRow>
   );

@@ -1,4 +1,4 @@
-import { PageHeader, TextLink } from "@/components/desk-chrome";
+import { ActionLink, PageHeader, Panel } from "@/components/desk-chrome";
 import {
   Table,
   TableBody,
@@ -37,48 +37,48 @@ export function ClassesView({ counts }: { counts: TypeCount[] }) {
         }
       />
 
-      <Table>
-        <TableHeader>
-          <TableRow className="hover:bg-transparent">
-            <TableHead>Class</TableHead>
-            <TableHead className="text-right">Underliers</TableHead>
-            <TableHead className="hidden sm:table-cell">Notes</TableHead>
-            <TableHead className="text-right">Research</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {ASSET_TYPES.map((type) => {
-            const row = byType.get(type);
-            const count = row?.count ?? null;
-            const empty = count === 0;
-            return (
-              <TableRow key={type}>
-                <TableCell className="whitespace-normal font-medium">
-                  {TYPE_LABELS[type]}
-                  <p className="mt-0.5 max-w-sm text-[12px] font-normal text-muted-foreground sm:hidden">
+      <Panel>
+        <Table bare>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              <TableHead>Class</TableHead>
+              <TableHead className="text-right">Underliers</TableHead>
+              <TableHead className="hidden sm:table-cell">Notes</TableHead>
+              <TableHead className="text-right">Research</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {ASSET_TYPES.map((type) => {
+              const row = byType.get(type);
+              const count = row?.count ?? null;
+              const empty = count === 0;
+              return (
+                <TableRow key={type}>
+                  <TableCell className="whitespace-normal font-medium">
+                    {TYPE_LABELS[type]}
+                    <p className="mt-0.5 max-w-sm text-[12px] font-normal text-muted-foreground sm:hidden">
+                      {CLASS_BLURB[type]}
+                    </p>
+                  </TableCell>
+                  <TableCell className="text-right font-mono tabular-nums">
+                    {formatInt(count)}
+                  </TableCell>
+                  <TableCell className="hidden max-w-md whitespace-normal text-[12px] text-muted-foreground sm:table-cell">
                     {CLASS_BLURB[type]}
-                  </p>
-                </TableCell>
-                <TableCell className="text-right font-mono tabular-nums">
-                  {formatInt(count)}
-                </TableCell>
-                <TableCell className="hidden max-w-md whitespace-normal text-[12px] text-muted-foreground sm:table-cell">
-                  {CLASS_BLURB[type]}
-                </TableCell>
-                <TableCell className="text-right">
-                  {empty ? (
-                    <span className="text-[12px] text-muted-foreground">None in map</span>
-                  ) : (
-                    <TextLink href={`/?type=${type}`} className="text-[12px]">
-                      Open desk
-                    </TextLink>
-                  )}
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {empty ? (
+                      <span className="text-[12px] text-muted-foreground">None in map</span>
+                    ) : (
+                      <ActionLink href={`/?type=${type}`}>Open desk</ActionLink>
+                    )}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </Panel>
     </div>
   );
 }

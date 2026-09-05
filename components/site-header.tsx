@@ -26,14 +26,18 @@ export function SiteHeader({
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background">
-      <div className="h-px bg-mark" aria-hidden />
-      <div className="mx-auto flex w-full max-w-[88rem] items-center justify-between gap-3 px-3 py-1.5 sm:px-4">
-        <Link
-          href="/"
-          className="shrink-0 text-[13px] font-semibold tracking-[0.16em] uppercase"
-        >
-          Underlier Desk
+    <header className="sticky top-0 z-40 border-b border-border bg-surface">
+      <div className="mx-auto flex w-full max-w-[88rem] items-center justify-between gap-3 px-3 py-2 sm:px-4">
+        <Link href="/" className="flex min-w-0 shrink-0 items-center gap-2.5 leading-tight">
+          <DeskMark />
+          <span>
+            <span className="block text-[13px] font-semibold tracking-[0.16em] uppercase">
+              Underlier Desk
+            </span>
+            <span className="hidden text-[10px] tracking-[0.12em] text-muted-foreground uppercase sm:block">
+              RWA research
+            </span>
+          </span>
         </Link>
         <nav className="flex min-w-0 flex-1 items-center gap-0.5 text-[13px]" aria-label="Primary">
           {LINKS.map((link) => {
@@ -46,7 +50,7 @@ export function SiteHeader({
                 className={cn(
                   "border-b-2 px-2 py-1.5",
                   current
-                    ? "border-mark text-foreground"
+                    ? "border-up text-foreground"
                     : "border-transparent text-muted-foreground hover:text-foreground",
                 )}
               >
@@ -55,7 +59,7 @@ export function SiteHeader({
             );
           })}
         </nav>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-center gap-3">
           <span
             className="font-mono text-[10px] tracking-[0.14em] text-muted-foreground uppercase"
             title={
@@ -77,5 +81,31 @@ export function SiteHeader({
         </div>
       </div>
     </header>
+  );
+}
+
+function DeskMark() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 18 18"
+      aria-hidden
+      className="shrink-0 text-foreground"
+    >
+      <path
+        fill="currentColor"
+        fillOpacity="0.92"
+        d="M9 1.4 16.1 5.1v7.8L9 16.6 1.9 12.9V5.1L9 1.4Z"
+      />
+      <path fill="var(--background)" fillOpacity="0.45" d="M9 1.4 16.1 5.1 9 8.8 1.9 5.1 9 1.4Z" />
+      <path
+        fill="none"
+        stroke="var(--background)"
+        strokeOpacity="0.55"
+        strokeWidth="0.7"
+        d="M9 8.8V16.6M1.9 5.1 9 8.8l7.1-3.7"
+      />
+    </svg>
   );
 }

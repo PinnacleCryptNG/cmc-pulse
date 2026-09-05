@@ -54,7 +54,7 @@ Query strings `q`, `type`, `sort`, `dir`, and `start` belong on `/`.
 2. Search `NVDA` (or `GOLD`, `SPCX`, `TLT`) on the desk.
 3. Open the asset desk. Compare issuer wrappers to the average tokenized price.
 4. Open an issuer book, then an underlier from that book.
-5. Open **Evidence** — named CoinMarketCap endpoints and truncated envelopes from this load.
+5. Open **Data & Evidence** — named CoinMarketCap endpoints and truncated envelopes from this load.
 
 ## Architecture
 
@@ -100,7 +100,7 @@ flowchart TD
   D --> F[CMC-reported venue]
   E --> G[Issuer book]
   G --> D
-  D --> H[Evidence drawer]
+  D --> H[Data & Evidence drawer]
 ```
 
 ## CMC endpoints used
@@ -113,7 +113,7 @@ flowchart TD
 6. `GET /v5/real-world-assets/issuers`
 7. `GET /v2/cryptocurrency/quotes/latest` — fallback when an RWA token has a `crypto_id` but no price
 
-Each page exposes **Evidence** with the named endpoint and a truncated response. Sample envelopes: [`evidence/sample-cmc-map-spacex.json`](evidence/sample-cmc-map-spacex.json) and [`evidence/live-nvda-quotes.json`](evidence/live-nvda-quotes.json) (key stripped).
+Each page exposes **Data & Evidence** with the named endpoint and a truncated response. Sample envelopes: [`evidence/sample-cmc-map-spacex.json`](evidence/sample-cmc-map-spacex.json) and [`evidence/live-nvda-quotes.json`](evidence/live-nvda-quotes.json) (key stripped).
 
 Debug BFF routes (same payloads the UI uses):
 

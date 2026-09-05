@@ -15,9 +15,9 @@ export function AppFrame({
   children: ReactNode;
 }) {
   return (
-    <div className="flex min-h-full flex-col">
+    <div className="flex min-h-full flex-col bg-background">
       <SiteHeader evidence={evidence} source={source} />
-      <main className="mx-auto flex w-full max-w-[88rem] flex-1 flex-col gap-3 px-3 py-4 sm:px-4">
+      <main className="mx-auto flex w-full max-w-[88rem] flex-1 flex-col gap-5 px-3 py-5 sm:px-5">
         <StatusBanner source={source} warning={warning} />
         {children}
       </main>

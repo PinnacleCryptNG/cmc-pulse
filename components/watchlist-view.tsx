@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { WatchlistButton } from "@/components/watchlist-button";
-import { EmptyState, PageHeader, TextLink } from "@/components/desk-chrome";
+import { EmptyState, PageHeader, Panel, TextLink } from "@/components/desk-chrome";
 import {
   Table,
   TableBody,
@@ -36,7 +36,8 @@ export function WatchlistView() {
           Star a row on the desk or an asset desk.
         </EmptyState>
       ) : (
-        <Table>
+        <Panel>
+        <Table bare>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead>Underlier</TableHead>
@@ -73,6 +74,7 @@ export function WatchlistView() {
             ))}
           </TableBody>
         </Table>
+        </Panel>
       )}
     </div>
   );

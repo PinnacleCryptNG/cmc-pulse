@@ -4,21 +4,40 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { isHttpsUrl } from "@/lib/safe-url";
 import { cn } from "@/lib/utils";
 
+export function Panel({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("border border-border bg-surface", className)}>{children}</div>
+  );
+}
+
 export function PageHeader({
   kicker,
   title,
   description,
   action,
   id,
+  className,
 }: {
   kicker: string;
   title: ReactNode;
   description?: ReactNode;
   action?: ReactNode;
   id?: string;
+  className?: string;
 }) {
   return (
-    <header className="flex flex-col gap-2 border-b border-border pb-3 sm:flex-row sm:items-end sm:justify-between">
+    <header
+      className={cn(
+        "flex flex-col gap-2 border-b border-border pb-3 sm:flex-row sm:items-end sm:justify-between",
+        className,
+      )}
+    >
       <div className="min-w-0">
         <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
           {kicker}
@@ -50,15 +69,22 @@ export function SectionHead({
   description,
   action,
   id,
+  className,
 }: {
   kicker: string;
   title: ReactNode;
   description?: ReactNode;
   action?: ReactNode;
   id?: string;
+  className?: string;
 }) {
   return (
-    <div className="flex flex-col gap-0.5 border-b border-border pb-2 sm:flex-row sm:items-end sm:justify-between">
+    <div
+      className={cn(
+        "flex flex-col gap-0.5 border-b border-border pb-2 sm:flex-row sm:items-end sm:justify-between",
+        className,
+      )}
+    >
       <div className="min-w-0">
         <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
           {kicker}
@@ -70,12 +96,16 @@ export function SectionHead({
           {title}
         </h2>
       </div>
-      {description ? (
-        <p className="max-w-xl text-[11px] leading-relaxed text-muted-foreground sm:text-right">
-          {description}
-        </p>
-      ) : null}
-      {action}
+      {(description || action) && (
+        <div className="flex max-w-xl flex-col items-start gap-1 sm:items-end">
+          {description ? (
+            <p className="text-[11px] leading-relaxed text-muted-foreground sm:text-right">
+              {description}
+            </p>
+          ) : null}
+          {action}
+        </div>
+      )}
     </div>
   );
 }
@@ -90,7 +120,7 @@ export function QuoteBar({
   return (
     <div
       className={cn(
-        "grid grid-cols-2 divide-x divide-y divide-border border-y border-border md:grid-cols-4 md:divide-y-0",
+        "grid grid-cols-2 divide-x divide-y divide-border border border-border bg-surface md:grid-cols-4 md:divide-y-0",
         className,
       )}
     >
@@ -152,6 +182,28 @@ export function TextLink({
       href={href}
       className={cn(
         "text-mark underline-offset-4 hover:underline",
+        className,
+      )}
+    >
+      {children}
+    </Link>
+  );
+}
+
+export function ActionLink({
+  href,
+  children,
+  className,
+}: {
+  href: string;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "inline-flex h-6 items-center border border-border px-2 text-[10px] tracking-[0.04em] text-muted-foreground hover:border-foreground/25 hover:text-foreground",
         className,
       )}
     >
@@ -224,7 +276,7 @@ export function DeskLogo({
       title={name}
       width={size === "sm" ? 24 : 36}
       height={size === "sm" ? 24 : 36}
-      className={`${dim} shrink-0 border border-border bg-surface object-contain p-0.5`}
+      className={`${dim} shrink-0 rounded-sm border border-border bg-background object-contain p-0.5`}
     />
   );
 }
@@ -252,9 +304,8 @@ export function StatusFlag({ active }: { active: boolean | null }) {
 export function LoadingShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-full flex-col">
-      <div className="border-b border-border">
-        <div className="h-px bg-mark" aria-hidden />
-        <div className="mx-auto flex w-full max-w-[88rem] items-center justify-between px-3 py-1.5 sm:px-4">
+      <div className="border-b border-border bg-surface">
+        <div className="mx-auto flex w-full max-w-[88rem] items-center justify-between px-3 py-2 sm:px-4">
           <Skeleton className="h-3.5 w-36" />
           <div className="hidden gap-3 sm:flex">
             <Skeleton className="h-4 w-10" />

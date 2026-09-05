@@ -1,5 +1,6 @@
 "use client";
 
+import { FileText } from "lucide-react";
 import type { CallEvidence } from "@/lib/cmc/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,18 +22,19 @@ export function EvidenceDrawer({ evidence }: { evidence: CallEvidence[] }) {
             type="button"
             variant="ghost"
             size="sm"
-            className="h-7 px-1.5 font-normal text-[11px] tracking-[0.08em] text-muted-foreground hover:text-foreground"
+            className="h-7 gap-1.5 px-1.5 font-normal text-[11px] tracking-[0.04em] text-muted-foreground hover:text-foreground"
           />
         }
       >
-        Evidence
+        <FileText className="size-3.5" aria-hidden />
+        Data & Evidence
         <span className="ml-1 font-mono text-[10px] tabular-nums text-muted-foreground">
           {evidence.length}
         </span>
       </SheetTrigger>
       <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-lg">
         <SheetHeader>
-          <SheetTitle>Evidence</SheetTitle>
+          <SheetTitle>Data & Evidence</SheetTitle>
           <SheetDescription>
             Provenance for the relationships on this page: named CoinMarketCap
             endpoints and truncated response envelopes from this load. Secrets are

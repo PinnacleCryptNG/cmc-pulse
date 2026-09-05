@@ -6,13 +6,15 @@ import { cn } from "cn"
 function Table({
   className,
   sticky,
+  bare,
   ...props
-}: React.ComponentProps<"table"> & { sticky?: boolean }) {
+}: React.ComponentProps<"table"> & { sticky?: boolean; bare?: boolean }) {
   return (
     <div
       data-slot="table-container"
       className={cn(
         "relative w-full overflow-x-auto",
+        !bare && "border border-border bg-surface",
         sticky && "md:max-h-[min(68vh,42rem)] md:overflow-auto",
       )}
     >
@@ -30,7 +32,7 @@ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
     <thead
       data-slot="table-header"
       className={cn(
-        "sticky top-0 z-10 bg-background [&_tr]:border-b [&_tr]:border-border",
+        "sticky top-0 z-10 bg-surface [&_tr]:border-b [&_tr]:border-border",
         className,
       )}
       {...props}
@@ -66,7 +68,7 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
     <tr
       data-slot="table-row"
       className={cn(
-        "border-b border-border/80 transition-colors hover:bg-muted/60 has-aria-expanded:bg-muted/60 data-[state=selected]:bg-muted",
+        "border-b border-border/70 transition-colors hover:bg-muted/40 has-aria-expanded:bg-muted/40 data-[state=selected]:bg-muted",
         className
       )}
       {...props}
@@ -79,7 +81,7 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
     <th
       data-slot="table-head"
       className={cn(
-        "h-8 bg-background px-2 text-left align-middle text-[10px] font-medium tracking-[0.12em] whitespace-nowrap text-muted-foreground uppercase [&:has([role=checkbox])]:pr-0",
+        "h-8 bg-surface px-2.5 text-left align-middle text-[10px] font-medium tracking-[0.12em] whitespace-nowrap text-muted-foreground uppercase [&:has([role=checkbox])]:pr-0",
         className
       )}
       {...props}
@@ -92,7 +94,7 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
     <td
       data-slot="table-cell"
       className={cn(
-        "px-2 py-1.5 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0",
+        "px-2.5 py-1.5 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0",
         className
       )}
       {...props}
