@@ -44,6 +44,8 @@ Never commit the key. `.env*` is gitignored; `.env.example` is not. The key is a
 | `/issuers` | Issuer directory |
 | `/issuer/[id]` | Issuer book of tokenized underliers (no quotes on those rows) |
 
+Visual target: [`reference/underlier-desk-reference.png`](reference/underlier-desk-reference.png).
+
 Query strings `q`, `type`, `sort`, `dir`, and `start` belong on `/`.
 
 ## Judge path (under two minutes)

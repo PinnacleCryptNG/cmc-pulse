@@ -41,6 +41,14 @@ Data flow: **RSC → `lib/cmc/service.ts`**. Pages do not fetch `/api/rwa/*` fro
 
 Do not add auth, a database, a chart library, or a second component library. Do not invent fields or fake prices.
 
+## Visual reference (locked)
+
+The look target is [`reference/underlier-desk-reference.png`](reference/underlier-desk-reference.png): four panels for `/`, `/asset/[id]`, `/issuers`, and `/issuer/[id]`.
+
+Institutional research terminal — dark charcoal, thin borders, dense tables, emerald only for live/active and signed numbers. Action labels stay **View desk**, **View issuer**, **View underlier**. Header control is **Evidence**. Venue copy is **CMC-reported venue**.
+
+Match that layout and density. Do not invent KPI totals, cash lasts, token counts, or issuer-book quotes the CMC payload does not return.
+
 ## Architecture
 
 ```mermaid
