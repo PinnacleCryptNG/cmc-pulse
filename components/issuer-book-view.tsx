@@ -28,6 +28,8 @@ export function IssuerBookView({ book }: { book: IssuerBook }) {
   const tokens = sortTokens(issuer.tokens);
   const shown = tokens.length;
   const indexed = issuer.numTokens ?? issuer.totalSize;
+  const linked = tokens.filter((token) => token.rwaId !== null).length;
+  const unlinked = shown - linked;
   const truncated = issuer.hasMore || (indexed !== null && shown < indexed);
   const website = issuer.website && isHttpsUrl(issuer.website) ? issuer.website : null;
 
@@ -98,13 +100,21 @@ export function IssuerBookView({ book }: { book: IssuerBook }) {
         </dl>
       </header>
 
+      <section aria-label="Issuer relationship summary">
+        <div className="grid border border-border bg-surface sm:grid-cols-3">
+          <RelationshipStat label="Issuer" value={issuer.name} detail={`issuer_id ${issuer.issuerId}`} />
+          <RelationshipStat label="Linked underliers" value={linked.toLocaleString("en-US")} detail="CMC relationships resolved" />
+          <RelationshipStat label="Unresolved in payload" value={unlinked.toLocaleString("en-US")} detail="No rwa_id returned" />
+        </div>
+      </section>
+
       <section aria-labelledby="tokenization-heading">
         <Panel>
           <div className="border-b border-border px-3 pt-3">
             <SectionHead
               id="tokenization-heading"
-              kicker="Underlier → tokenized representation"
-              title="Real-world assets tokenized by this issuer"
+              kicker="Issuer → token → underlier"
+              title="Tokenization relationships"
               className="border-b-0 pb-3"
               description={
                 truncated
@@ -144,6 +154,16 @@ export function IssuerBookView({ book }: { book: IssuerBook }) {
   );
 }
 
+function RelationshipStat({ label, value, detail }: { label: string; value: string; detail: string }) {
+  return (
+    <div className="border-b border-border px-3 py-3 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
+      <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">{label}</p>
+      <p className="mt-1 truncate text-[13px] font-medium">{value}</p>
+      <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">{detail}</p>
+    </div>
+  );
+}
+
 function TokenRow({ token }: { token: IssuerToken }) {
   const underlierLabel = token.underlierName ?? (token.rwaId !== null ? `rwa_id ${token.rwaId}` : null);
   const typeLabel = token.underlierType ? formatType(token.underlierType) : null;
@@ -152,10 +172,7 @@ function TokenRow({ token }: { token: IssuerToken }) {
     <TableRow className="focus-within:bg-muted/60">
       <TableCell className="whitespace-normal">
         {token.rwaId !== null && underlierLabel ? (
-          <Link
-            href={`/asset/${token.rwaId}`}
-            className="font-medium text-foreground hover:text-mark"
-          >
+          <Link href={`/asset/${token.rwaId}`} className="font-medium text-foreground hover:text-mark">
             {underlierLabel}
           </Link>
         ) : (
@@ -166,23 +183,13 @@ function TokenRow({ token }: { token: IssuerToken }) {
         ) : token.rwaId !== null ? (
           <div className="font-mono text-[11px] text-muted-foreground">rwa_id {token.rwaId}</div>
         ) : null}
-        <div className="mt-0.5 text-[11px] text-muted-foreground sm:hidden">
-          {typeLabel ?? "—"}
-        </div>
+        <div className="mt-0.5 text-[11px] text-muted-foreground sm:hidden">{typeLabel ?? "—"}</div>
       </TableCell>
-      <TableCell className="hidden text-[12px] text-muted-foreground sm:table-cell">
-        {typeLabel ?? "—"}
-      </TableCell>
+      <TableCell className="hidden text-[12px] text-muted-foreground sm:table-cell">{typeLabel ?? "—"}</TableCell>
       <TableCell className="font-mono">{token.symbol}</TableCell>
-      <TableCell className="hidden max-w-md whitespace-normal text-[12px] text-muted-foreground md:table-cell">
-        {token.name}
-      </TableCell>
+      <TableCell className="hidden max-w-md whitespace-normal text-[12px] text-muted-foreground md:table-cell">{token.name}</TableCell>
       <TableCell className="text-right">
-        {token.rwaId !== null ? (
-          <ActionLink href={`/asset/${token.rwaId}`}>View underlier</ActionLink>
-        ) : (
-          <span className="text-muted-foreground">—</span>
-        )}
+        {token.rwaId !== null ? <ActionLink href={`/asset/${token.rwaId}`}>View underlier</ActionLink> : <span className="text-muted-foreground">—</span>}
       </TableCell>
     </TableRow>
   );
