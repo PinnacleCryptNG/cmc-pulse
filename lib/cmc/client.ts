@@ -4,6 +4,7 @@ import type { CallEvidence, DataSource } from "./types";
 
 const CMC_BASE = "https://pro-api.coinmarketcap.com";
 const PREVIEW_LIMIT = 4000;
+const REQUEST_TIMEOUT_MS = 8000;
 
 export type CmcCall = {
   path: string;
@@ -121,6 +122,7 @@ export async function cmcGet(
         Accept: "application/json",
       },
       cache: "no-store",
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
     const payload: unknown = await response.json().catch(() => null);
     const status = extractStatus(payload);
