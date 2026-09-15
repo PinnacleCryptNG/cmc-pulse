@@ -1,4 +1,5 @@
 import { AppFrame } from "@/components/app-frame";
+import { DeskIntro } from "@/components/desk-intro";
 import { MarketDeskView } from "@/components/market-desk-view";
 import { getScreener } from "@/lib/cmc/service";
 import {
@@ -28,6 +29,7 @@ export default async function HomePage({
 
   return (
     <AppFrame evidence={data.evidence} source={data.source} warning={data.warning}>
+      <DeskIntro />
       <MarketDeskView data={data} />
     </AppFrame>
   );
