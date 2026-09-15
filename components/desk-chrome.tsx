@@ -257,6 +257,13 @@ export function IdentityRow({ label, value }: { label: string; value: ReactNode 
   );
 }
 
+function initials(name: string) {
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return "?";
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return `${words[0][0]}${words[words.length - 1][0]}`.toUpperCase();
+}
+
 export function DeskLogo({
   src,
   name,
@@ -266,8 +273,18 @@ export function DeskLogo({
   name: string;
   size?: "sm" | "md";
 }) {
-  if (!isHttpsUrl(src)) return null;
   const dim = size === "sm" ? "size-6" : "size-9";
+  if (!isHttpsUrl(src)) {
+    return (
+      <span
+        className={`${dim} inline-flex shrink-0 items-center justify-center rounded-sm border border-border bg-background font-mono text-[9px] font-medium tracking-tight text-muted-foreground`}
+        aria-hidden="true"
+        title={name}
+      >
+        {initials(name)}
+      </span>
+    );
+  }
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
