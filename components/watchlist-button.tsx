@@ -1,7 +1,6 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { Star } from "lucide-react";
 import {
   isOnWatchlist,
   subscribeWatchlist,
@@ -43,7 +42,19 @@ export function WatchlistButton({
         saved && "text-up",
       )}
     >
-      <Star className={cn("size-3.5", saved && "fill-current")} aria-hidden />
+      <svg
+        viewBox="0 0 24 24"
+        width="14"
+        height="14"
+        fill={saved ? "currentColor" : "none"}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="m12 3 2.78 5.63 6.22.9-4.5 4.39 1.06 6.2L12 17.2l-5.56 2.92 1.06-6.2L3 9.53l6.22-.9L12 3Z" />
+      </svg>
     </button>
   );
 }
