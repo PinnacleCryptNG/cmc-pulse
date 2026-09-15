@@ -58,28 +58,27 @@ async function typeCounts(): Promise<{ counts: TypeCount[]; evidence: CallEviden
   if (typeCountsMemo && Date.now() - typeCountsMemo.at < COUNTS_TTL_MS) {
     return { counts: typeCountsMemo.counts, evidence: typeCountsMemo.evidence };
   }
-  const evidence: CallEvidence[] = [];
-  const allCall = await cmcGet(MAP, { start: 1, limit: 1, sort: "rwa_id" });
-  evidence.push(allCall.evidence);
-  const allParsed = parseMapPayload(allCall.payload);
 
-  const perType = await Promise.all(
-    ASSET_TYPES.map(async (type) => {
-      const call = await cmcGet(MAP, {
+  const evidence: CallEvidence[] = [];
+  const [allCall, ...typeCalls] = await Promise.all([
+    cmcGet(MAP, { start: 1, limit: 1, sort: "rwa_id" }),
+    ...ASSET_TYPES.map((type) =>
+      cmcGet(MAP, {
         asset_type: type,
         start: 1,
         limit: 1,
         sort: "rwa_id",
-      });
-      evidence.push(call.evidence);
-      const parsed = parseMapPayload(call.payload);
-      return {
-        type,
-        label: TYPE_LABELS[type],
-        count: call.ok ? parsed.totalSize : null,
-      } satisfies TypeCount;
-    }),
-  );
+      }),
+    ),
+  ]);
+
+  evidence.push(allCall.evidence, ...typeCalls.map((call) => call.evidence));
+  const allParsed = parseMapPayload(allCall.payload);
+  const perType = typeCalls.map((call, index) => ({
+    type: ASSET_TYPES[index],
+    label: TYPE_LABELS[ASSET_TYPES[index]],
+    count: call.ok ? parseMapPayload(call.payload).totalSize : null,
+  }) satisfies TypeCount);
 
   const result: { counts: TypeCount[]; evidence: CallEvidence[] } = {
     counts: [
