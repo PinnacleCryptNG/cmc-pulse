@@ -33,14 +33,14 @@ export function DeskIntro() {
 
         <form action="/" method="get" className="min-w-0">
           <label htmlFor="desk-search" className="sr-only">
-            Search an asset, ticker or RWA ID
+            Search ticker, slug or RWA ID
           </label>
           <div className="flex h-11 items-center border border-border bg-surface px-3 focus-within:border-foreground/50">
             <Search className="mr-2.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
             <input
               id="desk-search"
               name="q"
-              placeholder="Search an asset, ticker or RWA ID"
+              placeholder="Search ticker, slug or RWA ID"
               className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
               autoComplete="off"
             />
