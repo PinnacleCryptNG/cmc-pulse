@@ -1,5 +1,6 @@
 import { AppFrame } from "@/components/app-frame";
 import { AssetDeskView } from "@/components/asset-desk-view";
+import { InvestigationTrail } from "@/components/investigation-trail";
 import { getAssetDesk } from "@/lib/cmc/service";
 import { isRwaIdParam } from "@/lib/search-params";
 import { notFound } from "next/navigation";
@@ -22,6 +23,7 @@ export default async function AssetPage({
 
   return (
     <AppFrame evidence={desk.evidence} source={desk.source} warning={desk.warning}>
+      <InvestigationTrail desk={desk} />
       <AssetDeskView desk={desk} rwaId={id} />
     </AppFrame>
   );
