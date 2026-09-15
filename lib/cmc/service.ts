@@ -2,8 +2,6 @@ import { parseSortDir, parseSortParam } from "../search-params";
 import { cmcGet, hasLiveKey, type CmcCall } from "./client";
 import {
   applyCryptoQuotes,
-  invertIssuerTokens,
-  mergeTokens,
   parseCryptoQuotes,
   parseInfoPayload,
   parseIssuerPayload,
@@ -13,7 +11,7 @@ import {
   parseQuotesPayload,
   TYPE_LABELS,
 } from "./parse";
-import { ASSET_TYPES, type AssetDesk, type AssetType, type CallEvidence, type IssuerBook, type IssuerDetail, type IssuersResult, type QuotePath, type ScreenerResult, type TypeCount, type UnderlyingToken } from "./types";
+import { ASSET_TYPES, type AssetDesk, type AssetType, type CallEvidence, type IssuerBook, type IssuersResult, type QuotePath, type ScreenerResult, type TypeCount } from "./types";
 
 const MAP = "/v5/real-world-assets/map";
 const INFO = "/v5/real-world-assets/info";
@@ -23,14 +21,6 @@ const ISSUERS = "/v5/real-world-assets/issuers/list";
 const ISSUER = "/v5/real-world-assets/issuers";
 const CRYPTO_QUOTES = "/v2/cryptocurrency/quotes/latest";
 
-type IssuerIndex = {
-  at: number;
-  issuers: IssuerDetail[];
-  tokensByRwa: Map<number, UnderlyingToken[]>;
-};
-
-let issuerIndexMemo: IssuerIndex | null = null;
-const INDEX_TTL_MS = 5 * 60 * 1000;
 const COUNTS_TTL_MS = 5 * 60 * 1000;
 
 let typeCountsMemo: { at: number; counts: TypeCount[]; evidence: CallEvidence[] } | null =
@@ -100,52 +90,6 @@ async function typeCounts(): Promise<{ counts: TypeCount[]; evidence: CallEviden
   };
   typeCountsMemo = { at: Date.now(), ...result };
   return result;
-}
-
-async function poolMap<T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>) {
-  const results: R[] = new Array(items.length);
-  let cursor = 0;
-  async function worker() {
-    while (cursor < items.length) {
-      const index = cursor;
-      cursor += 1;
-      results[index] = await fn(items[index]);
-    }
-  }
-  const workers = Array.from({ length: Math.min(limit, items.length) }, () => worker());
-  await Promise.all(workers);
-  return results;
-}
-
-async function loadIssuerIndex(evidence: CallEvidence[]) {
-  if (issuerIndexMemo && Date.now() - issuerIndexMemo.at < INDEX_TTL_MS) {
-    return issuerIndexMemo;
-  }
-  const collected: IssuerDetail[] = [];
-  let start = 1;
-  const limit = 250;
-  for (let page = 0; page < 4; page += 1) {
-    const listCall = await cmcGet(ISSUERS, { start, limit });
-    evidence.push(listCall.evidence);
-    if (!listCall.ok) break;
-    const parsed = parseIssuersListPayload(listCall.payload);
-    const details = await poolMap(parsed.issuers, 5, async (summary) => {
-      const detailCall = await cmcGet(ISSUER, { issuer_id: summary.issuerId, limit: 250 });
-      evidence.push(detailCall.evidence);
-      return parseIssuerPayload(detailCall.payload);
-    });
-    for (const detail of details) {
-      if (detail) collected.push(detail);
-    }
-    if (!parsed.hasMore) break;
-    start += limit;
-  }
-  issuerIndexMemo = {
-    at: Date.now(),
-    issuers: collected,
-    tokensByRwa: invertIssuerTokens(collected),
-  };
-  return issuerIndexMemo;
 }
 
 export async function getScreener(input: {
@@ -336,13 +280,8 @@ export async function getAssetDesk(rwaId: string): Promise<AssetDesk> {
     }
   }
 
-  const needsIssuerJoin =
+  const missingIssuerRelationship =
     tokens.length === 0 || tokens.some((token) => !token.issuerId || !token.issuerName);
-  if (needsIssuerJoin) {
-    const index = await loadIssuerIndex(evidence);
-    const fromIssuers = index.tokensByRwa.get(Number(rwaId)) ?? [];
-    tokens = mergeTokens(tokens, fromIssuers);
-  }
 
   const missingPrices = tokens.filter((token) => token.cryptoId && token.quote.price === null);
   if (missingPrices.length) {
@@ -376,7 +315,11 @@ export async function getAssetDesk(rwaId: string): Promise<AssetDesk> {
     evidence,
     warning: warningFrom(
       [infoCall, quotesCall],
-      !info ? `No metadata for rwa_id ${rwaId}.` : null,
+      !info
+        ? `No metadata for rwa_id ${rwaId}.`
+        : missingIssuerRelationship
+          ? "CMC did not return a complete issuer relationship for this asset; Underlier did not perform an unbounded issuer crawl."
+          : null,
     ),
   };
 }
