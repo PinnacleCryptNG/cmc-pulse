@@ -1,6 +1,7 @@
 import { AppFrame } from "@/components/app-frame";
 import { AssetDeskView } from "@/components/asset-desk-view";
 import { InvestigationTrail } from "@/components/investigation-trail";
+import { RepresentationLens } from "@/components/representation-lens";
 import { getAssetDesk } from "@/lib/cmc/service";
 import { isRwaIdParam } from "@/lib/search-params";
 import { notFound } from "next/navigation";
@@ -21,10 +22,15 @@ export default async function AssetPage({
     desk.quote.volume24h !== null;
   if (!desk.info && desk.tokens.length === 0 && !hasQuote) notFound();
 
+  const underlierName = desk.info?.name ?? `RWA ${id}`;
+
   return (
     <AppFrame evidence={desk.evidence} source={desk.source} warning={desk.warning}>
       <InvestigationTrail desk={desk} />
-      <AssetDeskView desk={desk} rwaId={id} />
+      <div className="flex flex-col gap-4">
+        <RepresentationLens desk={desk} underlierName={underlierName} />
+        <AssetDeskView desk={desk} rwaId={id} />
+      </div>
     </AppFrame>
   );
 }
