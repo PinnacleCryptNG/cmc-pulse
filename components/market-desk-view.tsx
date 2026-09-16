@@ -1,16 +1,13 @@
 import Link from "next/link";
-import { ArrowDown, ArrowUp, Search } from "lucide-react";
+import { ArrowDown, ArrowUp } from "lucide-react";
 import { WatchlistButton } from "@/components/watchlist-button";
 import {
   ActionLink,
   EmptyState,
-  PageHeader,
   Pager,
   Panel,
   TextLink,
 } from "@/components/desk-chrome";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -23,8 +20,6 @@ import { formatType, formatUsd } from "@/lib/cmc/format";
 import type { ScreenerResult, TypeCount } from "@/lib/cmc/types";
 import { SCREENER_SORTS, screenerHref } from "@/lib/search-params";
 import { cn } from "@/lib/utils";
-
-const SUGGESTED = ["NVDA", "GOLD", "SPCX", "TLT"] as const;
 
 const SORT_LABEL: Record<(typeof SCREENER_SORTS)[number], string> = {
   rwa_rank: "Rank",
@@ -80,73 +75,17 @@ export function MarketDeskView({ data }: { data: ScreenerResult }) {
 
       <Panel>
         <div className="px-3 pt-3">
-          <PageHeader
-            id="universe-heading"
-            kicker="Underlier map"
-            title="Underlier universe"
-            className="border-b-0 pb-2"
-            description={
-              <>
-                Lookup is ticker, slug, or <span className="font-mono">rwa_id</span> — not a
-                company-name search.
-              </>
-            }
-          />
-        </div>
-
-        <form
-          className="mx-3 mb-2 flex flex-col gap-2 border border-border bg-background px-2 py-2 sm:flex-row sm:items-center"
-          action="/"
-          method="get"
-        >
-          {data.assetType !== "all" ? (
-            <input type="hidden" name="type" value={data.assetType} />
-          ) : null}
-          {data.sort !== "rwa_rank" ? (
-            <input type="hidden" name="sort" value={data.sort} />
-          ) : null}
-          {data.sortDir !== "asc" ? (
-            <input type="hidden" name="dir" value={data.sortDir} />
-          ) : null}
-          <label
-            className="shrink-0 px-1 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground"
-            htmlFor="underlier-lookup"
-          >
-            Lookup
-          </label>
-          <div className="relative min-w-0 flex-1">
-            <Search
-              className="pointer-events-none absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-muted-foreground"
-              aria-hidden
-            />
-            <Input
-              id="underlier-lookup"
-              name="q"
-              defaultValue={data.query}
-              placeholder="NVDA, GOLD, SPCX, TLT, or an rwa_id"
-              aria-label="Search underliers"
-              className="h-7 border-0 bg-transparent pl-7 focus-visible:ring-0"
-            />
+          <div className="border-b border-border pb-3">
+            <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              Underlier map
+            </p>
+            <h1 className="mt-0.5 text-[1.35rem] font-semibold tracking-tight text-foreground">
+              Underlier universe
+            </h1>
+            <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+              Browse the assets mapped to tokenized market exposure.
+            </p>
           </div>
-          <Button type="submit" variant="outline" size="sm" className="h-7 shrink-0 rounded-sm">
-            Find
-          </Button>
-        </form>
-
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 pb-2 text-[11px]">
-          <span className="uppercase tracking-[0.14em] text-muted-foreground">Examples</span>
-          {SUGGESTED.map((ticker) => (
-            <Link
-              key={ticker}
-              href={screenerHref({}, { q: ticker })}
-              className={cn(
-                "font-mono hover:text-foreground",
-                data.query.toUpperCase() === ticker ? "text-up" : "text-muted-foreground",
-              )}
-            >
-              {ticker}
-            </Link>
-          ))}
         </div>
 
         <div className="flex flex-col gap-2 border-t border-border px-3 py-2 lg:flex-row lg:items-end lg:justify-between">
@@ -305,18 +244,12 @@ export function MarketDeskView({ data }: { data: ScreenerResult }) {
                     <span className="font-mono tabular-nums">
                       {data.totalSize.toLocaleString("en-US")}
                     </span>
-                    {" matching this lookup"}
+                    {" matching this view"}
                   </>
                 ) : (
                   <>
                     {" · "}
                     {typeLabel}
-                    {data.query ? (
-                      <>
-                        {" · "}
-                        <span className="font-mono">{data.query}</span>
-                      </>
-                    ) : null}
                   </>
                 )}
               </p>
@@ -467,19 +400,12 @@ function EmptyUniverse({
   typeActive: boolean;
   resetHref: string;
 }) {
-  const context = [
-    query ? `Lookup ${query}` : null,
-    typeActive ? `Type ${typeLabel}` : null,
-  ].filter(Boolean);
+  const context = [query || null, typeActive ? typeLabel : null].filter(Boolean);
 
   return (
-    <EmptyState title="No underliers found" actions={<TextLink href={resetHref}>Clear lookup</TextLink>}>
+    <EmptyState title="No matching assets found" actions={<TextLink href={resetHref}>Back to all assets</TextLink>}>
       {context.length > 0 ? <p className="font-mono text-[12px] text-foreground">{context.join(" · ")}</p> : null}
-      <p className="mt-1">
-        No rows matched this lookup. CMC search is ticker, slug, or{" "}
-        <span className="font-mono">rwa_id</span>
-        {typeActive ? ", within the selected type" : ""}.
-      </p>
+      <p className="mt-1">Try another asset or return to the full mapped universe.</p>
     </EmptyState>
   );
 }
