@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Search } from "lucide-react";
+import { getScreener } from "@/lib/cmc/service";
 
 const EXAMPLES = ["NVDA", "TLT", "GOLD", "SPCX"] as const;
 
@@ -22,22 +24,39 @@ const USE_CASES = [
 ] as const;
 
 const STEPS = [
-  ["01", "FIND", "Search by ticker, slug or RWA ID."],
-  ["02", "RESOLVE", "Identify the underlying real-world asset."],
+  ["01", "FIND", "Search for the asset you already know."],
+  ["02", "RESOLVE", "Identify the real-world asset underneath."],
   ["03", "TRACE", "Follow issuers and tokenized representations."],
   ["04", "VERIFY", "Compare market data and supporting evidence."],
 ] as const;
 
-export default function HomePage() {
+export const dynamic = "force-dynamic";
+
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const query = typeof params.q === "string" ? params.q.trim() : "";
+
+  if (query) {
+    const data = await getScreener({ q: query, start: 1, limit: 5 });
+    if (data.assets.length === 1) {
+      redirect(`/asset/${data.assets[0].rwaId}`);
+    }
+    redirect(`/explore?q=${encodeURIComponent(query)}`);
+  }
+
   return (
     <div className="min-h-full bg-background text-foreground">
       <header className="border-b border-border">
         <div className="mx-auto flex w-full max-w-[88rem] items-center justify-between px-4 py-3 sm:px-6">
-          <Link href="/" className="flex items-center gap-2.5" aria-label="CMC Pulse home">
-            <DeskMark />
+          <Link href="/" className="flex items-center gap-2.5" aria-label="UnderScope home">
+            <BrandMark />
             <span className="leading-none">
-              <span className="block text-[13px] font-semibold uppercase tracking-[0.16em]">CMC Pulse</span>
-              <span className="mt-1 block font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">Underlier Desk</span>
+              <span className="block text-[13px] font-semibold uppercase tracking-[0.16em]">UnderScope</span>
+              <span className="mt-1 block font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">CMC Pulse · RWA intelligence</span>
             </span>
           </Link>
           <Link
@@ -54,21 +73,21 @@ export default function HomePage() {
           <div className="max-w-4xl">
             <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-up">RWA intelligence</p>
             <h1 className="mt-4 max-w-3xl text-4xl font-semibold leading-[1.05] tracking-[-0.045em] sm:text-6xl">
-              Understand what&apos;s actually behind tokenized assets.
+              See what&apos;s actually behind a tokenized asset.
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-              CMC Pulse helps you trace tokenized stocks, treasuries, commodities and ETFs back to the underlying asset, issuer and market.
+              Trace tokenized stocks, treasuries, commodities and ETFs back to the underlying asset, issuer and market.
             </p>
           </div>
 
-          <form action="/explore" method="get" className="mt-9 max-w-3xl">
-            <label htmlFor="start-search" className="sr-only">Search ticker, slug or RWA ID</label>
+          <form action="/" method="get" className="mt-9 max-w-3xl">
+            <label htmlFor="start-search" className="sr-only">Search an asset</label>
             <div className="flex h-14 items-center border border-border bg-surface px-4 transition-colors focus-within:border-foreground/50">
               <Search className="mr-3 size-4 shrink-0 text-muted-foreground" aria-hidden />
               <input
                 id="start-search"
                 name="q"
-                placeholder="Search ticker, slug or RWA ID"
+                placeholder="Search an asset or ticker"
                 className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground sm:text-base"
                 autoComplete="off"
               />
@@ -102,8 +121,8 @@ export default function HomePage() {
           <div className="grid gap-10 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)] lg:gap-20">
             <div>
               <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-up">The workflow</p>
-              <h2 className="mt-3 max-w-md text-2xl font-semibold tracking-[-0.03em] sm:text-3xl">From a ticker to an auditable asset trail.</h2>
-              <p className="mt-4 max-w-md text-sm leading-6 text-muted-foreground">Start with the asset you know. CMC Pulse resolves the relationships that help you understand the tokenized exposure.</p>
+              <h2 className="mt-3 max-w-md text-2xl font-semibold tracking-[-0.03em] sm:text-3xl">From a ticker to an asset trail you can inspect.</h2>
+              <p className="mt-4 max-w-md text-sm leading-6 text-muted-foreground">Start with the asset you know. UnderScope resolves the relationships that help you understand the tokenized exposure.</p>
             </div>
             <div className="grid border-y border-border sm:grid-cols-2">
               {STEPS.map(([number, label, body]) => (
@@ -123,7 +142,7 @@ export default function HomePage() {
           <div className="mx-auto flex w-full max-w-[88rem] flex-col gap-5 px-4 py-8 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <div>
               <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Ready to investigate?</p>
-              <p className="mt-1 text-sm text-foreground">Open the market desk and resolve an asset.</p>
+              <p className="mt-1 text-sm text-foreground">Open the market desk and browse the mapped asset universe.</p>
             </div>
             <Link href="/explore" className="inline-flex h-10 items-center justify-center border border-border px-4 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] hover:border-foreground/50">
               Explore the desk →
@@ -134,7 +153,7 @@ export default function HomePage() {
 
       <footer className="border-t border-border">
         <div className="mx-auto flex w-full max-w-[88rem] flex-col gap-1 px-4 py-5 font-mono text-[9px] uppercase tracking-[0.1em] text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <span>CMC Pulse · Underlier Desk</span>
+          <span>UnderScope · CMC Pulse</span>
           <span>Real-world asset intelligence powered by CoinMarketCap data</span>
         </div>
       </footer>
@@ -142,10 +161,13 @@ export default function HomePage() {
   );
 }
 
-function DeskMark() {
+function BrandMark() {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden className="shrink-0 text-foreground">
-      <path fill="currentColor" fillOpacity="0.92" d="M2 3.2h6.5v2.1H2zM9.5 3.2H16v2.1H9.5zM2 7.95h4.2v2.1H2zM7.2 7.95H16v2.1H7.2zM2 12.7h8.5v2.1H2zM12.5 12.7H16v2.1h-3.5z" />
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden className="shrink-0">
+      <path d="M3.25 3.25v9.5a4 4 0 0 0 4 4h5.5a4 4 0 0 0 4-4v-9.5" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M5.75 3.25h8.5" stroke="currentColor" strokeWidth="1.8" />
+      <circle cx="10" cy="8" r="1.7" fill="var(--up)" />
+      <path d="M10 9.7v3.2" stroke="var(--up)" strokeWidth="1.5" />
     </svg>
   );
 }
