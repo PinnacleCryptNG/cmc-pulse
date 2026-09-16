@@ -19,10 +19,10 @@ export function SiteHeader({
           <DeskMark />
           <span>
             <span className="block text-[13px] font-semibold tracking-[0.16em] uppercase">
-              Underlier Desk
+              UnderScope
             </span>
             <span className="hidden text-[10px] tracking-[0.12em] text-muted-foreground uppercase sm:block">
-              RWA intelligence
+              CMC Pulse · RWA intelligence
             </span>
           </span>
         </Link>
@@ -30,19 +30,9 @@ export function SiteHeader({
         <div className="flex shrink-0 items-center gap-3">
           <span
             className="font-mono text-[10px] tracking-[0.14em] text-muted-foreground uppercase"
-            title={
-              source === "live"
-                ? "Serving live CoinMarketCap RWA endpoints"
-                : "Serving checked-in fixture responses"
-            }
+            title={source === "live" ? "Serving live CoinMarketCap RWA endpoints" : "Serving checked-in fixture responses"}
           >
-            <span
-              className={cn(
-                "mr-1.5 inline-block size-1.5 align-middle",
-                source === "live" ? "bg-up" : "bg-muted-foreground/50",
-              )}
-              aria-hidden
-            />
+            <span className={cn("mr-1.5 inline-block size-1.5 align-middle", source === "live" ? "bg-up" : "bg-muted-foreground/50")} aria-hidden />
             {source === "live" ? "Live" : "Fixture"}
           </span>
           {evidence.length > 0 ? <EvidenceDrawer evidence={evidence} /> : null}
@@ -54,8 +44,11 @@ export function SiteHeader({
 
 function DeskMark() {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden className="shrink-0 text-foreground">
-      <path fill="currentColor" fillOpacity="0.92" d="M2 3.2h6.5v2.1H2zM9.5 3.2H16v2.1H9.5zM2 7.95h4.2v2.1H2zM7.2 7.95H16v2.1H7.2zM2 12.7h8.5v2.1H2zM12.5 12.7H16v2.1h-3.5z" />
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden className="shrink-0">
+      <path d="M3.25 3.25v9.5a4 4 0 0 0 4 4h5.5a4 4 0 0 0 4-4v-9.5" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M5.75 3.25h8.5" stroke="currentColor" strokeWidth="1.8" />
+      <circle cx="10" cy="8" r="1.7" fill="var(--up)" />
+      <path d="M10 9.7v3.2" stroke="var(--up)" strokeWidth="1.5" />
     </svg>
   );
 }
