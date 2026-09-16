@@ -164,7 +164,7 @@ export function parseMarketPairsPayload(payload: unknown): { rwaId: number | nul
 
 export function parseIssuerPayload(payload: unknown): IssuerDetail | null {
   const data = extractData(payload); const record = asRecord(data); if (!record) return null; const issuerId = asString(pick(record, "issuer_id", "issuerId", "id")); const name = asString(pick(record, "name")); if (!issuerId || !name) return null; const tokens = extractNamedArray(record, "tokens").map(parseIssuerToken).filter((item): item is IssuerToken => item !== null);
-  return { issuerId, name, website: asHttps(pick(record, "website")), logo: asHttps(pick(record, "logo")), numTokens: asNumber(pick(record, "num_tokens", "numTokens", "token_count")), tokens, totalSize: asNumber(pick(record, "total_size")) ?? tokens.length, hasMore: asBoolean(pick(record, "has_more")) ?? false };
+  return { issuerId, name, website: asHttps(pick(record, "website")), logo: asHttps(pick(record, "logo")), numTokens: asNumber(pick(record, "num_tokens", "numTokens", "token_count")), active: asBoolean(pick(record, "active", "is_active")), tokens, totalSize: asNumber(pick(record, "total_size")) ?? tokens.length, hasMore: asBoolean(pick(record, "has_more")) ?? false };
 }
 
 export function parseIssuersListPayload(payload: unknown): { issuers: IssuerSummary[]; totalSize: number; hasMore: boolean } {
