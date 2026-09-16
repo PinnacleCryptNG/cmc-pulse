@@ -1,109 +1,112 @@
-# Underlier Desk
+# UnderScope
 
-See the real asset behind every tokenized stock, treasury, and commodity.
+**Tokenized asset investigation.**
 
-A research desk for the **Build with CMC: API Hackathon**, track **Real World Assets**.
+UnderScope is a financial-intelligence investigation desk for tracing what sits behind a tokenized stock, treasury, commodity, ETF, currency, or real-estate asset.
 
-**One-liner.** What real-world asset is being tokenized, who is tokenizing it, and where can you access it?
+> **Investigate what’s behind a tokenized asset.**
 
-Tickers collide. `NVDA` is a Nasdaq stock and several issuer tokens; `SPCX` is an underlier and a Backpack token. Underlier Desk resolves `rwa_id`, then joins metadata, tokenized quotes, issuer tokens, and the venue CMC actually reports.
+Built for the **Build with CMC: API Hackathon**, Real World Assets track.
 
-There is no splash screen. `/` is the Market Desk: universe summary plus the underlier table.
+## What it does
+
+UnderScope connects four layers of an asset:
+
+**FIND → RESOLVE → TRACE → VERIFY**
+
+- **Find** tokenized assets across the CMC RWA universe.
+- **Resolve** a ticker, slug, or `rwa_id` to the correct real-world asset.
+- **Trace** tokenized representations and their issuers.
+- **Verify** the underlying metadata, reported venues, quotes, and CMC evidence.
+
+The key distinction is between an RWA's `rwa_id` and a token's `crypto_id`. The same ticker can refer to both the traditional asset and one or more tokenized representations, so UnderScope keeps those identities separate.
+
+## Product surfaces
+
+| Route | Purpose |
+|---|---|
+| `/` | First-time start page and product introduction |
+| `/explore` | Market Desk with ranked tokenized assets, filters, and sorting |
+| `/classes` | Asset-type taxonomy |
+| `/watchlist` | Browser-local saved assets |
+| `/asset/[id]` | Asset investigation desk: metadata, tokenized quotes, wrappers, issuers, and venues |
+| `/issuers` | Issuer directory |
+| `/issuer/[id]` | Issuer investigation book and tokenized underliers |
+
+The normal user experience keeps technical identifiers and API details out of the main interface. **Data & Evidence** provides the deeper CMC trail for verification and judging.
+
+## Investigation workflow
+
+```mermaid
+flowchart LR
+  A[Start] --> B[Explore the Desk]
+  B --> C[Find an asset]
+  C --> D[Resolve the underlier]
+  D --> E[Trace tokenized representations]
+  E --> F[Inspect issuer]
+  F --> G[Verify CMC evidence]
+```
+
+## Judge path
+
+A judge can understand the core product quickly:
+
+1. Open the start page and select **Explore the Desk**.
+2. Browse the ranked tokenized-asset universe or filter by asset class.
+3. Open an asset such as `NVDA`, `GOLD`, `SPCX`, or `TLT`.
+4. Inspect the prominent asset identity, tokenized quote, issuer representations, and CMC-reported venue.
+5. Follow an issuer into its investigation book.
+6. Open **Data & Evidence** to inspect the CMC endpoints and response evidence behind the view.
 
 ## Run locally
 
 ```bash
 npm install
-cp .env.example .env.local   # then paste CMC_API_KEY
+cp .env.example .env.local
 npm test
 npm run dev
 ```
 
-Dev server: [http://127.0.0.1:43147](http://127.0.0.1:43147)
+Add your CoinMarketCap API key to `.env.local`:
 
-| Need | Required? |
+```env
+CMC_API_KEY=your_key_here
+```
+
+| Requirement | Required? |
 |---|---|
-| `CMC_API_KEY` from [coinmarketcap.com/api](https://coinmarketcap.com/api) | **Yes** for live data |
+| `CMC_API_KEY` | Yes for live CMC data |
 | Database | No |
-| Auth / accounts | No |
+| Authentication | No |
 | AI model | No |
 
-Without a key the app still runs on checked-in fixture responses so the underlier join can be developed and tested. Force fixtures even with a key by setting `CMC_USE_FIXTURES=1`.
+Without an API key, the app runs against checked-in fixture responses. To force fixture mode even when a key is present:
 
-Never commit the key. `.env*` is gitignored; `.env.example` is not. The key is a **server-only** secret (`CMC_API_KEY`, never `NEXT_PUBLIC_*`). Evidence previews redact it if it ever appears in a payload.
+```env
+CMC_USE_FIXTURES=1
+```
 
-## Screens
-
-| Route | What it is |
-|---|---|
-| `/` | Market Desk — universe summary, lookup, type/sort, underlier table |
-| `/explore` | Alias; redirects to `/` with the same query string |
-| `/classes` | CMC asset-type taxonomy from `/map` |
-| `/watchlist` | Browser-local saved names (no live quotes on this page) |
-| `/asset/[id]` | Underlier desk: wrappers vs average tokenized price, issuers, venue |
-| `/issuers` | Issuer directory |
-| `/issuer/[id]` | Issuer book of tokenized underliers (no quotes on those rows) |
-
-Visual target: [`reference/underlier-desk-reference.png`](reference/underlier-desk-reference.png).
-
-Query strings `q`, `type`, `sort`, `dir`, and `start` belong on `/`.
-
-## Judge path (under two minutes)
-
-1. Open `/` (Market Desk). Summary plus the ranked underlier table from **one** `assets/list` pull, plus cached map type counts.
-2. Search `NVDA` (or `GOLD`, `SPCX`, `TLT`) on the desk.
-3. Open the asset desk. Compare issuer wrappers to the average tokenized price.
-4. Open an issuer book, then an underlier from that book.
-5. Open **Data & Evidence** — named CoinMarketCap endpoints and truncated envelopes from this load.
+Never commit API credentials. `CMC_API_KEY` is server-only and must never use the `NEXT_PUBLIC_` prefix.
 
 ## Architecture
 
-Pages are React Server Components. They call `lib/cmc/service.ts` on the server. The browser never fetches `/api/rwa/*`; those BFF routes exist for evidence and debugging only.
+The application uses React Server Components and keeps CoinMarketCap requests on the server.
 
 ```mermaid
 flowchart LR
-  subgraph ui [App Router RSC]
-    Home["/ Market Desk"]
-    Desk["/asset/id Desk"]
-    Classes["/classes"]
-    Watch["/watchlist"]
-    Issuers["/issuers Directory"]
-    Book["/issuer/id Book"]
-  end
-  subgraph svc [lib/cmc]
-    Service["service.ts"]
-    Client["client.ts"]
-    Parse["parse.ts"]
-  end
-  subgraph cmc [CoinMarketCap]
-    RWA["/v5/real-world-assets/*"]
-    Crypto["/v2/cryptocurrency/quotes/latest"]
-  end
-  Home --> Service
-  Desk --> Service
-  Classes --> Service
-  Issuers --> Service
-  Book --> Service
-  Service --> Client
-  Client -->|live key| RWA
-  Client -->|crypto_id fallback| Crypto
-  Client -->|no key or CMC_USE_FIXTURES=1| Fixtures["fixtures.ts"]
-  Client --> Parse
+  UI[Next.js App Router] --> Service[lib/cmc/service.ts]
+  Service --> Client[lib/cmc/client.ts]
+  Client --> Parser[lib/cmc/parse.ts]
+  Client --> RWA[CMC RWA API]
+  Client --> Crypto[CMC Crypto Quotes fallback]
+  Client --> Fixtures[Checked-in fixtures]
 ```
 
-```mermaid
-flowchart TD
-  A[Land on Market Desk] --> B[Universe: type counts + ranked underliers]
-  B --> C[Search ticker / slug / rwa_id]
-  C --> D[Asset desk]
-  D --> E[Issuer wrappers vs average tokenized price]
-  D --> F[CMC-reported venue]
-  E --> G[Issuer book]
-  G --> D
-  D --> H[Data & Evidence drawer]
-```
+The `/api/rwa/*` routes are backend-for-frontend endpoints used for evidence and debugging. The primary product surfaces consume the server-side service layer directly.
 
-## CMC endpoints used
+## CoinMarketCap endpoints
+
+UnderScope currently integrates these CMC endpoints:
 
 1. `GET /v5/real-world-assets/map`
 2. `GET /v5/real-world-assets/info`
@@ -111,46 +114,73 @@ flowchart TD
 4. `GET /v5/real-world-assets/quotes/latest`
 5. `GET /v5/real-world-assets/issuers/list`
 6. `GET /v5/real-world-assets/issuers`
-7. `GET /v2/cryptocurrency/quotes/latest` — fallback when an RWA token has a `crypto_id` but no price
+7. `GET /v2/cryptocurrency/quotes/latest` as a fallback for token quotes when an RWA token exposes a `crypto_id` but its RWA quote is unavailable
 
-Each page exposes **Data & Evidence** with the named endpoint and a truncated response. Sample envelopes: [`evidence/sample-cmc-map-spacex.json`](evidence/sample-cmc-map-spacex.json) and [`evidence/live-nvda-quotes.json`](evidence/live-nvda-quotes.json) (key stripped).
-
-Debug BFF routes (same payloads the UI uses):
+Debug/evidence routes:
 
 - `/api/rwa/screener`
 - `/api/rwa/asset/[id]`
 - `/api/rwa/issuers`
 - `/api/rwa/issuer/[id]`
 
-## What the API made possible / where it got in the way
+Sample evidence is stored in:
 
-The RWA family is the first time CMC lets you walk **underlier → issuer → on-chain token → venue** without scraping HTML. `rwa_id` is a separate namespace from `crypto_id`, which is exactly the collision a person hits. A live `NVDA` lookup returns multiple issuer tokens (Backed/xStock, Ondo, and others) on one quotes call.
+- `evidence/sample-cmc-map-spacex.json`
+- `evidence/live-nvda-quotes.json`
 
-Friction from live calls on a typical plan:
+Sensitive values are stripped from checked-in evidence.
 
-- `tradfi_markets` is venue identity (`exchange`, `ticker`, `market_url`), not a cash-market last price. The UI labels it **CMC-reported venue**.
-- There is **no name-search** parameter. Lookups are ticker, slug, or `rwa_id`.
-- `/issuers/list` does not include tokens; inverting “who wrapped this underlier” requires `/issuers` per issuer unless quotes already attached `issuer_id`.
-- RWA list/quotes do not return `percent_change_24h`.
-- `/info` About text is a long markdown FAQ, not a one-line company blurb.
-- Asset-type taxonomy is uneven: stocks and ETFs dominate the map; treasuries often show up as ETFs. Do not treat map `total_size` and `assets/list` `total_size` as the same universe.
-- Convert quotes arrive as a `quotes: [{ symbol: "USD", ... }]` array, not the crypto-style `quote.USD` object.
-- `/market-pairs/list` is not on a typical plan. The product does not call it.
+## API observations
+
+The CMC RWA API shaped several product decisions:
+
+- `rwa_id` and `crypto_id` represent different identity namespaces and must not be conflated.
+- RWA lookup supports ticker, slug, and `rwa_id`; it does not provide a general company-name search parameter.
+- CMC's RWA metadata includes an About block that can provide descriptions, websites, and logos.
+- Tokenized quote responses use an RWA-specific structure rather than the standard crypto quote shape.
+- Issuer-list responses and issuer-detail responses expose different levels of relationship data, so UnderScope preserves that distinction rather than pretending the relationship is always complete.
+- The product labels reported market information carefully. A CMC-reported venue is not presented as a traditional-market last-trade price when the API does not provide one.
+- Asset-type coverage is uneven across the RWA universe, so counts from different CMC endpoints are not assumed to represent identical universes.
+
+## Performance and reliability
+
+The service layer is designed to avoid unnecessary CMC calls:
+
+- RWA type counts are fetched in parallel and memoized.
+- Asset investigation loads metadata and quotes in parallel where possible.
+- The previous unbounded issuer crawl was removed. UnderScope does not crawl the entire issuer universe just to resolve one asset.
+- CMC requests use a server-side timeout.
+- Fixture mode provides a deterministic development path when live API access is unavailable.
 
 ## Security and data handling
 
-- CMC key stays on the server. It is never sent to the client, never committed, and stripped from evidence previews.
-- External website and market URLs must be `https:` before they become `href` or `src`.
-- Route params are allowlisted (`rwa_id` digits, issuer ids alphanumeric). Screener `sort` is allowlisted so a junk `?sort=` cannot trip a CMC error into a map fallback.
-- No accounts, cookies, or user-uploaded data. Responses are `Cache-Control: no-store` on the BFF.
-- Watchlist is `localStorage` only.
+- The CMC API key remains server-side.
+- Evidence previews redact secret-looking query parameters.
+- External website and market URLs are restricted to `https:` before being used as links or image sources.
+- Route parameters and screener sorting are allowlisted.
+- BFF responses use `Cache-Control: no-store`.
+- Watchlists use browser `localStorage` only.
+- No account system, database, payment flow, or user-uploaded data is required.
 
 ## Stack
 
-Next.js App Router, TypeScript, Tailwind, shadcn/ui. Forced dark UI. CMC calls stay on the server. No database.
+- Next.js 16 App Router
+- React 19
+- TypeScript
+- Tailwind CSS
+- shadcn/ui
+- CoinMarketCap API
+
+The interface uses a dense research-terminal visual language rather than a conventional crypto dashboard: near-black charcoal surfaces, neutral borders, signal green for live/active states, DM Sans for interface text, and JetBrains Mono for data.
+
+## Development checks
 
 ```bash
 npm run lint
 npm test
 npm run build
 ```
+
+## Project status
+
+UnderScope is a hackathon-focused investigation terminal. Live CMC integration and fixture-backed development are supported. Authentication, persistent accounts, database-backed watchlists, live trading, payments, and order execution are intentionally outside the current scope.
