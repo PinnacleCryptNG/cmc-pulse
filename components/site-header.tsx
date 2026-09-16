@@ -5,26 +5,13 @@ import { EvidenceDrawer } from "@/components/evidence-drawer";
 import type { CallEvidence, DataSource } from "@/lib/cmc/types";
 import { cn } from "@/lib/utils";
 
-export function SiteHeader({
-  evidence,
-  source,
-}: {
-  evidence: CallEvidence[];
-  source: DataSource;
-}) {
+export function SiteHeader({ evidence, source }: { evidence: CallEvidence[]; source: DataSource }) {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-surface/95 backdrop-blur-sm">
       <div className="mx-auto flex w-full max-w-[88rem] items-center justify-between gap-3 px-3 py-2.5 sm:px-4">
         <Link href="/" className="flex min-w-0 items-center gap-2.5 leading-tight">
           <DeskMark />
-          <span>
-            <span className="block text-[13px] font-semibold tracking-[0.16em] uppercase">
-              UnderScope
-            </span>
-            <span className="hidden text-[10px] tracking-[0.12em] text-muted-foreground uppercase sm:block">
-              CMC Pulse · RWA intelligence
-            </span>
-          </span>
+          <span className="block text-[13px] font-semibold tracking-[0.16em] uppercase">UnderScope</span>
         </Link>
 
         <div className="flex shrink-0 items-center gap-3">
