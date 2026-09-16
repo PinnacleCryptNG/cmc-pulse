@@ -23,17 +23,8 @@ export function AppFrame({
       </main>
       <footer className="mt-auto border-t border-border">
         <div className="mx-auto flex w-full max-w-[88rem] flex-col gap-0.5 px-3 py-2.5 text-[10px] leading-relaxed tracking-wide text-muted-foreground sm:px-4 sm:flex-row sm:items-baseline sm:justify-between">
-          <p>
-            Underlier Desk · Real World Assets ·{" "}
-            <span className="font-mono">/v5/real-world-assets/*</span>
-            {source === "live"
-              ? " · pro-api.coinmarketcap.com"
-              : " · fixture payloads"}
-          </p>
-          <p>
-            Tickers collide. Resolve <span className="font-mono">rwa_id</span>, then
-            compare each issuer token to the average tokenized price.
-          </p>
+          <p>UnderScope · RWA intelligence · powered by CoinMarketCap data</p>
+          <p>Trace the underlying asset, issuer and tokenized representation.</p>
         </div>
       </footer>
     </div>
