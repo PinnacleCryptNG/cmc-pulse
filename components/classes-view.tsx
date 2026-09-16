@@ -7,9 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ASSET_TYPES } from "@/lib/cmc/types";
-import { TYPE_LABELS } from "@/lib/cmc/parse";
-import type { TypeCount } from "@/lib/cmc/types";
+import { ASSET_TYPES, TYPE_LABELS, type TypeCount } from "@/lib/cmc/types";
 import { formatInt } from "@/lib/cmc/format";
 
 const CLASS_BLURB: Record<(typeof ASSET_TYPES)[number], string> = {
@@ -70,7 +68,7 @@ export function ClassesView({ counts }: { counts: TypeCount[] }) {
                     {empty ? (
                       <span className="text-[12px] text-muted-foreground">None in map</span>
                     ) : (
-                      <ActionLink href={`/?type=${type}`}>Open desk</ActionLink>
+                      <ActionLink href={`/explore?type=${type}`}>Open desk</ActionLink>
                     )}
                   </TableCell>
                 </TableRow>
