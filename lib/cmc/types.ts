@@ -7,6 +7,16 @@ export const ASSET_TYPES = [
   "real_estate",
 ] as const;
 
+export const TYPE_LABELS: Record<AssetType | "all", string> = {
+  all: "All",
+  stock: "Stocks",
+  commodity: "Commodities",
+  currency: "FX",
+  government_security: "Treasuries",
+  etf: "ETFs",
+  real_estate: "Real Estate",
+};
+
 export type AssetType = (typeof ASSET_TYPES)[number];
 
 export type DataSource = "live" | "fixture";
