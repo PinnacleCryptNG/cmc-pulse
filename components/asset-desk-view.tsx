@@ -54,24 +54,23 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
     <div className="flex flex-col gap-4">
       <nav aria-label="Breadcrumb" className="text-[12px]">
         <Link
-          href="/"
+          href="/explore"
           className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-3.5" aria-hidden />
-          Back to underlier universe
+          Back to asset desk
         </Link>
         {info?.symbol ? (
           <>
             <span className="text-muted-foreground"> / </span>
             <Link
-              href={`/?q=${encodeURIComponent(info.symbol)}`}
+              href={`/explore?q=${encodeURIComponent(info.symbol)}`}
               className="font-mono hover:text-mark"
             >
               {info.symbol}
             </Link>
           </>
         ) : null}
-        <span className="text-muted-foreground"> / rwa_id {rwaId}</span>
       </nav>
 
       <header className="flex flex-col gap-3">
@@ -146,7 +145,7 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
           <UnderlierIdentity info={info} rwaId={rwaId} />
           {info?.assetType ? (
             <p className="mt-2 px-0.5 text-[12px] text-muted-foreground">
-              <TextLink href={`/?type=${encodeURIComponent(String(info.assetType))}`}>
+              <TextLink href={`/explore?type=${encodeURIComponent(String(info.assetType))}`}>
                 More {formatType(String(info.assetType))} underliers
               </TextLink>
             </p>
@@ -189,38 +188,18 @@ export function AssetDeskView({ desk, rwaId }: { desk: AssetDesk; rwaId: string 
 function MetaStrip({ info }: { info: AssetInfo | null }) {
   if (!info) return null;
   const cells: { label: string; value: ReactNode }[] = [];
-  if (info.primaryExchange) {
-    cells.push({ label: "Primary exchange", value: info.primaryExchange });
-  }
-  if (info.industry) {
-    cells.push({ label: "Industry", value: info.industry });
-  }
-  if (info.founded) {
-    cells.push({ label: "Founded", value: info.founded.slice(0, 10) });
-  }
-  if (info.employees != null) {
-    cells.push({ label: "Employees", value: formatInt(info.employees) });
-  }
-  if (info.cik) {
-    cells.push({
-      label: "CIK",
-      value: <span className="font-mono">{info.cik}</span>,
-    });
-  }
+  if (info.primaryExchange) cells.push({ label: "Primary exchange", value: info.primaryExchange });
+  if (info.industry) cells.push({ label: "Industry", value: info.industry });
+  if (info.founded) cells.push({ label: "Founded", value: info.founded.slice(0, 10) });
+  if (info.employees != null) cells.push({ label: "Employees", value: formatInt(info.employees) });
+  if (info.cik) cells.push({ label: "CIK", value: <span className="font-mono">{info.cik}</span> });
   if (cells.length === 0) return null;
 
   return (
-    <dl
-      className={cn(
-        "grid border border-border bg-surface",
-        cells.length >= 5 ? "grid-cols-2 sm:grid-cols-5" : "grid-cols-2 sm:grid-cols-4",
-      )}
-    >
+    <dl className={cn("grid border border-border bg-surface", cells.length >= 5 ? "grid-cols-2 sm:grid-cols-5" : "grid-cols-2 sm:grid-cols-4")}>
       {cells.map((cell) => (
         <div key={cell.label} className="border-border px-3 py-2 not-last:border-r max-sm:[&:nth-child(odd)]:border-r max-sm:[&:nth-child(-n+2)]:border-b sm:border-b-0">
-          <dt className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-            {cell.label}
-          </dt>
+          <dt className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">{cell.label}</dt>
           <dd className="mt-0.5 truncate text-[12.5px] text-foreground">{cell.value}</dd>
         </div>
       ))}
@@ -230,190 +209,60 @@ function MetaStrip({ info }: { info: AssetInfo | null }) {
 
 function UnderlierIdentity({ info, rwaId }: { info: AssetInfo | null; rwaId: string }) {
   const rows: { label: string; value: ReactNode }[] = [];
-  rows.push({ label: "rwa_id", value: <span className="font-mono">{info?.rwaId ?? rwaId}</span> });
-  if (info?.rwaRank != null) {
-    rows.push({ label: "Rank", value: <span className="font-mono tabular-nums">{info.rwaRank}</span> });
-  }
-  if (info?.assetType) {
-    rows.push({ label: "Asset type", value: typeLabel(info.assetType) });
-  }
-  if (info?.primaryExchange) {
-    rows.push({ label: "Primary exchange", value: info.primaryExchange });
-  }
-  if (info?.industry) {
-    rows.push({ label: "Industry", value: info.industry });
-  }
-  if (info?.founded) {
-    rows.push({ label: "Founded", value: info.founded.slice(0, 10) });
-  }
-  if (info?.employees != null) {
-    rows.push({ label: "Employees", value: formatInt(info.employees) });
-  }
-  if (info?.cik) {
-    rows.push({
-      label: "SEC CIK",
-      value: <span className="font-mono">{info.cik}</span>,
-    });
-  }
+  if (info?.rwaRank != null) rows.push({ label: "Rank", value: <span className="font-mono tabular-nums">{info.rwaRank}</span> });
+  if (info?.assetType) rows.push({ label: "Asset type", value: typeLabel(info.assetType) });
+  if (info?.primaryExchange) rows.push({ label: "Primary exchange", value: info.primaryExchange });
+  if (info?.industry) rows.push({ label: "Industry", value: info.industry });
+  if (info?.founded) rows.push({ label: "Founded", value: info.founded.slice(0, 10) });
+  if (info?.employees != null) rows.push({ label: "Employees", value: formatInt(info.employees) });
+  if (info?.cik) rows.push({ label: "SEC CIK", value: <span className="font-mono">{info.cik}</span> });
   if (info?.website) {
     rows.push({
       label: "Website",
-      value: (
-        <ExternalLink className="text-mark hover:underline" href={info.website}>
-          {hostLabel(info.website)}
-        </ExternalLink>
-      ),
+      value: <ExternalLink className="text-mark hover:underline" href={info.website}>{hostLabel(info.website)}</ExternalLink>,
     });
   }
   const about = shortAbout(info?.description);
 
   return (
-    <DeskSection
-      id="underlier"
-      kicker="Real-world asset"
-      title="About the underlier"
-      description="The instrument being tokenized — not the on-chain wrapper."
-    >
-      {about ? (
-        <p className="text-[13px] leading-relaxed text-muted-foreground">{about}</p>
-      ) : (
-        <p className="text-[13px] text-muted-foreground">No About block returned for this underlier.</p>
-      )}
+    <DeskSection id="underlier" kicker="Real-world asset" title="About the underlier" description="The instrument being tokenized — not the on-chain wrapper.">
+      {about ? <p className="text-[13px] leading-relaxed text-muted-foreground">{about}</p> : <p className="text-[13px] text-muted-foreground">No About block returned for this underlier.</p>}
       <dl className="mt-3 grid gap-y-1.5">
-        {rows.map((row) => (
-          <IdentityRow key={row.label} label={row.label} value={row.value} />
-        ))}
+        {rows.map((row) => <IdentityRow key={row.label} label={row.label} value={row.value} />)}
       </dl>
     </DeskSection>
   );
 }
 
-function TokenizedExposure({
-  tokens,
-  underlierPrice,
-  underlierName,
-  closestId,
-  mostVolumeId,
-  showMcap,
-  showChange,
-}: {
-  tokens: UnderlyingToken[];
-  underlierPrice: number | null;
-  underlierName: string;
-  closestId: number | null | undefined;
-  mostVolumeId: number | null | undefined;
-  showMcap: boolean;
-  showChange: boolean;
-}) {
+function TokenizedExposure({ tokens, underlierPrice, underlierName, closestId, mostVolumeId, showMcap, showChange }: { tokens: UnderlyingToken[]; underlierPrice: number | null; underlierName: string; closestId: number | null | undefined; mostVolumeId: number | null | undefined; showMcap: boolean; showChange: boolean }) {
   return (
-    <DeskSection
-      id="tokenized-exposure"
-      kicker="Tokenized exposure"
-      title="Issuer wrappers"
-      description={
-        <>
-          Each row is a tokenized representation of {underlierName}, not a standalone
-          cryptocurrency.
-        </>
-      }
-    >
+    <DeskSection id="tokenized-exposure" kicker="Tokenized exposure" title="Issuer wrappers" description={<>Each row is a tokenized representation of {underlierName}, not a standalone cryptocurrency.</>}>
       {tokens.length === 0 ? (
-        <EmptyState title="No tokenized exposure">
-          No tokenized exposure in this CMC payload. Underlier metadata still stands.
-        </EmptyState>
+        <EmptyState title="No tokenized exposure">No tokenized exposure in this CMC payload. Underlier metadata still stands.</EmptyState>
       ) : (
         <Table bare>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead>Token</TableHead>
-              <TableHead className="hidden sm:table-cell">Issuer</TableHead>
-              <TableHead className="text-right">Price</TableHead>
-              {showChange ? (
-                <TableHead className="hidden text-right md:table-cell">24h</TableHead>
-              ) : null}
-              <TableHead className="hidden text-right md:table-cell">24h vol</TableHead>
-              {showMcap ? (
-                <TableHead className="hidden text-right lg:table-cell">Mkt cap</TableHead>
-              ) : null}
-              <TableHead className="text-right">Research</TableHead>
-            </TableRow>
-          </TableHeader>
+          <TableHeader><TableRow className="hover:bg-transparent"><TableHead>Token</TableHead><TableHead className="hidden sm:table-cell">Issuer</TableHead><TableHead className="text-right">Price</TableHead>{showChange ? <TableHead className="hidden text-right md:table-cell">24h</TableHead> : null}<TableHead className="hidden text-right md:table-cell">24h vol</TableHead>{showMcap ? <TableHead className="hidden text-right lg:table-cell">Mkt cap</TableHead> : null}<TableHead className="text-right">Research</TableHead></TableRow></TableHeader>
           <TableBody>
             {tokens.map((token) => {
-              const isClosest =
-                closestId !== null && closestId !== undefined && token.cryptoId === closestId;
-              const isMostVolume =
-                mostVolumeId !== null &&
-                mostVolumeId !== undefined &&
-                token.cryptoId === mostVolumeId;
+              const isClosest = closestId !== null && closestId !== undefined && token.cryptoId === closestId;
+              const isMostVolume = mostVolumeId !== null && mostVolumeId !== undefined && token.cryptoId === mostVolumeId;
               const spread = spreadVsUnderlier(token.quote.price, underlierPrice);
               return (
-                <TableRow
-                  key={`${token.cryptoId}-${token.symbol}-${token.issuerId}`}
-                  className="focus-within:bg-muted/60"
-                >
+                <TableRow key={`${token.cryptoId}-${token.symbol}-${token.issuerId}`} className="focus-within:bg-muted/60">
                   <TableCell className="whitespace-normal">
                     <div className="font-medium">{token.name}</div>
-                    <div className="font-mono text-[11px] text-muted-foreground">
-                      {token.symbol}
-                      {token.cryptoId ? ` · crypto_id ${token.cryptoId}` : ""}
-                    </div>
-                    <div className="mt-0.5 text-[11px] sm:hidden">
-                      {token.issuerId ? (
-                        <TextLink href={`/issuer/${token.issuerId}`}>
-                          {token.issuerName ?? "View issuer"}
-                        </TextLink>
-                      ) : (
-                        (token.issuerName ?? "Issuer not named")
-                      )}
-                    </div>
+                    <div className="font-mono text-[11px] text-muted-foreground">{token.symbol}</div>
+                    <div className="mt-0.5 text-[11px] sm:hidden">{token.issuerId ? <TextLink href={`/issuer/${token.issuerId}`}>{token.issuerName ?? "View issuer"}</TextLink> : (token.issuerName ?? "Issuer not named")}</div>
                   </TableCell>
                   <TableCell className="hidden whitespace-normal sm:table-cell">
-                    {token.issuerId ? (
-                      <Link
-                        className="font-medium text-foreground hover:text-mark"
-                        href={`/issuer/${token.issuerId}`}
-                      >
-                        {token.issuerName ?? token.issuerId}
-                      </Link>
-                    ) : (
-                      (token.issuerName ?? "—")
-                    )}
-                    <div className="mt-0.5 text-[11px] text-up">
-                      {[isClosest ? "Closest" : null, isMostVolume ? "Most volume" : null]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </div>
+                    {token.issuerId ? <Link className="font-medium text-foreground hover:text-mark" href={`/issuer/${token.issuerId}`}>{token.issuerName ?? token.issuerId}</Link> : (token.issuerName ?? "—")}
+                    <div className="mt-0.5 text-[11px] text-up">{[isClosest ? "Closest" : null, isMostVolume ? "Most volume" : null].filter(Boolean).join(" · ")}</div>
                   </TableCell>
-                  <TableCell className="text-right font-mono tabular-nums">
-                    {formatUsd(token.quote.price)}
-                    <div className={cn("text-[11px]", spreadClass(spread))}>{formatPct(spread)}</div>
-                  </TableCell>
-                  {showChange ? (
-                    <TableCell
-                      className={cn(
-                        "hidden text-right font-mono tabular-nums md:table-cell",
-                        changeClass(token.quote.percentChange24h),
-                      )}
-                    >
-                      {formatPct(token.quote.percentChange24h)}
-                    </TableCell>
-                  ) : null}
-                  <TableCell className="hidden text-right font-mono tabular-nums md:table-cell">
-                    {formatUsd(token.quote.volume24h, { compact: true })}
-                  </TableCell>
-                  {showMcap ? (
-                    <TableCell className="hidden text-right font-mono tabular-nums lg:table-cell">
-                      {formatUsd(token.quote.marketCap, { compact: true })}
-                    </TableCell>
-                  ) : null}
-                  <TableCell className="text-right">
-                    {token.issuerId ? (
-                      <ActionLink href={`/issuer/${token.issuerId}`}>View issuer</ActionLink>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
+                  <TableCell className="text-right font-mono tabular-nums">{formatUsd(token.quote.price)}<div className={cn("text-[11px]", spreadClass(spread))}>{formatPct(spread)}</div></TableCell>
+                  {showChange ? <TableCell className={cn("hidden text-right font-mono tabular-nums md:table-cell", changeClass(token.quote.percentChange24h))}>{formatPct(token.quote.percentChange24h)}</TableCell> : null}
+                  <TableCell className="hidden text-right font-mono tabular-nums md:table-cell">{formatUsd(token.quote.volume24h, { compact: true })}</TableCell>
+                  {showMcap ? <TableCell className="hidden text-right font-mono tabular-nums lg:table-cell">{formatUsd(token.quote.marketCap, { compact: true })}</TableCell> : null}
+                  <TableCell className="text-right">{token.issuerId ? <ActionLink href={`/issuer/${token.issuerId}`}>View issuer</ActionLink> : <span className="text-muted-foreground">—</span>}</TableCell>
                 </TableRow>
               );
             })}
@@ -424,309 +273,47 @@ function TokenizedExposure({
   );
 }
 
-function ComparisonSection({
-  underlierName,
-  underlierSymbol,
-  underlierPrice,
-  summary,
-  tokens,
-}: {
-  underlierName: string;
-  underlierSymbol: string | null;
-  underlierPrice: number | null;
-  summary: ReturnType<typeof summarizeWrappers>;
-  tokens: UnderlyingToken[];
-}) {
-  if (tokens.length === 0) {
-    return (
-      <DeskSection
-        id="comparison"
-        kicker="How it compares"
-        title="Tokenized vs underlier"
-        description="Spread versus the average tokenized price of the underlier."
-      >
-        <EmptyState title="No wrappers to compare">
-          No wrappers to compare against this underlier.
-        </EmptyState>
-      </DeskSection>
-    );
-  }
-
+function ComparisonSection({ underlierName, underlierSymbol, underlierPrice, summary, tokens }: { underlierName: string; underlierSymbol: string | null; underlierPrice: number | null; summary: ReturnType<typeof summarizeWrappers>; tokens: UnderlyingToken[] }) {
+  if (tokens.length === 0) return <DeskSection id="comparison" kicker="How it compares" title="Tokenized vs underlier" description="Spread versus the average tokenized price of the underlier."><EmptyState title="No wrappers to compare">No wrappers to compare against this underlier.</EmptyState></DeskSection>;
   const closestToken = tokens.find((token) => token.cryptoId === summary.closest?.cryptoId);
   const volumeToken = tokens.find((token) => token.cryptoId === summary.mostVolume?.cryptoId);
-
   return (
-    <DeskSection
-      id="comparison"
-      kicker="How it compares"
-      title="Tokenized vs underlier (average)"
-      description="Existing spread versus the average tokenized underlier price. Not a cash-market premium."
-    >
+    <DeskSection id="comparison" kicker="How it compares" title="Tokenized vs underlier (average)" description="Existing spread versus the average tokenized underlier price. Not a cash-market premium.">
       <div className="grid grid-cols-1 divide-y divide-border border border-border bg-background md:grid-cols-3 md:divide-x md:divide-y-0">
-        <div className="px-3 py-2.5">
-          <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-            Average tokenized price
-          </p>
-          <p className="mt-1 font-mono text-[15px] tabular-nums">{formatUsd(underlierPrice)}</p>
-          <p className="mt-0.5 text-[11px] text-muted-foreground">
-            {underlierName}
-            {underlierSymbol ? ` · ${underlierSymbol}` : ""}
-          </p>
-        </div>
-        <div className="px-3 py-2.5">
-          <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-            Closest price
-          </p>
-          <p className="mt-1 font-mono text-[15px] tabular-nums">
-            {formatUsd(closestToken?.quote.price ?? null)}
-            <span className={cn("ml-2 text-[12px]", spreadClass(summary.closest?.spreadPct ?? null))}>
-              {formatPct(summary.closest?.spreadPct ?? null)}
-            </span>
-          </p>
-          <p className="mt-0.5 text-[11px] text-muted-foreground">
-            {summary.closest
-              ? `${summary.closest.symbol}${summary.closest.issuerName ? ` · ${summary.closest.issuerName}` : ""}`
-              : "—"}
-          </p>
-        </div>
-        <div className="px-3 py-2.5">
-          <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-            Most volume
-          </p>
-          <p className="mt-1 font-mono text-[15px] tabular-nums">
-            {formatUsd(volumeToken?.quote.volume24h ?? summary.mostVolume?.volume24h ?? null, {
-              compact: true,
-            })}
-          </p>
-          <p className="mt-0.5 text-[11px] text-muted-foreground">
-            {summary.mostVolume
-              ? `${summary.mostVolume.symbol}${summary.mostVolume.issuerName ? ` · ${summary.mostVolume.issuerName}` : ""}`
-              : "—"}
-          </p>
-        </div>
+        <div className="px-3 py-2.5"><p className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Average tokenized price</p><p className="mt-1 font-mono text-[15px] tabular-nums">{formatUsd(underlierPrice)}</p><p className="mt-0.5 text-[11px] text-muted-foreground">{underlierName}{underlierSymbol ? ` · ${underlierSymbol}` : ""}</p></div>
+        <div className="px-3 py-2.5"><p className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Closest price</p><p className="mt-1 font-mono text-[15px] tabular-nums">{formatUsd(closestToken?.quote.price ?? null)}<span className={cn("ml-2 text-[12px]", spreadClass(summary.closest?.spreadPct ?? null))}>{formatPct(summary.closest?.spreadPct ?? null)}</span></p><p className="mt-0.5 text-[11px] text-muted-foreground">{summary.closest ? `${summary.closest.symbol}${summary.closest.issuerName ? ` · ${summary.closest.issuerName}` : ""}` : "—"}</p></div>
+        <div className="px-3 py-2.5"><p className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Most volume</p><p className="mt-1 font-mono text-[15px] tabular-nums">{formatUsd(volumeToken?.quote.volume24h ?? summary.mostVolume?.volume24h ?? null, { compact: true })}</p><p className="mt-0.5 text-[11px] text-muted-foreground">{summary.mostVolume ? `${summary.mostVolume.symbol}${summary.mostVolume.issuerName ? ` · ${summary.mostVolume.issuerName}` : ""}` : "—"}</p></div>
       </div>
-      <p className="text-[11px] text-muted-foreground">
-        {summary.pricedCount} of {summary.tokenCount} wrappers have a tokenized price in this
-        payload.
-      </p>
+      <p className="text-[11px] text-muted-foreground">{summary.pricedCount} of {summary.tokenCount} wrappers have a tokenized price in this payload.</p>
     </DeskSection>
   );
 }
 
-function TradfiSection({
-  underlierName,
-  underlierSymbol,
-  markets,
-}: {
-  underlierName: string;
-  underlierSymbol: string | null;
-  markets: TradfiMarket[];
-}) {
-  return (
-    <DeskSection
-      id="tradfi"
-      kicker="Market / venue"
-      title="CMC-reported venue"
-      description="Venue identity from this CMC payload. Not a cash-market last, and not necessarily a traditional listing."
-    >
-      <p className="text-[12px] text-muted-foreground">
-        <span className="text-foreground">{underlierName}</span>
-        {underlierSymbol ? (
-          <>
-            {" "}
-            <span className="font-mono text-[11px]">{underlierSymbol}</span>
-          </>
-        ) : null}
-      </p>
-      {markets.length === 0 ? (
-        <p className="text-[12px] text-muted-foreground">No venue identity in this payload.</p>
-      ) : (
-        <Table bare>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead>Exchange</TableHead>
-              <TableHead>Ticker</TableHead>
-              <TableHead className="text-right">Research</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {markets.map((market) => (
-              <TableRow
-                key={`${market.exchange}-${market.name}-${market.symbol}`}
-                className="focus-within:bg-muted/60"
-              >
-                <TableCell className="whitespace-normal">
-                  {market.exchange ?? market.name}
-                </TableCell>
-                <TableCell className="font-mono">{market.symbol ?? "—"}</TableCell>
-                <TableCell className="text-right">
-                  {market.marketUrl ? (
-                    <ExternalLink
-                      className="inline-flex h-6 items-center border border-border px-2 text-[10px] text-muted-foreground hover:border-foreground/25 hover:text-foreground"
-                      href={market.marketUrl}
-                    >
-                      Open venue
-                    </ExternalLink>
-                  ) : (
-                    <span className="text-muted-foreground">—</span>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      )}
-    </DeskSection>
-  );
+function TradfiSection({ underlierName, underlierSymbol, markets }: { underlierName: string; underlierSymbol: string | null; markets: TradfiMarket[] }) {
+  return <DeskSection id="tradfi" kicker="Market / venue" title="CMC-reported venue" description="Venue identity from this CMC payload. Not a cash-market last, and not necessarily a traditional listing."><p className="text-[12px] text-muted-foreground"><span className="text-foreground">{underlierName}</span>{underlierSymbol ? <> <span className="font-mono text-[11px]">{underlierSymbol}</span></> : null}</p>{markets.length === 0 ? <p className="text-[12px] text-muted-foreground">No venue identity in this payload.</p> : <Table bare><TableHeader><TableRow className="hover:bg-transparent"><TableHead>Exchange</TableHead><TableHead>Ticker</TableHead><TableHead className="text-right">Research</TableHead></TableRow></TableHeader><TableBody>{markets.map((market) => <TableRow key={`${market.exchange}-${market.name}-${market.symbol}`} className="focus-within:bg-muted/60"><TableCell className="whitespace-normal">{market.exchange ?? market.name}</TableCell><TableCell className="font-mono">{market.symbol ?? "—"}</TableCell><TableCell className="text-right">{market.marketUrl ? <ExternalLink className="inline-flex h-6 items-center border border-border px-2 text-[10px] text-muted-foreground hover:border-foreground/25 hover:text-foreground" href={market.marketUrl}>Open venue</ExternalLink> : <span className="text-muted-foreground">—</span>}</TableCell></TableRow>)}</TableBody></Table>}</DeskSection>;
 }
 
-function IssuersSection({
-  issuers,
-  underlierName,
-}: {
-  issuers: IssuerGroup[];
-  underlierName: string;
-}) {
-  return (
-    <DeskSection
-      id="issuers"
-      kicker="Issuer"
-      title="Who wrapped it"
-      description={`${underlierName} → issuer → tokenized representation.`}
-    >
-      {issuers.length === 0 ? (
-        <p className="text-[12px] text-muted-foreground">
-          No issuers attached to wrappers in this payload.
-        </p>
-      ) : (
-        <ul className="flex flex-col divide-y divide-border border border-border bg-background">
-          {issuers.map((group) => (
-            <li key={group.key} className="flex items-baseline justify-between gap-3 px-3 py-2">
-              <div className="min-w-0">
-                {group.issuerId ? (
-                  <Link
-                    className="font-medium text-foreground hover:text-mark"
-                    href={`/issuer/${group.issuerId}`}
-                  >
-                    {group.name}
-                  </Link>
-                ) : (
-                  <span className="font-medium">{group.name}</span>
-                )}
-                <p className="font-mono text-[11px] text-muted-foreground">
-                  {group.tokens.map((token) => token.symbol).join(" · ")}
-                </p>
-              </div>
-              {group.issuerId ? (
-                <ActionLink href={`/issuer/${group.issuerId}`} className="shrink-0">
-                  View issuer
-                </ActionLink>
-              ) : (
-                <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
-                  {group.tokens.length}
-                </span>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
-    </DeskSection>
-  );
+function IssuersSection({ issuers, underlierName }: { issuers: IssuerGroup[]; underlierName: string }) {
+  return <DeskSection id="issuers" kicker="Issuer" title="Who wrapped it" description={`${underlierName} → issuer → tokenized representation.`}>{issuers.length === 0 ? <p className="text-[12px] text-muted-foreground">No issuers attached to wrappers in this payload.</p> : <ul className="flex flex-col divide-y divide-border border border-border bg-background">{issuers.map((group) => <li key={group.key} className="flex items-baseline justify-between gap-3 px-3 py-2"><div className="min-w-0">{group.issuerId ? <Link className="font-medium text-foreground hover:text-mark" href={`/issuer/${group.issuerId}`}>{group.name}</Link> : <span className="font-medium">{group.name}</span>}<p className="font-mono text-[11px] text-muted-foreground">{group.tokens.map((token) => token.symbol).join(" · ")}</p></div>{group.issuerId ? <ActionLink href={`/issuer/${group.issuerId}`} className="shrink-0">View issuer</ActionLink> : <span className="font-mono text-[11px] tabular-nums text-muted-foreground">{group.tokens.length}</span>}</li>)}</ul>}</DeskSection>;
 }
 
-function EvidenceSection({
-  evidence,
-  pathUsed,
-}: {
-  evidence: CallEvidence[];
-  pathUsed: AssetDesk["pathUsed"];
-}) {
-  return (
-    <DeskSection
-      id="evidence"
-      kicker="Evidence"
-      title="Data & Evidence"
-      description="Named CoinMarketCap RWA calls on this page load."
-    >
-      <p className="text-[11px] text-muted-foreground">
-        Quotes path: <span className="font-mono">{pathUsed}</span>
-      </p>
-      {evidence.length === 0 ? (
-        <p className="text-[12px] text-muted-foreground">No CMC call evidence on this page load.</p>
-      ) : (
-        <ul className="flex flex-col gap-1.5">
-          {evidence.map((item, index) => (
-            <li key={`${item.endpoint}-${index}`} className="text-[11px]">
-              <span className="font-mono">{item.endpoint}</span>
-              <span className="ml-2 text-muted-foreground">
-                {item.ok ? (
-                  <span className="text-up">HTTP {item.httpStatus}</span>
-                ) : (
-                  `error ${item.httpStatus}`
-                )}
-                {` · ${item.elapsedMs}ms`}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </DeskSection>
-  );
+function EvidenceSection({ evidence, pathUsed }: { evidence: CallEvidence[]; pathUsed: AssetDesk["pathUsed"] }) {
+  return <DeskSection id="evidence" kicker="Evidence" title="Data & Evidence" description="Named CoinMarketCap RWA calls on this page load."><p className="text-[11px] text-muted-foreground">Quotes path: <span className="font-mono">{pathUsed}</span></p>{evidence.length === 0 ? <p className="text-[12px] text-muted-foreground">No CMC call evidence on this page load.</p> : <ul className="flex flex-col gap-1.5">{evidence.map((item, index) => <li key={`${item.endpoint}-${index}`} className="text-[11px]"><span className="font-mono">{item.endpoint}</span><span className="ml-2 text-muted-foreground">{item.ok ? <span className="text-up">HTTP {item.httpStatus}</span> : `error ${item.httpStatus}`}{` · ${item.elapsedMs}ms`}</span></li>)}</ul>}</DeskSection>;
 }
 
-function DeskSection({
-  id,
-  kicker,
-  title,
-  description,
-  children,
-}: {
-  id: string;
-  kicker: string;
-  title: string;
-  description?: ReactNode;
-  children: ReactNode;
-}) {
-  return (
-    <section aria-labelledby={id}>
-      <Panel>
-        <div className="border-b border-border px-3 pt-3">
-          <SectionHead
-            id={id}
-            kicker={kicker}
-            title={title}
-            description={description}
-            className="border-b-0 pb-3"
-          />
-        </div>
-        <div className="flex flex-col gap-2.5 p-3">{children}</div>
-      </Panel>
-    </section>
-  );
+function DeskSection({ id, kicker, title, description, children }: { id: string; kicker: string; title: string; description?: ReactNode; children: ReactNode }) {
+  return <section aria-labelledby={id}><Panel><div className="border-b border-border px-3 pt-3"><SectionHead id={id} kicker={kicker} title={title} description={description} className="border-b-0 pb-3" /></div><div className="flex flex-col gap-2.5 p-3">{children}</div></Panel></section>;
 }
 
-type IssuerGroup = {
-  key: string;
-  issuerId: string | null;
-  name: string;
-  tokens: UnderlyingToken[];
-};
+type IssuerGroup = { key: string; issuerId: string | null; name: string; tokens: UnderlyingToken[] };
 
 function groupIssuers(tokens: UnderlyingToken[]): IssuerGroup[] {
   const groups = new Map<string, IssuerGroup>();
   for (const token of tokens) {
     const key = token.issuerId ?? token.issuerName ?? `token:${token.cryptoId ?? token.symbol}`;
     const existing = groups.get(key);
-    if (existing) {
-      existing.tokens.push(token);
-      continue;
-    }
-    groups.set(key, {
-      key,
-      issuerId: token.issuerId,
-      name: token.issuerName ?? token.issuerId ?? "Unnamed issuer",
-      tokens: [token],
-    });
+    if (existing) { existing.tokens.push(token); continue; }
+    groups.set(key, { key, issuerId: token.issuerId, name: token.issuerName ?? token.issuerId ?? "Unnamed issuer", tokens: [token] });
   }
   return [...groups.values()];
 }
