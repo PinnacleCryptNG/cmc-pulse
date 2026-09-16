@@ -3,17 +3,7 @@ import { SiteHeader } from "@/components/site-header";
 import { StatusBanner } from "@/components/status-banner";
 import type { CallEvidence, DataSource } from "@/lib/cmc/types";
 
-export function AppFrame({
-  evidence,
-  source,
-  warning,
-  children,
-}: {
-  evidence: CallEvidence[];
-  source: DataSource;
-  warning: string | null;
-  children: ReactNode;
-}) {
+export function AppFrame({ evidence, source, warning, children }: { evidence: CallEvidence[]; source: DataSource; warning: string | null; children: ReactNode }) {
   return (
     <div className="flex min-h-full flex-col bg-background">
       <SiteHeader evidence={evidence} source={source} />
@@ -23,8 +13,8 @@ export function AppFrame({
       </main>
       <footer className="mt-auto border-t border-border">
         <div className="mx-auto flex w-full max-w-[88rem] flex-col gap-0.5 px-3 py-2.5 text-[10px] leading-relaxed tracking-wide text-muted-foreground sm:px-4 sm:flex-row sm:items-baseline sm:justify-between">
-          <p>UnderScope · RWA intelligence · powered by CoinMarketCap data</p>
-          <p>Trace the underlying asset, issuer and tokenized representation.</p>
+          <p>UnderScope</p>
+          <p>Investigate the underlying asset, issuer and tokenized representation.</p>
         </div>
       </footer>
     </div>
