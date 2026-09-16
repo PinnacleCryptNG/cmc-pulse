@@ -1,6 +1,16 @@
 import { safeHttpsUrl } from "../safe-url";
 import { ASSET_TYPES, type AssetType, type AssetInfo, type IssuerDetail, type IssuerSummary, type IssuerToken, type ListedAsset, type MappedAsset, type MarketPair, type TradfiMarket, type UnderlyingToken, type UsdQuote } from "./types";
 
+export const TYPE_LABELS: Record<AssetType | "all", string> = {
+  all: "All",
+  stock: "Stocks",
+  commodity: "Commodities",
+  currency: "FX",
+  government_security: "Treasuries",
+  etf: "ETFs",
+  real_estate: "Real Estate",
+};
+
 function asHttps(value: unknown): string | null {
   return safeHttpsUrl(asString(value));
 }
