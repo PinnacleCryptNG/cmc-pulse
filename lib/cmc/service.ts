@@ -9,9 +9,8 @@ import {
   parseListPayload,
   parseMapPayload,
   parseQuotesPayload,
-  TYPE_LABELS,
 } from "./parse";
-import { ASSET_TYPES, type AssetDesk, type AssetType, type CallEvidence, type IssuerBook, type IssuersResult, type QuotePath, type ScreenerResult, type TypeCount } from "./types";
+import { ASSET_TYPES, TYPE_LABELS, type AssetDesk, type AssetType, type CallEvidence, type IssuerBook, type IssuersResult, type QuotePath, type ScreenerResult, type TypeCount } from "./types";
 
 const MAP = "/v5/real-world-assets/map";
 const INFO = "/v5/real-world-assets/info";
