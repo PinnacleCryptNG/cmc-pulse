@@ -1,4 +1,4 @@
-import type { AssetDesk, TradfiMarket, UnderlyingToken } from "@/lib/cmc/types";
+import type { AssetDesk, TradfiMarket } from "@/lib/cmc/types";
 import { formatPct, formatUsd } from "@/lib/cmc/format";
 import { cn } from "@/lib/utils";
 
